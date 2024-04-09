@@ -532,7 +532,7 @@ TEST_CASE(operator_PolytopeSoup)
    um2::PolytopeSoup tri_poly_soup_ref;
    makeReferenceTriPolytopeSoup(tri_poly_soup_ref);
    um2::PolytopeSoup const tri_poly_soup = tri_mesh;
-   ASSERT(tri_poly_soup.compare(tri_poly_soup_ref) == 10);
+   ASSERT(tri_poly_soup.compare(tri_poly_soup_ref) == 6);
 }
 
 TEST_CASE(PolytopeSoup_constructor)

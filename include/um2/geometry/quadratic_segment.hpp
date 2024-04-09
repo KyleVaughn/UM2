@@ -254,25 +254,22 @@ template <Int D>
 PURE HOSTDEV constexpr auto
 isStraight(QuadraticSegment<D> const & q) noexcept -> bool
 {
-  // Q(r) = C + rB + r²A,
-  // L(r) = P0 + r(P1 - P0) 
-  // Let D = P1 - P0. Note C = P0. 
-  // Q(r) - L(r) = r(B - D + rA)
-  // Note: B - D = -A
-  // Hence, Q(r) - L(r) = r(-A + rA) = r(r-1)A
-  // We see that r(r-1) achieves its maximum at r = 0.5, where it is 0.25.
-  // Hence, Q(r) achieves its maximum distance from L(r) at r = 0.5, and this
-  // distance is exactly ‖A‖ / 4.
-  // Hence, if ‖A‖ / 4 < eps_distance, then no point on the segment is more than
-  // eps_distance from the line segment.
-  //
-  // For ease of computation, we use the squared norm.
-  // If ‖A‖² < 16 * eps_distance², then the segment is straight.
-  //
-  // Drop the multiplication by 2
-  Point<D> const half_a = q[0] + q[1] - 2 * q[2];
-  // ‖A / 2‖² == ‖A‖² / 4 
-  return half_a.squaredNorm() < 4 * eps_distance2;
+  // Assume ‖p2 - p0‖ < ‖p1 - p0‖
+  ASSERT(q[0].squaredDistanceTo(q[1]) > q[0].squaredDistanceTo(q[2]));
+  // Area of triangle = 1/2 base * height. 
+  // base = ‖p1 - p0‖
+  // height = p2's displacement from the line(p0, p1) 
+  // Hence the displacement of p2 from the line segment is
+  // height = ‖(p2 - p0) × (p1 - p0)‖ / ‖p1 - p0‖
+  // We can avoid a square root by comparing the squared distance.
+  auto const v10 = q[1] - q[0];
+  auto const v20 = q[2] - q[0];
+  auto const cp = v10.cross(v20);
+  if constexpr (D == 2) {
+    return (cp * cp) / v10.squaredNorm() < eps_distance2; 
+  } else {
+    return cp.squaredNorm() / v10.squaredNorm() < eps_distance2;
+  }
 }
 
 //==============================================================================

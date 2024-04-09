@@ -15,6 +15,7 @@ namespace um2
 // Constructors
 //==============================================================================
 
+// Helper function to get VTK element type from P and N.
 template <Int P, Int N>
 static constexpr auto
 getVTKElemType() -> VTKElemType
@@ -28,7 +29,7 @@ getVTKElemType() -> VTKElemType
   } else if constexpr (P == 2 && N == 8) {
     return VTKElemType::QuadraticQuad;
   }
-  return VTKElemType::None;
+  return VTKElemType::Invalid;
 }
 
 template <Int P, Int N>
@@ -72,7 +73,7 @@ FaceVertexMesh<P, N>::FaceVertexMesh(PolytopeSoup const & soup)
 }
 
 //==============================================================================
-// mortonSort
+// Modifiers 
 //==============================================================================
 
 template <Int P, Int N>
@@ -90,10 +91,6 @@ FaceVertexMesh<P, N>::mortonSort() noexcept
     populateVF();
   }
 }
-
-//==============================================================================
-// mortonSortFaces
-//==============================================================================
 
 template <Int P, Int N>
 void
@@ -122,10 +119,6 @@ FaceVertexMesh<P, N>::mortonSortFaces() noexcept
   // Sort the faces according to the permutation vector.
   applyPermutation(_fv.begin(), _fv.end(), perm.cbegin());
 }
-
-//==============================================================================
-// mortonSortVertices
-//==============================================================================
 
 template <Int P, Int N>
 void
@@ -158,10 +151,6 @@ FaceVertexMesh<P, N>::mortonSortVertices() noexcept
     }
   }
 }
-
-//==============================================================================
-// populateVF
-//==============================================================================
 
 template <Int P, Int N>
 void
@@ -205,7 +194,7 @@ FaceVertexMesh<P, N>::populateVF() noexcept
 }
 
 //==============================================================================
-// operator PolytopeSoup 
+// Methods 
 //==============================================================================
 
 template <Int P, Int N>
@@ -232,33 +221,29 @@ FaceVertexMesh<P, N>::operator PolytopeSoup() const noexcept
   return soup;
 }
 
-//==============================================================================
-// validate
-//==============================================================================
-
-// Check for:
-// - Counter-clockwise faces (warn and fix)
-// - Manifoldness (error)
 template <Int P, Int N>
-void
-// NOLINTNEXTLINE(readability-function-cognitive-complexity)
-FaceVertexMesh<P, N>::validate()
+static void
+checkCCWFaces(FaceVertexMesh<P, N> & mesh)
 {
   // Check that the vertices are in counter-clockwise order.
-  Int const num_faces = numFaces();
-  Int constexpr edges_per_face = polygonNumEdges<P, N>();
-  Int const total_num_edges = num_faces * edges_per_face;
+  Int const num_faces = mesh.numFaces();
   bool faces_flipped = false;
   for (Int i = 0; i < num_faces; ++i) {
-    if (!getFace(i).isCCW()) {
-      flipFace(i);
+    if (!mesh.getFace(i).isCCW()) {
+      mesh.flipFace(i);
       faces_flipped = true;
     }
   }
   if (faces_flipped) {
     logger::warn("Some faces were flipped to ensure counter-clockwise order");
   }
+}
 
+template <Int P, Int N>
+static void
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+checkManifoldWatertight(FaceVertexMesh<P, N> const & mesh)
+{
   // Ensure that the mesh doesn't have any holes or self-intersections.
   // Algorithm:
   //  1. For each face, get the edges as represented by the vertex indices.
@@ -274,6 +259,12 @@ FaceVertexMesh<P, N>::validate()
   //      by able to form a single closed loop.
   //    - Determine the number of closed loops.
 
+  using EdgeConn = typename FaceVertexMesh<P, N>::EdgeConn;
+
+  Int const num_faces = mesh.numFaces();
+  Int constexpr edges_per_face = polygonNumEdges<P, N>();
+  Int const total_num_edges = num_faces * edges_per_face;
+
   // 1
   //---------------------------------------------------------------------------
   // (Edge conn, orientation) pairs. +1 if ordered, -1 if reversed.
@@ -281,7 +272,7 @@ FaceVertexMesh<P, N>::validate()
   for (Int iface = 0; iface < num_faces; ++iface) {
     for (Int iedge = 0; iedge < edges_per_face; ++iedge) {
       auto & edge_conn = edge_conns[iface * edges_per_face + iedge];
-      edge_conn.first = getEdgeConn(iface, iedge);
+      edge_conn.first = mesh.getEdgeConn(iface, iedge);
       ASSERT(edge_conn.first[0] != edge_conn.first[1]);
       // Ensure that the first vertex index is less than the second.
       if (edge_conn.first[0] > edge_conn.first[1]) {
@@ -406,6 +397,20 @@ FaceVertexMesh<P, N>::validate()
     logger::error("Mesh has a hole in its interior");
     return;
   }
+} // checkManifoldWatertight
+
+// Check for:
+// - Counter-clockwise faces (warn and fix)
+// - Manifoldness/watertight (error)
+template <Int P, Int N>
+void
+FaceVertexMesh<P, N>::validate()
+{
+  // Check that the vertices are in counter-clockwise order.
+  checkCCWFaces(*this);
+
+  // Check that the mesh is manifold and watertight.
+  checkManifoldWatertight(*this);
 }
 
 //==============================================================================

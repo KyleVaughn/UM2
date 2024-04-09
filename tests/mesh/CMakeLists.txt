@@ -3,6 +3,7 @@ file(COPY ${PROJECT_SOURCE_DIR}/tests/mesh/mesh_files DESTINATION ${CMAKE_CURREN
 
 add_um2_test(./regular_grid.cpp)
 add_um2_test(./rectilinear_grid.cpp)
+add_um2_test(./element_types.cpp)
 add_um2_test(./polytope_soup.cpp)
 add_um2_test(./face_vertex_mesh/tri_mesh.cpp)
 #add_um2_test(./face_vertex_mesh/quad_mesh.cpp)

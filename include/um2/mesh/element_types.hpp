@@ -11,7 +11,7 @@ namespace um2
 
 // Element IDs for VTK
 enum class VTKElemType : int8_t {
-  None = 0,
+  Invalid = 0,
   Vertex = 1,
   Line = 3,
   Triangle = 5,
@@ -23,7 +23,7 @@ enum class VTKElemType : int8_t {
 
 // Element IDs for XDMF
 enum class XDMFElemType : int8_t {
-  None = 0,
+  Invalid = 0,
   Vertex = 1,
   Line = 2,
   Triangle = 4,
@@ -34,7 +34,7 @@ enum class XDMFElemType : int8_t {
 };
 
 enum class MeshType : int8_t {
-  None = 0,
+  Invalid = 0,
   Tri = 3,
   Quad = 4,
   TriQuad = 7,
@@ -43,7 +43,7 @@ enum class MeshType : int8_t {
   QuadraticTriQuad = 14
 };
 
-CONST constexpr auto
+constexpr auto
 verticesPerElem(VTKElemType const type) -> Int
 {
   switch (type) {
@@ -87,29 +87,11 @@ inferVTKElemType(Int const type) -> VTKElemType
     return VTKElemType::QuadraticQuad;
   default:
     ASSERT(false);
-    return VTKElemType::None;
+    return VTKElemType::Invalid;
   }
 }
 
-//CONST constexpr auto
-//verticesPerElem(MeshType const type) -> Int
-//{
-//  switch (type) {
-//  case MeshType::Tri:
-//    return 3;
-//  case MeshType::Quad:
-//    return 4;
-//  case MeshType::QuadraticTri:
-//    return 6;
-//  case MeshType::QuadraticQuad:
-//    return 8;
-//  default:
-//    ASSERT(false);
-//    return -1000;
-//  }
-//}
-
-CONST constexpr auto
+constexpr auto
 xdmfToVTKElemType(int8_t x) -> VTKElemType
 {
   switch (x) {
@@ -129,11 +111,11 @@ xdmfToVTKElemType(int8_t x) -> VTKElemType
     return VTKElemType::QuadraticQuad;
   default:
     ASSERT(false);
-    return VTKElemType::None;
+    return VTKElemType::Invalid;
   }
 }
 
-CONST constexpr auto
+constexpr auto
 vtkToXDMFElemType(VTKElemType x) -> XDMFElemType
 {
   switch (x) {
@@ -153,7 +135,7 @@ vtkToXDMFElemType(VTKElemType x) -> XDMFElemType
     return XDMFElemType::QuadraticQuad;
   default:
     ASSERT(false);
-    return XDMFElemType::None;
+    return XDMFElemType::Invalid;
   }
 }
 
@@ -171,7 +153,7 @@ getMeshType(Vector<VTKElemType> const & elem_types) noexcept -> MeshType
     case VTKElemType::QuadraticQuad:
       return MeshType::QuadraticQuad;
     default:
-      return MeshType::None;
+      return MeshType::Invalid;
     }
   }
   if (elem_types.size() == 2) {
@@ -187,7 +169,7 @@ getMeshType(Vector<VTKElemType> const & elem_types) noexcept -> MeshType
       return MeshType::QuadraticTriQuad;
     }
   }
-  return MeshType::None;
+  return MeshType::Invalid;
 }
 
 } // namespace um2

@@ -343,8 +343,8 @@ requires(D == 2)
 PURE HOSTDEV constexpr auto
 isCCW(Quadrilateral2 const & q) noexcept -> bool
 {
-  bool const b0 = areCCW(q[0], q[1], q[2]);
-  bool const b1 = areCCW(q[0], q[2], q[3]);
+  bool const b0 = areApproxCCW(q[0], q[1], q[2]);
+  bool const b1 = areApproxCCW(q[0], q[2], q[3]);
   return b0 && b1;
 }
 

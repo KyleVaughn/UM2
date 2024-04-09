@@ -3,10 +3,10 @@
 #include <um2/common/logger.hpp>
 #include <um2/stdlib/algorithm/is_sorted.hpp>
 #include <um2/stdlib/algorithm/fill.hpp>
+#include <um2/stdlib/numeric/iota.hpp>
 
 #include <algorithm> // std::any_of
 #include <numeric> // std::reduce
-#include <iomanip> // std::setw
 
 namespace um2::mpact
 {
@@ -14,6 +14,7 @@ namespace um2::mpact
 //=============================================================================
 // flattenLattice
 //=============================================================================
+// Helper function to convert a 2D vector of integers into a 1D vector of integers
 //  um2::Vector<um2::Vector<Int>> const ids = {
 //      {2, 3},
 //      {0, 1}
@@ -30,6 +31,7 @@ flattenLattice(Vector<Vector<T>> const & ids, Vector<U> & flat_ids)
   for (Int i = 1; i < num_rows; ++i) {
     if (ids[i].size() != num_cols) {
       logger::error("Each row must have the same number of columns");
+      return;
     }
   }
   flat_ids.resize(num_rows * num_cols);
@@ -850,6 +852,16 @@ Model::addAssembly(Vector<Int> const & lat_ids, Vector<Float> const & z) -> Int
     logger::error("The z-planes must be in ascending order");
     return -1;
   }
+  // Unless this is the 2D special case, ensure all z-coordinates are positive
+  auto const ahalf = castIfNot<Float>(0.5);
+  // Check if z = {-ahalf, ahalf} for the 2D special case
+  if (um2::abs(z.front() + ahalf) > eps_distance
+      || um2::abs(z.back() - ahalf) > eps_distance) {
+    if (um2::abs(z.front()) > eps_distance) {
+      logger::error("The first z-plane must be at 0");
+      return -1;
+    }
+  }
   // Ensure this assembly is the same height as all other assemblies
   if (!_assemblies.empty()) {
     auto const assem_top = _assemblies[0].grid().maxima(0);
@@ -995,28 +1007,20 @@ Model::importCoarseCellMeshes(String const & filename)
 
   PolytopeSoup const soup(filename);
 
+  String cc_name("Coarse_Cell_00000");
+
   // For each coarse cell
   Int const num_coarse_cells = numCoarseCells();
   for (Int icc = 0; icc < num_coarse_cells; ++icc) {
-    // Get the subset named "Coarse_Cell_XXXXX"
-    int32_t constexpr buf_size = 8;
-    char buffer[buf_size];
-    for (char & c : buffer) {
-      c = '0';
-    }
-    int32_t const len = snprintf(nullptr, 0, "%d", icc);
-    int32_t const ret = snprintf(buffer + (5 - len), static_cast<uint64_t>(len + 1), "%d", icc);
-    ASSERT(ret == len);
-    String cc_name("Coarse_Cell_");
-    cc_name.append(buffer, 5);
 
     // Get the mesh for the coarse cell
     PolytopeSoup cc_mesh;
     soup.getSubset(cc_name, cc_mesh);
+    incrementASCIINumber(cc_name);
 
     // Get the mesh type and material IDs
     MeshType const mesh_type = getMeshType(cc_mesh.getElemTypes());
-    ASSERT(mesh_type != MeshType::None);
+    ASSERT(mesh_type != MeshType::Invalid);
     ASSERT(mesh_type != MeshType::TriQuad);
     ASSERT(mesh_type != MeshType::QuadraticTriQuad);
     CoarseCell & cc = _coarse_cells[icc];
@@ -1025,9 +1029,7 @@ Model::importCoarseCellMeshes(String const & filename)
     um2::fill(cc.material_ids.begin(), cc.material_ids.end(), static_cast<MatID>(-1));
     // For each elset in the cc_mesh, test if it is a material.
     // If so, set all the elements in the elset to the corresponding material ID.
-    for (Int iset = 0; iset < cc_mesh.numElsets(); ++iset) {
-      String elset_name;
-      cc_mesh.getElsetName(iset, elset_name);
+    for (auto const & elset_name : cc_mesh.elsetNames()) {
       if (elset_name.starts_with("Material_")) {
         String const mat_name = elset_name.substr(9);
         // Get the material ID (index into the materials vector)
@@ -1106,875 +1108,617 @@ Model::importCoarseCellMeshes(String const & filename)
   }
 } // importCoarseCellMeshes
 
-
-
-
-
-
-
-
-
-
-////=============================================================================
-//// fillHierarchy
-////=============================================================================
-//
-//void
-//Model::fillHierarchy()
-//{
-//  // Assumes that everything that has been defined fits in 1 of the next higher
-//  // hierarchy levels
-//
-//  // Find the first thing we only have 1 of
-//  if (numCoarseMeshes() == 1) {
-//    // We need more info. Double check that we have 1 or more coarsecells
-//    if (numCoarseCells() == 0) {
-//      logger::error("No coarse cells defined");
-//      return;
-//    }
-//  }
-//
-//  // If we only have 1 coarse cell, we need to add an RTM, unless we already have one
-//  if (numCoarseCells() == 1 && numRTMs() == 0) {
-//    Int const id = addRTM({{0}});
-//    if (id != 0) {
-//      logger::error("Failed to add RTM");
-//      return;
-//    }
-//  }
-//
-//  // If we only have 1 RTM, we need to add a lattice, unless we already have one
-//  if (numRTMs() == 1 && numLattices() == 0) {
-//    Int const id = addLattice({{0}});
-//    if (id != 0) {
-//      logger::error("Failed to add lattice");
-//      return;
-//    }
-//  }
-//
-//  // If we only have 1 lattice, we need to add an assembly, unless we already have one
-//  if (numLattices() == 1 && numAssemblies() == 0) {
-//    Int const id = addAssembly({0});
-//    if (id != 0) {
-//      logger::error("Failed to add assembly");
-//      return;
-//    }
-//  }
-//
-//  // If we only have 1 assembly, we need to add the core
-//  if (numAssemblies() == 1) {
-//    Int const id = addCore({{0}});
-//    if (id != 0) {
-//      logger::error("Failed to add core");
-//      return;
-//    }
-//  }
-//}
-
 //=============================================================================
 // operator PolytopeSoup
 //=============================================================================
 
-//Model::operator PolytopeSoup() const noexcept
-//{
-//  LOG_DEBUG("Converting MPACT model to PolytopeSoup");
-//
-//  PolytopeSoup soup;
-//
-//  if (core.children().empty()) {
-//    logger::error("Core has no children");
-//    return soup;
-//  }
-//
-//  // Allocate counters for each assembly, lattice, etc.
-//  Vector<Int> asy_found(_assemblies.size(), -1);
-//  Vector<Int> lat_found(_lattices.size(), -1);
-//  Vector<Int> rtm_found(_rtms.size(), -1);
-//  Vector<Int> cc_found(_coarse_cells.size(), -1);
-//
-//  // Keep track of the total number of faces, since we have to
-//  // increment the face ID for each assembly, lattice, etc.
-//  Int total_num_faces = 0;
-//
-//  // Keep track of the material
-//  std::stringstream ss;
-//  
-//  // For each assembly
-//  Int const nyasy = core.numCells(1);
-//  Int const nxasy = core.numCells(0);
-//  for (Int iyasy = 0; iyasy < nyasy; ++iyasy) {
-//    for (Int ixasy = 0; ixasy < nxasy; ++ixasy) {
-//      // Get the number of faces before this assembly
-//      Int const asy_faces_prev = total_num_faces;
-//
-//      // Get the assembly ID
-//      auto const asy_id = core.getChild(ixasy, iyasy);
-//      ASSERT(asy_id >= 0);
-//      ASSERT(asy_id < _assemblies.size());
-//
-//      // Increment the number of times we have seen this assembly
-//      Int const asy_id_ctr = ++asy_found[asy_id];
-//
-//      // Get the assembly name 
-//      ss.str("");
-//      ss << "Assembly_" << std::setw(5) << std::setfill('0') << asy_id << "_"
-//         << std::setw(5) << std::setfill('0') << asy_id_ctr;
-//      String const asy_name(ss.str().c_str());
-//      LOG_DEBUG("Assembly name: ", asy_name);
-//
-//      // Get the assembly offset (lower left corner)
-//      Point2 const asy_ll = core.getBox(ixasy, iyasy).minima(); 
-//
-//      // Get the assembly
-//      auto const & assembly = assemblies[asy_id];
-//      if (assembly.children().empty()) {
-//        logger::error("Assembly has no children");
-//        return soup;
-//      }
-//
-//      // For each lattice
-//      Int const nzlat = assembly.numCells(0);
-//      for (Int izlat = 0; izlat < nzlat; ++izlat) {
-//        // Get the number of faces before this lattice
-//        Int const lat_faces_prev = total_num_faces;
-//
-//        // Get the lattice ID
-//        auto const lat_id = assembly.getChild(izlat);
-//        ASSERT(lat_id >= 0);
-//        ASSERT(lat_id < lattices.size());
-//
-//        // Increment the number of times we have seen this lattice
-//        Int const lat_id_ctr = ++lat_found[lat_id];
-//
-//        // Get the lattice name
-//        ss.str("");
-//        ss << "Lattice_" << std::setw(5) << std::setfill('0') << lat_id << "_"
-//           << std::setw(5) << std::setfill('0') << lat_id_ctr;
-//        String const lat_name(ss.str().c_str());
-//        LOG_DEBUG("Lattice name: ", lat_name);
-//
-//        // Get the lattice offset (z direction)
-//        // The midplane is the location that the geometry was sampled at.
-//        Float const low_z = assembly.grid().divs(0)[izlat];
-//        Float const high_z = assembly.grid().divs(0)[izlat + 1];
-//        Float const lat_z = (low_z + high_z) / 2;
-//
-//        // Get the lattice
-//        auto const & lattice = lattices[lat_id];
-//        if (lattice.children().empty()) {
-//          logger::error("Lattice has no children");
-//          return soup;
-//        }
-//
-//        // For each RTM
-//        Int const nyrtm = lattice.numCells(1);
-//        Int const nxrtm = lattice.numCells(0);
-//        for (Int iyrtm = 0; iyrtm < nyrtm; ++iyrtm) {
-//          for (Int ixrtm = 0; ixrtm < nxrtm; ++ixrtm) {
-//            // Get the number of faces before this RTM
-//            Int const rtm_faces_prev = total_num_faces;
-//
-//            // Get the RTM ID
-//            auto const rtm_id = lattice.getChild(ixrtm, iyrtm);
-//            ASSERT(rtm_id >= 0);
-//            ASSERT(rtm_id < rtms.size());
-//
-//            // Increment the number of times we have seen this RTM
-//            Int const rtm_id_ctr = ++rtm_found[rtm_id];
-//
-//            // Get the RTM name
-//            ss.str("");
-//            ss << "RTM_" << std::setw(5) << std::setfill('0') << rtm_id << "_"
-//               << std::setw(5) << std::setfill('0') << rtm_id_ctr;
-//            String const rtm_name(ss.str().c_str());
-//            LOG_DEBUG("RTM name: ", rtm_name);
-//
-//            // Get the RTM offset (lower left corner)
-//            Point2 const rtm_ll = lattice.getBox(ixrtm, iyrtm).minima();
-//
-//            // Get the rtm
-//            auto const & rtm = rtms[rtm_id];
-//            if (rtm.children().empty()) {
-//              logger::error("RTM has no children");
-//              return soup;
-//            }
-//
-//            // For each coarse cell
-//            Int const nycells = rtm.numCells(1);
-//            Int const nxcells = rtm.numCells(0);
-//            for (Int iycell = 0; iycell < nycells; ++iycell) {
-//              for (Int ixcell = 0; ixcell < nxcells; ++ixcell) {
-//                // Get the number of faces before this coarse cell
-//                Int const cell_faces_prev = total_num_faces;
-//
-//                // Get the coarse cell ID
-//                auto const & cell_id = rtm.getChild(ixcell, iycell);
-//                ASSERT(cell_id >= 0);
-//                ASSERT(cell_id < coarse_cells.size());
-//
-//                // Increment the number of times we have seen this coarse cell
-//                Int const cell_id_ctr = ++cc_found[cell_id];
-//
-//                // Get the coarse cell name
-//                ss.str("");
-//                ss << "Coarse_Cell_" << std::setw(5) << std::setfill('0') << cell_id << "_" 
-//                   << std::setw(5) << std::setfill('0') << cell_id_ctr;
-//                String const cell_name(ss.str().c_str());
-//                LOG_DEBUG("Coarse cell name: ", cell_name);
-//
-//                // Get the cell offset (lower left corner)
-//                Point2 const cell_ll = rtm.getBox(ixcell, iycell).minima();
-//
-//                // Get the coarse cell
-//                auto const & coarse_cell = _coarse_cells[cell_id];
-//
-//                // Get the mesh type and id of the coarse cell.
-//                MeshType const mesh_type = coarse_cell.mesh_type;
-//                Int const mesh_id = coarse_cell.mesh_id;
-////                Vector<MatID> const & cell_materials = coarse_cell.material_ids;
-////                for (Int iface = 0; iface < cell_materials.size(); ++iface) {
-////                  auto const mat_id = static_cast<Int>(cell_materials[iface]);
-////                  material_elsets[mat_id].push_back(static_cast<Int>(iface + cell_faces_prev));
-////                }
-//                // Add the vertices and faces to the PolytopeSoup
-//
-//                // Get pointers to the vertices of the mesh
-//                Point2 const * fvm_vertices_begin = nullptr;
-//                Point2 const * fvm_vertices_end = nullptr;
-//                switch (mesh_type) {
-//                case MeshType::Tri:
-//                  LOG_DEBUG("Mesh type: Tri");
-//                  fvm_vertices_begin = _tris[mesh_id].vertices().cbegin();
-//                  fvm_vertices_end = _tris[mesh_id].vertices().cend();
-//                  break;
-//                case MeshType::Quad:
-//                  LOG_DEBUG("Mesh type: Quad");
-//                  fvm_vertices_begin = _quads[mesh_id].vertices().cbegin();
-//                  fvm_vertices_end = _quads[mesh_id].vertices().cend();
-//                  break;
-//                case MeshType::QuadraticTri:
-//                  LOG_DEBUG("Mesh type: QuadraticTri");
-//                  fvm_vertices_begin = _tri6s[mesh_id].vertices().cbegin();
-//                  fvm_vertices_end = _tri6s[mesh_id].vertices().cend();
-//                  break;
-//                case MeshType::QuadraticQuad:
-//                  LOG_DEBUG("Mesh type: QuadraticQuad");
-//                  fvm_vertices_begin = _quad8s[mesh_id].vertices().begin();
-//                  fvm_vertices_end = _quad8s[mesh_id].vertices().end();
-//                  break;
-//                default:
-//                  logger::error("Unsupported mesh type");
-//                  return soup;
-//                } // switch (mesh_type)
-//
-//                // Add each vertex to the PolytopeSoup, translating by the
-//                // global xyz offset
-//                auto const num_verts_prev = soup.numVertices();
-//                soup.reserveMoreVertices(static_cast<Int>(fvm_vertices_end - fvm_vertices_begin));
-//                Point2 const xy_offset = cell_ll + rtm_ll + asy_ll;
-//                for (auto it = fvm_vertices_begin; it != fvm_vertices_end; ++it) {
-//                  Point2 const p = *it + xy_offset;
-//                  soup.addVertex(p[0], p[1], lat_z);
-//                }
-//
-//                // Add each face to the PolytopeSoup, offsetting the vertex IDs 
-//                // by num_verts_prev
-//                LOG_DEBUG("Adding faces to PolytopeSoup");
-//                switch (mesh_type) {
-//                case MeshType::Tri: {
-//                  VTKElemType const elem_type = VTKElemType::Triangle;
-//                  Vector<Int> conn(verts_per_face);
-//                  auto const & mesh = _tris[mesh_id];
-//                  for (Int iface = 0; iface < mesh.numFaces(); ++iface) {
-//                    auto const & face_conn = mesh.getFaceConn(iface);
-//                    for (Int i = 0; i < verts_per_face; ++i) {
-//                      conn[i] = face_conn[i] + num_verts_prev;
-//                    }
-//                    soup.addElement(elem_type, conn);
-//                  }
-//                } break;
-//                case MeshType::Quad: {
-////////                   Int const verts_per_face = 4;
-////////                   VTKElemType const elem_type = VTKElemType::Quad;
-////////                   Vector<Int> conn(verts_per_face);
-////////                   for (Int iface = 0; iface < quad[mesh_id].fv.size(); ++iface) {
-////////                     auto const & face_conn = quad[mesh_id].fv[iface];
-////////                     for (Int i = 0; i < verts_per_face; ++i) {
-////////                       conn[i] = face_conn[i] + num_verts_prev;
-////////                     }
-////////                     soup.addElement(elem_type, conn);
-////////                   }
-////////                   if (write_kn) {
-////////                     if (cc_kns_max[cell_id].empty()) {
-////////                       LOG_DEBUG("Computing Knudsen numbers");
-////////                       for (Int iface = 0; iface < quad[mesh_id].fv.size(); ++iface)
-///////{ /                         LOG_DEBUG("face = " + toString(quad[mesh_id].fv[iface][0])
-///////+ " /                         " + / toString(quad[mesh_id].fv[iface][1]) + " " + /
-/////// toString(quad[mesh_id].fv[iface][2]) + " " + / toString(quad[mesh_id].fv[iface][3]));
-////////                         Float const mcl = quad[mesh_id].getFace(iface).meanChordLength();
-////////                         auto const mat_id = static_cast<Int>(
-////////                             static_cast<uint32_t>(cell_materials[iface]));
-////////                         Float const t_max = materials[mat_id].xs.getOneGroupTotalXS(
-////////                             XSReductionStrategy::Max);
-////////                         Float const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
-////////                             XSReductionStrategy::Mean);
-////////                         cc_kns_max[cell_id].push_back(static_cast<Float>(1) / (t_max *
-////////                         mcl)); cc_kns_mean[cell_id].push_back(static_cast<Float>(1) /
-////////                                                        (t_mean * mcl));
-////////                       }
-////////                     }
-////////                     for (auto const & kn : cc_kns_max[cell_id]) {
-////////                       kn_max.push_back(kn);
-////////                     }
-////////                     for (auto const & kn : cc_kns_mean[cell_id]) {
-////////                       kn_mean.push_back(kn);
-////////                     }
-////////                   }
-////////                 } break;
-////////                 case MeshType::QuadraticTri: {
-////////                   Int const verts_per_face = 6;
-////////                   VTKElemType const elem_type = VTKElemType::QuadraticTriangle;
-////////                   Vector<Int> conn(verts_per_face);
-////////                   for (Int iface = 0; iface < quadratic_tri[mesh_id].fv.size();
-////////                        ++iface) {
-////////                     auto const & face_conn = quadratic_tri[mesh_id].fv[iface];
-////////                     for (Int i = 0; i < verts_per_face; ++i) {
-////////                       conn[i] = face_conn[i] + num_verts_prev;
-////////                     }
-////////                     soup.addElement(elem_type, conn);
-////////                   }
-////////                   if (write_kn) {
-////////                     if (cc_kns_max[cell_id].empty()) {
-////////                       LOG_DEBUG("Computing Knudsen numbers");
-////////                       for (Int iface = 0; iface < quadratic_tri[mesh_id].fv.size();
-////////                            ++iface) {
-////////                         Float const mcl =
-////////                             quadratic_tri[mesh_id].getFace(iface).meanChordLength();
-////////                         auto const mat_id = static_cast<Int>(
-////////                             static_cast<uint32_t>(cell_materials[iface]));
-////////                         Float const t_max = materials[mat_id].xs.getOneGroupTotalXS(
-////////                             XSReductionStrategy::Max);
-////////                         Float const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
-////////                             XSReductionStrategy::Mean);
-////////                         cc_kns_max[cell_id].push_back(static_cast<Float>(1) / (t_max *
-////////                         mcl)); cc_kns_mean[cell_id].push_back(static_cast<Float>(1) /
-////////                                                        (t_mean * mcl));
-////////                       }
-////////                     }
-////////                     for (auto const & kn : cc_kns_max[cell_id]) {
-////////                       kn_max.push_back(kn);
-////////                     }
-////////                     for (auto const & kn : cc_kns_mean[cell_id]) {
-////////                       kn_mean.push_back(kn);
-////////                     }
-////////                   }
-////////                 } break;
-////////                 case MeshType::QuadraticQuad: {
-////////                   Int const verts_per_face = 8;
-////////                   VTKElemType const elem_type = VTKElemType::QuadraticQuad;
-////////                   Vector<Int> conn(verts_per_face);
-////////                   for (Int iface = 0; iface < quadratic_quad[mesh_id].fv.size();
-////////                        ++iface) {
-////////                     auto const & face_conn = quadratic_quad[mesh_id].fv[iface];
-////////                     for (Int i = 0; i < verts_per_face; ++i) {
-////////                       conn[i] = face_conn[i] + num_verts_prev;
-////////                     }
-////////                     soup.addElement(elem_type, conn);
-////////                   }
-////////                   if (write_kn) {
-////////                     if (cc_kns_max[cell_id].empty()) {
-////////                       LOG_DEBUG("Computing Knudsen numbers");
-////////                       for (Int iface = 0; iface < quadratic_quad[mesh_id].fv.size();
-////////                            ++iface) {
-////////                         Float const mcl =
-////////                             quadratic_quad[mesh_id].getFace(iface).meanChordLength();
-////////                         auto const mat_id = static_cast<Int>(
-////////                             static_cast<uint32_t>(cell_materials[iface]));
-////////                         Float const t_max = materials[mat_id].xs.getOneGroupTotalXS(
-////////                             XSReductionStrategy::Max);
-////////                         Float const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
-////////                             XSReductionStrategy::Mean);
-////////                         cc_kns_max[cell_id].push_back(static_cast<Float>(1) / (t_max *
-////////                         mcl)); cc_kns_mean[cell_id].push_back(static_cast<Float>(1) /
-////////                                                        (t_mean * mcl));
-////////                       }
-////////                     }
-////////                     for (auto const & kn : cc_kns_max[cell_id]) {
-////////                       kn_max.push_back(kn);
-////////                     }
-////////                     for (auto const & kn : cc_kns_mean[cell_id]) {
-////////                       kn_mean.push_back(kn);
-////////                     }
-////////                   }
-////////                 } break;
-////////                 default:
-////////                   logger::error("Unsupported mesh type");
-////////                   return;
-////////                 } // switch (mesh_type)
-////////                 Int const num_faces = soup.numElems() - cell_faces_prev;
-////////
-////////                 // Add an elset for the cell
-////////                 Vector<Int> cell_ids(num_faces);
-////////                 um2::iota(cell_ids.begin(), cell_ids.end(),
-////////                           static_cast<Int>(cell_faces_prev));
-////////                 soup.addElset(cell_name, cell_ids);
-////////                 total_num_faces += num_faces;
-////////
-////////               } // for (ixcell)
-////////             }   // for (iycell)
-////////
-////////             // Add the RTM elset
-////////             Vector<Int> rtm_ids(total_num_faces - rtm_faces_prev);
-////////             um2::iota(rtm_ids.begin(), rtm_ids.end(),
-/////// static_cast<Int>(rtm_faces_prev)); /             soup.addElset(rtm_name, rtm_ids); / }
-/////// // for (ixrtm) /         }   // for (iyrtm)
-////////
-////////         // Add the lattice elset
-////////         Vector<Int> lat_ids(total_num_faces - lat_faces_prev);
-////////         um2::iota(lat_ids.begin(), lat_ids.end(), static_cast<Int>(lat_faces_prev));
-////////         soup.addElset(lat_name, lat_ids);
-////////       } // for (izlat)
-////////
-////////       // Add the assembly elset
-////////       Vector<Int> asy_ids(total_num_faces - asy_faces_prev);
-////////       um2::iota(asy_ids.begin(), asy_ids.end(), static_cast<Int>(asy_faces_prev));
-////////       soup.addElset(asy_name, asy_ids);
-//    } // for (ixasy)
-//  }   // for (iyasy)
-////////
-////////   // Add the material elsets
-////////   for (Int imat = 0; imat < materials.size(); ++imat) {
-////////     String const mat_name = "Material_" + String(materials[imat].name.data());
-////////     soup.addElset(mat_name, material_elsets[imat]);
-////////   }
-////////
-////////   Vector<Int> all_ids(total_num_faces);
-////////   um2::iota(all_ids.begin(), all_ids.end(), static_cast<Int>(0));
-////////   // Add the knudsen number elsets
-////////   if (write_kn) {
-////////     soup.addElset("Knudsen_Max", all_ids, kn_max);
-////////     soup.addElset("Knudsen_Mean", all_ids, kn_mean);
-////////   }
-////////
-//  soup.sortElsets();
-//} // operator PolytopeSoup
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+Model::operator PolytopeSoup() const noexcept
+{
+  LOG_DEBUG("Converting MPACT model to PolytopeSoup");
 
-////////==============================================================================
-//////// getMaterialNames
-////////==============================================================================
-//////
-////// template <std::floating_point T, std::integral I>
-////// void
-////// Model::getMaterialNames(Vector<String> & material_names) const
-//////{
-//////  material_names.clear();
-//////  String const mat_prefix = "Material_";
-//////  for (auto const & material : materials) {
-//////    String const mat_suffix(material.name.data());
-//////    material_names.push_back(mat_prefix + mat_suffix);
-//////  }
-//////  std::sort(material_names.begin(), material_names.end());
-//////} // getMaterialNames
-//////
-////////==============================================================================
-//////// writeXDMF
-////////==============================================================================
-//////
-////// template <std::floating_point T, std::integral I>
-////// void
-//////// NOLINTNEXTLINE
-////// Model::writeXDMF(String const & filepath, bool write_kn) const
-//////{
-//////   logger::info("Writing XDMF file: " + filepath);
-//////
-//////   // Setup HDF5 file
-//////   // Get the h5 file name
-//////   Int last_slash = filepath.find_last_of('/');
-//////   if (last_slash == String::npos) {
-//////     last_slash = 0;
-//////   }
-//////   Int const h5filepath_end = last_slash == 0 ? 0 : last_slash + 1;
-//////   LOG_DEBUG("h5filepath_end: " + toString(h5filepath_end));
-//////   String const h5filename =
-//////       filepath.substr(h5filepath_end, filepath.size() - 5 - h5filepath_end) + ".h5";
-//////   LOG_DEBUG("h5filename: " + h5filename);
-//////   String const h5filepath = filepath.substr(0, h5filepath_end);
-//////   LOG_DEBUG("h5filepath: " + h5filepath);
-//////   H5::H5File h5file((h5filepath + h5filename).c_str(), H5F_ACC_TRUNC);
-//////
-//////   // Setup XML file
-//////   pugi::xml_document xdoc;
-//////
-//////   // XDMF root node
-//////   pugi::xml_node xroot = xdoc.append_child("Xdmf");
-//////   xroot.append_attribute("Version") = "3.0";
-//////
-//////   // Domain node
-//////   pugi::xml_node xdomain = xroot.append_child("Domain");
-//////
-//////   // Get the material names from elset names, in alphabetical order.
-//////   Vector<String> material_names;
-//////   getMaterialNames(material_names);
-//////   std::sort(material_names.begin(), material_names.end());
-//////
-//////   // If there are any materials, add an information node listing them
-//////   if (!material_names.empty()) {
-//////     pugi::xml_node xinfo = xdomain.append_child("Information");
-//////     xinfo.append_attribute("Name") = "Materials";
-//////     String mats;
-//////     for (Int i = 0; i < material_names.size(); ++i) {
-//////       auto const & mat_name = material_names[i];
-//////       String const short_name = mat_name.substr(9, mat_name.size() - 9);
-//////       mats += short_name;
-//////       if (i + 1 < material_names.size()) {
-//////         mats += ", ";
-//////       }
-//////     }
-//////     xinfo.append_child(pugi::node_pcdata).set_value(mats.c_str());
-//////   }
-//////
-//////   String const name = h5filename.substr(0, h5filename.size() - 3);
-//////
-//////   // Core grid
-//////   pugi::xml_node xcore_grid = xdomain.append_child("Grid");
-//////   xcore_grid.append_attribute("Name") = name.c_str();
-//////   xcore_grid.append_attribute("GridType") = "Tree";
-//////
-//////   // h5
-//////   H5::Group const h5core_group = h5file.createGroup(name.c_str());
-//////   String const h5core_grouppath = "/" + name;
-//////
-//////   // Allocate counters for each assembly, lattice, etc.
-//////   Vector<Int> asy_found(assemblies.size(), -1);
-//////   Vector<Int> lat_found(lattices.size(), -1);
-//////   Vector<Int> rtm_found(rtms.size(), -1);
-//////   Vector<Int> cc_found(coarse_cells.size(), -1);
-//////
-//////   std::stringstream ss;
-//////   Vector<PolytopeSoup> soups(coarse_cells.size());
-//////   Vector<Vector<Float>> cc_kns_max(coarse_cells.size());
-//////   Vector<Vector<Float>> cc_kns_mean(coarse_cells.size());
-//////
-//////   if (core.children.empty()) {
-//////     logger::error("Core has no children");
-//////     return;
-//////   }
-//////   Int const nyasy = core.numYCells();
-//////   Int const nxasy = core.numXCells();
-//////   // Core M by N
-//////   pugi::xml_node xcore_info = xcore_grid.append_child("Information");
-//////   xcore_info.append_attribute("Name") = "M_by_N";
-//////   String const core_mn_str = toString(nyasy) + " x " + toString(nxasy);
-//////   xcore_info.append_child(pugi::node_pcdata).set_value(core_mn_str.c_str());
-//////   // For each assembly
-//////   for (Int iyasy = 0; iyasy < nyasy; ++iyasy) {
-//////     for (Int ixasy = 0; ixasy < nxasy; ++ixasy) {
-//////       auto const asy_id = static_cast<Int>(core.getChild(ixasy, iyasy));
-//////       Int const asy_id_ctr = ++asy_found[asy_id];
-//////       // Get elset name
-//////       ss.str("");
-//////       ss << "Assembly_" << std::setw(5) << std::setfill('0') << asy_id << "_"
-//////          << std::setw(5) << std::setfill('0') << asy_id_ctr;
-//////       String const asy_name(ss.str().c_str());
-//////       LOG_DEBUG("Assembly name: " + asy_name);
-//////       // Get the assembly offset (lower left corner)
-//////       AxisAlignedBox2<Float> const asy_bb = core.getBox(ixasy, iyasy);
-//////       Point2 const asy_ll = asy_bb.minima; // Lower left corner
-//////
-//////       auto const & assembly = assemblies[asy_id];
-//////       if (assembly.children.empty()) {
-//////         logger::error("Assembly has no children");
-//////         return;
-//////       }
-//////
-//////       // Create the XML grid
-//////       pugi::xml_node xasy_grid = xcore_grid.append_child("Grid");
-//////       xasy_grid.append_attribute("Name") = ss.str().c_str();
-//////       xasy_grid.append_attribute("GridType") = "Tree";
-//////
-//////       // Write the M by N information
-//////       Int const nzlat = assembly.numXCells();
-//////       pugi::xml_node xasy_info = xasy_grid.append_child("Information");
-//////       xasy_info.append_attribute("Name") = "M_by_N";
-//////       String const asy_mn_str = toString(nzlat) + " x 1";
-//////       xasy_info.append_child(pugi::node_pcdata).set_value(asy_mn_str.c_str());
-//////
-//////       // Create the h5 group
-//////       String const h5asy_grouppath = h5core_grouppath + "/" +
-///// String(ss.str().c_str()); /       H5::Group const h5asy_group =
-///// h5file.createGroup(h5asy_grouppath.c_str());
-//////
-//////       // For each lattice
-//////       for (Int izlat = 0; izlat < nzlat; ++izlat) {
-//////         auto const lat_id = static_cast<Int>(assembly.getChild(izlat));
-//////         Int const lat_id_ctr = ++lat_found[lat_id];
-//////         // Get elset name
-//////         ss.str("");
-//////         ss << "Lattice_" << std::setw(5) << std::setfill('0') << lat_id << "_"
-//////            << std::setw(5) << std::setfill('0') << lat_id_ctr;
-//////         String const lat_name(ss.str().c_str());
-//////         LOG_DEBUG("Lattice name: " + lat_name);
-//////         // Get the lattice offset (z direction)
-//////         // The midplane is the location that the geometry was sampled at.
-//////         Float const low_z = assembly.grid.divs[0][izlat];
-//////         Float const high_z = assembly.grid.divs[0][izlat + 1];
-//////         Float const lat_z = (low_z + high_z) / 2;
-//////
-//////         // Get the lattice
-//////         auto const & lattice = lattices[lat_id];
-//////         if (lattice.children.empty()) {
-//////           logger::error("Lattice has no children");
-//////           return;
-//////         }
-//////
-//////         // Create the XML grid
-//////         pugi::xml_node xlat_grid = xasy_grid.append_child("Grid");
-//////         xlat_grid.append_attribute("Name") = ss.str().c_str();
-//////         xlat_grid.append_attribute("GridType") = "Tree";
-//////
-//////         // Add the Z information for the lattice
-//////         pugi::xml_node xlat_info = xlat_grid.append_child("Information");
-//////         xlat_info.append_attribute("Name") = "Z";
-//////         String const z_values =
-//////             toString(low_z) + ", " + toString(lat_z) + ", " + toString(high_z);
-//////         xlat_info.append_child(pugi::node_pcdata).set_value(z_values.c_str());
-//////
-//////         // Write the M by N information
-//////         Int const nyrtm = lattice.numYCells();
-//////         Int const nxrtm = lattice.numXCells();
-//////         pugi::xml_node xlat_mn_info = xlat_grid.append_child("Information");
-//////         xlat_mn_info.append_attribute("Name") = "M_by_N";
-//////         String const lat_mn_str = toString(nyrtm) + " x " + toString(nxrtm);
-//////         xlat_mn_info.append_child(pugi::node_pcdata).set_value(lat_mn_str.c_str());
-//////
-//////         // Create the h5 group
-//////         String const h5lat_grouppath = h5asy_grouppath + "/" +
-//////         String(ss.str().c_str()); H5::Group const h5lat_group =
-//////         h5file.createGroup(h5lat_grouppath.c_str());
-//////
-//////         // For each RTM
-//////         for (Int iyrtm = 0; iyrtm < nyrtm; ++iyrtm) {
-//////           for (Int ixrtm = 0; ixrtm < nxrtm; ++ixrtm) {
-//////             auto const rtm_id = static_cast<Int>(lattice.getChild(ixrtm, iyrtm));
-//////             Int const rtm_id_ctr = ++rtm_found[rtm_id];
-//////             ss.str("");
-//////             ss << "RTM_" << std::setw(5) << std::setfill('0') << rtm_id << "_"
-//////                << std::setw(5) << std::setfill('0') << rtm_id_ctr;
-//////             String const rtm_name(ss.str().c_str());
-//////             LOG_DEBUG("RTM name: " + rtm_name);
-//////             // Get the RTM offset (lower left corner)
-//////             auto const rtm_bb = lattice.getBox(ixrtm, iyrtm);
-//////             Point2 const rtm_ll = rtm_bb.minima; // Lower left corner
-//////
-//////             // Get the rtm
-//////             auto const & rtm = rtms[rtm_id];
-//////             if (rtm.children.empty()) {
-//////               logger::error("RTM has no children");
-//////               return;
-//////             }
-//////
-//////             // Create the XML grid
-//////             pugi::xml_node xrtm_grid = xlat_grid.append_child("Grid");
-//////             xrtm_grid.append_attribute("Name") = ss.str().c_str();
-//////             xrtm_grid.append_attribute("GridType") = "Tree";
-//////
-//////             // Write the M by N information
-//////             Int const nycells = rtm.numYCells();
-//////             Int const nxcells = rtm.numXCells();
-//////             pugi::xml_node xrtm_mn_info = xrtm_grid.append_child("Information");
-//////             xrtm_mn_info.append_attribute("Name") = "M_by_N";
-//////             String const rtm_mn_str = toString(nycells) + " x " + toString(nxcells);
-////// xrtm_mn_info.append_child(pugi::node_pcdata).set_value(rtm_mn_str.c_str());
-//////
-//////             // Create the h5 group
-//////             String const h5rtm_grouppath =
-//////                 h5lat_grouppath + "/" + String(ss.str().c_str());
-//////             H5::Group const h5rtm_group =
-///// h5file.createGroup(h5rtm_grouppath.c_str());
-//////
-//////             for (Int iycell = 0; iycell < nycells; ++iycell) {
-//////               for (Int ixcell = 0; ixcell < nxcells; ++ixcell) {
-//////                 auto const & cell_id = static_cast<Int>(rtm.getChild(ixcell,
-///// iycell)); /                 Int const cell_id_ctr = ++cc_found[cell_id]; / ss.str(""); /
-///// ss << "Coarse_Cell_" << std::setw(5) << std::setfill('0') << cell_id / << "_" <<
-///// std::setw(5) << std::setfill('0') << cell_id_ctr; /                 String const
-///// cell_name(ss.str().c_str()); /                 LOG_DEBUG("Coarse cell name: " +
-///// cell_name); /                 // Get the cell offset (lower left corner) / auto const
-///// cell_bb = rtm.getBox(ixcell, iycell); /                 Point2 const cell_ll =
-///// cell_bb.minima; // Lower left corner
-//////
-//////                 // Get the mesh type and id of the coarse cell.
-//////                 MeshType const mesh_type = coarse_cells[cell_id].mesh_type;
-//////                 Int const mesh_id = coarse_cells[cell_id].mesh_id;
-//////                 LOG_DEBUG("mesh_id = " + toString(mesh_id));
-//////                 // Add to material elsets
-//////                 Vector<MatID> const & cell_materials =
-//////                     coarse_cells[cell_id].material_ids;
-//////                 LOG_DEBUG("cell_materials.size() = " +
-//////                 toString(cell_materials.size()));
-//////
-//////                 // Convert the mesh into PolytopeSoup
-//////                 PolytopeSoup & soup = soups[cell_id];
-//////                 if (soups[cell_id].numElems() == 0) {
-//////                   switch (mesh_type) {
-//////                   case MeshType::Tri:
-//////                     LOG_DEBUG("Mesh type: Tri");
-//////                     tri[mesh_id].toPolytopeSoup(soup);
-//////                     if (write_kn) {
-//////                       if (cc_kns_max[cell_id].empty()) {
-//////                         LOG_DEBUG("Computing Knudsen numbers");
-//////                         cc_kns_max[cell_id].resize(tri[mesh_id].fv.size());
-//////                         cc_kns_mean[cell_id].resize(tri[mesh_id].fv.size());
-//////                         for (Int iface = 0; iface < tri[mesh_id].fv.size(); ++iface)
-/////{ /                           Float const mcl =
-///// tri[mesh_id].getFace(iface).meanChordLength(); /                           auto const
-///// mat_id = static_cast<Int>( / static_cast<uint32_t>(cell_materials[iface])); / Float const
-///// t_max = materials[mat_id].xs.getOneGroupTotalXS( / XSReductionStrategy::Max); / F
-///// const t_mean = materials[mat_id].xs.getOneGroupTotalXS( / XSReductionStrategy::Mean);
-///// / cc_kns_max[cell_id][iface] = static_cast<Float>(1) / (t_max * / mcl);
-///// cc_kns_mean[cell_id][iface] = /                               static_cast<Float>(1) /
-/////(t_mean * mcl); /                         } /                       } / } / break; /
-///// case MeshType::Quad: /                     LOG_DEBUG("Mesh type: Quad"); /
-///// quad[mesh_id].toPolytopeSoup(soup); /                     if (write_kn) { / if
-/////(cc_kns_max[cell_id].empty()) { /                         LOG_DEBUG("Computing Knudsen
-///// numbers"); / cc_kns_max[cell_id].resize(quad[mesh_id].fv.size()); /
-///// cc_kns_mean[cell_id].resize(quad[mesh_id].fv.size()); /                         for
-/////(Int iface = 0; iface < quad[mesh_id].fv.size(); ++iface) /                         {
-//////                           Float const mcl =
-///// quad[mesh_id].getFace(iface).meanChordLength(); /                           auto const
-///// mat_id = static_cast<Int>( / static_cast<uint32_t>(cell_materials[iface])); / Float const
-///// t_max = materials[mat_id].xs.getOneGroupTotalXS( / XSReductionStrategy::Max); / F
-///// const t_mean = materials[mat_id].xs.getOneGroupTotalXS( / XSReductionStrategy::Mean);
-///// / cc_kns_max[cell_id][iface] = static_cast<Float>(1) / (t_max * / mcl);
-///// cc_kns_mean[cell_id][iface] = /                               static_cast<Float>(1) /
-/////(t_mean * mcl); /                         } /                       } / } / break; /
-///// case MeshType::QuadraticTri: /                     LOG_DEBUG("Mesh type:
-///// QuadraticTri"); /                     quadratic_tri[mesh_id].toPolytopeSoup(soup); /
-///// if (write_kn) { /                       if (cc_kns_max[cell_id].empty()) { /
-///// LOG_DEBUG("Computing Knudsen numbers"); /
-///// cc_kns_max[cell_id].resize(quadratic_tri[mesh_id].fv.size()); /
-///// cc_kns_mean[cell_id].resize(quadratic_tri[mesh_id].fv.size()); / for (Int iface = 0;
-///// iface < quadratic_tri[mesh_id].fv.size(); /                              ++iface) { /
-///// Float const mcl = / quadratic_tri[mesh_id].getFace(iface).meanChordLength(); / auto const
-///// mat_id = static_cast<Int>( / static_cast<uint32_t>(cell_materials[iface])); / Float const
-///// t_max = materials[mat_id].xs.getOneGroupTotalXS( / XSReductionStrategy::Max); / F
-///// const t_mean = materials[mat_id].xs.getOneGroupTotalXS( / XSReductionStrategy::Mean);
-///// / cc_kns_max[cell_id][iface] = static_cast<Float>(1) / (t_max * / mcl);
-///// cc_kns_mean[cell_id][iface] = /                               static_cast<Float>(1) /
-/////(t_mean * mcl); /                         } /                       } / } / break; /
-///// case MeshType::QuadraticQuad: /                     LOG_DEBUG("Mesh type:
-///// QuadraticQuad"); /                     quadratic_quad[mesh_id].toPolytopeSoup(soup); /
-///// if (write_kn) { /                       if (cc_kns_max[cell_id].empty()) { /
-///// LOG_DEBUG("Computing Knudsen numbers"); /
-///// cc_kns_max[cell_id].resize(quadratic_quad[mesh_id].fv.size()); /
-///// cc_kns_mean[cell_id].resize(quadratic_quad[mesh_id].fv.size()); / for (Int iface = 0;
-///// iface < quadratic_quad[mesh_id].fv.size(); /                              ++iface) { /
-///// Float const mcl = / quadratic_quad[mesh_id].getFace(iface).meanChordLength(); / auto const
-///// mat_id = static_cast<Int>( / static_cast<uint32_t>(cell_materials[iface])); / Float const
-///// t_max = materials[mat_id].xs.getOneGroupTotalXS( / XSReductionStrategy::Max); / F
-///// const t_mean = materials[mat_id].xs.getOneGroupTotalXS( / XSReductionStrategy::Mean);
-///// / cc_kns_max[cell_id][iface] = static_cast<Float>(1) / (t_max * / mcl);
-///// cc_kns_mean[cell_id][iface] = /                               static_cast<Float>(1) /
-/////(t_mean * mcl); /                         } /                       } / } / break; /
-///// default: /                     logger::error("Unsupported mesh type"); / return; / } //
-///// switch (mesh_type)
-//////
-//////                   // add Material elsets
-//////                   Int const cc_nfaces = cell_materials.size();
-//////                   Vector<Int> cc_mats(cc_nfaces);
-//////                   for (Int i = 0; i < cc_nfaces; ++i) {
-//////                     cc_mats[i] =
-//////                     static_cast<Int>(static_cast<uint32_t>(cell_materials[i]));
-//////                   }
-//////                   // Get the unique material ids
-//////                   Vector<Int> cc_mats_sorted = cc_mats;
-//////                   std::sort(cc_mats_sorted.begin(), cc_mats_sorted.end());
-//////                   auto * it = std::unique(cc_mats_sorted.begin(),
-//////                   cc_mats_sorted.end()); Int const cc_nunique = static_cast<Int>(it
-/////- /                   cc_mats_sorted.begin()); Vector<Int> cc_mats_unique(cc_nunique);
-///// for /                   (Int i = 0; i < cc_nunique; ++i) { / cc_mats_unique[i] =
-///// cc_mats_sorted[i]; /                   } /                   // Create a vector with
-///// the face ids for each material /                   Vector<Vector<Int>>
-///// cc_mats_split(cc_nunique); /                   for (Int i = 0; i < cc_nfaces; ++i) {
-//////                     Int const mat_id = cc_mats[i];
-//////                     auto * mat_it =
-//////                         std::find(cc_mats_unique.begin(), cc_mats_unique.end(),
-//////                         mat_id);
-//////                     Int const mat_idx =
-//////                         static_cast<Int>(mat_it - cc_mats_unique.begin());
-//////                     cc_mats_split[mat_idx].push_back(i);
-//////                   }
-//////                   // add each material elset
-//////                   for (Int i = 0; i < cc_nunique; ++i) {
-//////                     Int const mat_id = cc_mats_unique[i];
-//////                     Vector<Int> const & mat_faces = cc_mats_split[i];
-//////                     String const mat_name =
-//////                         "Material_" + String(materials[mat_id].name.data());
-//////                     soup.addElset(mat_name, mat_faces);
-//////                   }
-//////
-//////                   if (write_kn) {
-//////                     Vector<Int> all_faces(cc_nfaces);
-//////                     um2::iota(all_faces.begin(), all_faces.end(), 0);
-//////                     soup.addElset("Knudsen_Max", all_faces, cc_kns_max[cell_id]);
-//////                     soup.addElset("Knudsen_Mean", all_faces, cc_kns_mean[cell_id]);
-//////                     Vector<Float> kns_max = cc_kns_max[cell_id];
-//////                     Vector<Float> kns_mean = cc_kns_mean[cell_id];
-//////                     std::sort(kns_max.begin(), kns_max.end());
-//////                     std::sort(kns_mean.begin(), kns_mean.end());
-//////                     Float const kn_max_max = kns_max.back();
-//////                     Float const kn_mean_max = kns_mean.back();
-//////                     Float const kn_max_min = kns_max.front();
-//////                     Float const kn_mean_min = kns_mean.front();
-//////                     Float const kn_max_mean = um2::mean(kns_max.begin(), kns_max.end());
-//////                     Float const kn_mean_mean = um2::mean(kns_mean.begin(),
-///// kns_mean.end()); /                     LOG_INFO("Coarse Cell " + toString(cell_id) + "
-/////" + /                              toString(kn_max_max) + " " + toString(kn_max_min) +
-/////" " + /                              toString(kn_max_mean)); / LOG_INFO("Coarse Cell "
-/////+ toString(cell_id) + " " + /                              toString(kn_mean_max) + " "
-/////+ toString(kn_mean_min) + " " /                              + toString(kn_mean_mean));
-//////                   }
-//////                 }
-//////
-//////                 // Shift the mesh to global coordinates
-//////                 Point2 const xy_offset = cell_ll + rtm_ll + asy_ll;
-//////                 Point3<Float> const shift = Point3<Float>(xy_offset[0], xy_offset[1], lat_z);
-//////                 soup.translate(shift);
-//////
-//////                 // Write the mesh
-//////                 soup.writeXDMFUniformGrid(cell_name, material_names, xrtm_grid,
-///// h5file, /                                           h5filename, h5rtm_grouppath);
-//////
-//////                 // Shift the mesh back to local coordinates
-//////                 soup.translate(-shift);
-//////               } // for (ixcell)
-//////             }   // for (iycell)
-//////           }     // for (ixrtm)
-//////         }       // for (iyrtm)
-//////       }         // for (izlat)
-//////     }           // for (ixasy)
-//////   }             // for (iyasy)
-//////
-//////   // Write the XML file
-//////   xdoc.save_file(filepath.c_str(), "  ");
-//////
-//////   // Close the HDF5 file
-//////   h5file.close();
-////// } // writeXDMF
-//////
-////////==============================================================================
-//////// write
-////////==============================================================================
-//////
-////// template <std::floating_point T, std::integral I>
-////// void
-////// Model::write(String const & filename, bool write_kn) const
-//////{
-//////  if (filename.ends_with(".xdmf")) {
-//////    writeXDMF(filename, write_kn);
-//////  } else {
-//////    logger::error("Unsupported file format.");
-//////  }
-//////}
-//
+  PolytopeSoup core_soup;
+
+  if (_core.children().empty()) {
+    logger::error("Core has no children");
+    return core_soup;
+  }
+
+  // Store the one-group cross sections for each material
+  Vector<Float> one_group_xs(_materials.size());
+  for (Int imat = 0; imat < _materials.size(); ++imat) {
+    ASSERT(_materials[imat].xsec().isMacro());
+    auto const xs = _materials[imat].xsec().collapse();
+    one_group_xs[imat] = xs.t(0);
+  }
+
+  // Allocate counters for each assembly, lattice, etc.
+  Vector<Int> asy_found(_assemblies.size(), -1);
+  Vector<Int> lat_found(_lattices.size(), -1);
+  Vector<Int> rtm_found(_rtms.size(), -1);
+  Vector<Int> cc_found(_coarse_cells.size(), -1);
+
+  // For each assembly
+  Int const nyasy = _core.grid().numCells(1);
+  Int const nxasy = _core.grid().numCells(0);
+  for (Int iyasy = 0; iyasy < nyasy; ++iyasy) {
+    for (Int ixasy = 0; ixasy < nxasy; ++ixasy) {
+
+      PolytopeSoup assembly_soup;
+
+      // Get the assembly ID
+      auto const asy_id = _core.getChild(ixasy, iyasy);
+      ASSERT(asy_id >= 0);
+      ASSERT(asy_id < _assemblies.size());
+
+      // Increment the number of times we have seen this assembly
+      Int const asy_id_ctr = ++asy_found[asy_id];
+
+      // Get the assembly name
+      String const asy_name = "Assembly_" + getASCIINumber(asy_id) + "_" + getASCIINumber(asy_id_ctr);
+      LOG_DEBUG("Assembly name: ", asy_name);
+
+      // Get the assembly offset (lower left corner)
+      Point2 const asy_ll = _core.grid().getBox(ixasy, iyasy).minima();
+
+      // Get the assembly
+      auto const & assembly = _assemblies[asy_id];
+      if (assembly.children().empty()) {
+        logger::error("Assembly has no children");
+        return core_soup;
+      }
+
+      // For each lattice
+      Int const nzlat = assembly.grid().numCells(0);
+      for (Int izlat = 0; izlat < nzlat; ++izlat) {
+
+        PolytopeSoup lattice_soup;
+
+        // Get the lattice ID
+        auto const lat_id = assembly.getChild(izlat);
+        ASSERT(lat_id >= 0);
+        ASSERT(lat_id < _lattices.size());
+
+        // Increment the number of times we have seen this lattice
+        Int const lat_id_ctr = ++lat_found[lat_id];
+
+        // Get the lattice name
+        String const lat_name = "Lattice_" + getASCIINumber(lat_id) + "_" + getASCIINumber(lat_id_ctr);
+        LOG_DEBUG("Lattice name: ", lat_name);
+
+        // Get the lattice offset (z direction)
+        // The midplane is the location that the geometry was sampled at.
+        Float const low_z = assembly.grid().divs(0)[izlat];
+        Float const high_z = assembly.grid().divs(0)[izlat + 1];
+        Float const lat_z = (low_z + high_z) / 2;
+
+        // Get the lattice
+        auto const & lattice = _lattices[lat_id];
+        if (lattice.children().empty()) {
+          logger::error("Lattice has no children");
+          return core_soup;
+        }
+
+        // For each RTM
+        Int const nyrtm = lattice.grid().numCells(1);
+        Int const nxrtm = lattice.grid().numCells(0);
+        for (Int iyrtm = 0; iyrtm < nyrtm; ++iyrtm) {
+          for (Int ixrtm = 0; ixrtm < nxrtm; ++ixrtm) {
+
+            PolytopeSoup rtm_soup;
+
+            // Get the RTM ID
+            auto const rtm_id = lattice.getChild(ixrtm, iyrtm);
+            ASSERT(rtm_id >= 0);
+            ASSERT(rtm_id < _rtms.size());
+
+            // Increment the number of times we have seen this RTM
+            Int const rtm_id_ctr = ++rtm_found[rtm_id];
+
+            // Get the RTM name
+            String const rtm_name = "RTM_" + getASCIINumber(rtm_id) + "_" + getASCIINumber(rtm_id_ctr);
+            LOG_DEBUG("RTM name: ", rtm_name);
+
+            // Get the RTM offset (lower left corner)
+            Point2 const rtm_ll = lattice.grid().getBox(ixrtm, iyrtm).minima();
+
+            // Get the rtm
+            auto const & rtm = _rtms[rtm_id];
+            if (rtm.children().empty()) {
+              logger::error("RTM has no children");
+              return core_soup;
+            }
+
+            // For each coarse cell
+            Int const nycells = rtm.grid().numCells(1);
+            Int const nxcells = rtm.grid().numCells(0);
+            for (Int iycell = 0; iycell < nycells; ++iycell) {
+              for (Int ixcell = 0; ixcell < nxcells; ++ixcell) {
+
+                PolytopeSoup cell_soup;
+
+                // Get the coarse cell ID
+                auto const & cell_id = rtm.getChild(ixcell, iycell);
+                ASSERT(cell_id >= 0);
+                ASSERT(cell_id < _coarse_cells.size());
+
+                // Increment the number of times we have seen this coarse cell
+                Int const cell_id_ctr = ++cc_found[cell_id];
+
+                // Get the coarse cell name
+                String const cell_name = "Coarse_Cell_" + getASCIINumber(cell_id) + "_" + getASCIINumber(cell_id_ctr);
+                LOG_DEBUG("Coarse cell name: ", cell_name);
+
+                // Get the cell offset (lower left corner)
+                Point2 const cell_ll = rtm.grid().getBox(ixcell, iycell).minima();
+
+                // Get the coarse cell
+                auto const & coarse_cell = _coarse_cells[cell_id];
+
+                // Get the mesh type and id of the coarse cell.
+                MeshType const mesh_type = coarse_cell.mesh_type;
+                Int const mesh_id = coarse_cell.mesh_id;
+
+                Vector<Float> mcls(coarse_cell.numFaces());
+
+
+                switch (mesh_type) {
+                case MeshType::Tri:
+                  LOG_DEBUG("Mesh type: Tri");
+                  cell_soup = _tris[mesh_id];
+                  for (Int i = 0; i < mcls.size(); ++i) {
+                    mcls[i] = _tris[mesh_id].getFace(i).meanChordLength();
+                  }
+                  break;
+                case MeshType::Quad:
+                  LOG_DEBUG("Mesh type: Quad");
+                  cell_soup = _quads[mesh_id];
+                  for (Int i = 0; i < mcls.size(); ++i) {
+                    mcls[i] = _quads[mesh_id].getFace(i).meanChordLength();
+                  }
+                  break;
+                case MeshType::QuadraticTri:
+                  LOG_DEBUG("Mesh type: QuadraticTri");
+                  cell_soup = _tri6s[mesh_id];
+                  for (Int i = 0; i < mcls.size(); ++i) {
+                    mcls[i] = _tri6s[mesh_id].getFace(i).meanChordLength();
+                  }
+                  break;
+                case MeshType::QuadraticQuad:
+                  LOG_DEBUG("Mesh type: QuadraticQuad");
+                  cell_soup = _quad8s[mesh_id];
+                  for (Int i = 0; i < mcls.size(); ++i) {
+                    mcls[i] = _quad8s[mesh_id].getFace(i).meanChordLength();
+                  }
+                  break;
+                default:
+                  logger::error("Unsupported mesh type");
+                  return core_soup;
+                } // switch (mesh_type)
+
+                // Translate the cell_soup to the correct location
+                // global xyz offset
+                Point2 const xy_offset = cell_ll + rtm_ll + asy_ll;
+                Point3 const global_offset = Point3(xy_offset[0], xy_offset[1], lat_z);
+                cell_soup.translate(global_offset);
+
+
+                Vector<Int> cell_ids(cell_soup.numElements());
+                um2::iota(cell_ids.begin(), cell_ids.end(), 0);
+                // Add the Coarse_Cell, RTM, Lattice, and Assembly elsets
+                cell_soup.addElset(cell_name, cell_ids);
+                cell_soup.addElset(rtm_name, cell_ids);
+                cell_soup.addElset(lat_name, cell_ids);
+                cell_soup.addElset(asy_name, cell_ids);
+
+                // Add the material IDs
+                Vector<Float> mat_ids(coarse_cell.material_ids.size());
+                for (Int i = 0; i < mat_ids.size(); ++i) {
+                  mat_ids[i] = static_cast<Float>(coarse_cell.material_ids[i]);
+                }
+                cell_soup.addElset("Material_ID", cell_ids, mat_ids);
+
+                // Add the one-group cross sections
+                Vector<Float> xsecs(coarse_cell.numFaces());
+                for (Int i = 0; i < xsecs.size(); ++i) {
+                  xsecs[i] = one_group_xs[static_cast<Int>(coarse_cell.material_ids[i])];
+                }
+                cell_soup.addElset("One_Group_XS", cell_ids, xsecs);
+
+                // Add the mean chord lengths
+                cell_soup.addElset("Mean_Chord_Length", cell_ids, mcls);
+
+                // Add the Knudsen numbers
+                // Kn = mean free path / characteristic length
+                //    = 1 / (xs * mcl)
+                for (Int i = 0; i < xsecs.size(); ++i) {
+                  mcls[i] = 1 / (xsecs[i] * mcls[i]);
+                }
+                cell_soup.addElset("Knudsen_Number", cell_ids, mcls);
+
+                cell_soup.sortElsets();
+                rtm_soup += cell_soup;
+              } // for (ixcell)
+            }   // for (iycell)
+            lattice_soup += rtm_soup;
+          }   // for (ixrtm)
+        }     // for (iyrtm)
+        assembly_soup += lattice_soup;
+      } // for (izlat)
+      core_soup += assembly_soup;
+    } // for (ixasy)
+  }   // for (iyasy)
+  if (core_soup.numElsets() != 0) {
+    core_soup.sortElsets();
+  }
+  return core_soup;
+} // operator PolytopeSoup
+
+//==============================================================================
+// writeXDMF
+//==============================================================================
+
+void
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+Model::writeXDMFFile(String const & filepath) const
+{
+  LOG_INFO("Writing MPACT model to XDMF file: ", filepath);
+
+  if (_core.children().empty()) {
+    logger::error("Core has no children");
+    return;
+  }
+
+  // Store the one-group cross sections for each material
+  Vector<Float> one_group_xs(_materials.size());
+  for (Int imat = 0; imat < _materials.size(); ++imat) {
+    ASSERT(_materials[imat].xsec().isMacro());
+    auto const xs = _materials[imat].xsec().collapse();
+    one_group_xs[imat] = xs.t(0);
+  }
+
+  // Store a PolytopeSoup for each CoarseCell
+  Vector<PolytopeSoup> coarse_cell_soups(_coarse_cells.size());
+  {
+    Vector<Float> mcls;
+    Vector<Int> cell_ids;
+    Vector<Float> mat_ids;
+    Vector<Float> xsecs;
+    for (Int icc = 0; icc < _coarse_cells.size(); ++icc) {
+      auto & cell_soup = coarse_cell_soups[icc];
+      auto const & coarse_cell = _coarse_cells[icc];
+
+      // Get the mesh type and id of the coarse cell.
+      MeshType const mesh_type = coarse_cell.mesh_type;
+      Int const mesh_id = coarse_cell.mesh_id;
+
+      mcls.resize(coarse_cell.numFaces());
+
+      switch (mesh_type) {
+      case MeshType::Tri:
+        LOG_DEBUG("Mesh type: Tri");
+        cell_soup = _tris[mesh_id];
+        for (Int i = 0; i < mcls.size(); ++i) {
+          mcls[i] = _tris[mesh_id].getFace(i).meanChordLength();
+        }
+        break;
+      case MeshType::Quad:
+        LOG_DEBUG("Mesh type: Quad");
+        cell_soup = _quads[mesh_id];
+        for (Int i = 0; i < mcls.size(); ++i) {
+          mcls[i] = _quads[mesh_id].getFace(i).meanChordLength();
+        }
+        break;
+      case MeshType::QuadraticTri:
+        LOG_DEBUG("Mesh type: QuadraticTri");
+        cell_soup = _tri6s[mesh_id];
+        for (Int i = 0; i < mcls.size(); ++i) {
+          mcls[i] = _tri6s[mesh_id].getFace(i).meanChordLength();
+        }
+        break;
+      case MeshType::QuadraticQuad:
+        LOG_DEBUG("Mesh type: QuadraticQuad");
+        cell_soup = _quad8s[mesh_id];
+        for (Int i = 0; i < mcls.size(); ++i) {
+          mcls[i] = _quad8s[mesh_id].getFace(i).meanChordLength();
+        }
+        break;
+      default:
+        logger::error("Unsupported mesh type");
+        return; 
+      } // switch (mesh_type)
+
+      cell_ids.resize(cell_soup.numElements());
+      um2::iota(cell_ids.begin(), cell_ids.end(), 0);
+
+      // Add the material IDs
+      mat_ids.resize(coarse_cell.material_ids.size());
+      for (Int i = 0; i < mat_ids.size(); ++i) {
+        mat_ids[i] = static_cast<Float>(coarse_cell.material_ids[i]);
+      }
+      cell_soup.addElset("Material_ID", cell_ids, mat_ids);
+
+      // Add the one-group cross sections
+      xsecs.resize(coarse_cell.numFaces());
+      for (Int i = 0; i < xsecs.size(); ++i) {
+        xsecs[i] = one_group_xs[static_cast<Int>(coarse_cell.material_ids[i])];
+      }
+      cell_soup.addElset("One_Group_XS", cell_ids, xsecs);
+
+      // Add the mean chord lengths
+      cell_soup.addElset("Mean_Chord_Length", cell_ids, mcls);
+
+      // Add the Knudsen numbers
+      // Kn = mean free path / characteristic length
+      //    = 1 / (xs * mcl)
+      for (Int i = 0; i < xsecs.size(); ++i) {
+        mcls[i] = 1 / (xsecs[i] * mcls[i]);
+      }
+      cell_soup.addElset("Knudsen_Number", cell_ids, mcls);
+
+      cell_soup.sortElsets();
+    } // for (icc)
+  }
+
+  // Setup HDF5 file
+  // Get the h5 file name
+  Int last_slash = filepath.find_last_of('/');
+  if (last_slash == String::npos) {
+    last_slash = 0;
+  }
+
+  // If there is no slash, the file name and path are the same
+  // If there is a slash, the file name is everything after the last slash
+  // and the path is everything before and including the last slash
+  Int const h5filepath_end = last_slash == 0 ? 0 : last_slash + 1;
+  ASSERT(h5filepath_end < filepath.size());
+  // /some/path/foobar.xdmf -> foobar.h5
+  String const h5filename =
+      filepath.substr(h5filepath_end, filepath.size() - 5 - h5filepath_end) + ".h5";
+  // /some/path/foobar.xdmf -> /some/path/
+  String const h5filepath = filepath.substr(0, h5filepath_end);
+  String const h5fullpath = h5filepath + h5filename;
+  H5::H5File h5file(h5fullpath.data(), H5F_ACC_TRUNC);
+
+  // Setup XML file
+  pugi::xml_document xdoc;
+
+  // XDMF root node
+  pugi::xml_node xroot = xdoc.append_child("Xdmf");
+  xroot.append_attribute("Version") = "3.0";
+
+  // Domain node
+  pugi::xml_node xdomain = xroot.append_child("Domain");
+
+  // Write the material names as backup information
+  Vector<String> material_names;
+  for (auto const & material : _materials) {
+    material_names.push_back(material.getName());
+  }
+  pugi::xml_node xinfo = xdomain.append_child("Information");
+  xinfo.append_attribute("Name") = "Materials";
+  String mats;
+  for (Int i = 0; i < material_names.size(); ++i) {
+    mats += material_names[i];
+    if (i + 1 < material_names.size()) {
+      mats += ", ";
+    }
+  }
+  xinfo.append_child(pugi::node_pcdata).set_value(mats.data());
+
+  // Core
+  String const name = h5filename.substr(0, h5filename.size() - 3);
+  pugi::xml_node xcore_grid = xdomain.append_child("Grid");
+  xcore_grid.append_attribute("Name") = name.data();
+  xcore_grid.append_attribute("GridType") = "Tree";
+  H5::Group const h5core_group = h5file.createGroup(name.data());
+  String const h5core_grouppath = "/" + name;
+
+  // Allocate counters for each assembly, lattice, etc.
+  Vector<Int> asy_found(_assemblies.size(), -1);
+  Vector<Int> lat_found(_lattices.size(), -1);
+  Vector<Int> rtm_found(_rtms.size(), -1);
+  Vector<Int> cc_found(_coarse_cells.size(), -1);
+
+  Int const nyasy = _core.grid().numCells(1);
+  Int const nxasy = _core.grid().numCells(0);
+
+  // Core NX_by_NY
+  pugi::xml_node xcore_info = xcore_grid.append_child("Information");
+  xcore_info.append_attribute("Name") = "NX_by_NY";
+  String const core_nx_by_ny = String(nxasy) + " x " + String(nyasy); 
+  xcore_info.append_child(pugi::node_pcdata).set_value(core_nx_by_ny.data());
+
+  // For each assembly
+  for (Int iyasy = 0; iyasy < nyasy; ++iyasy) {
+    for (Int ixasy = 0; ixasy < nxasy; ++ixasy) {
+
+      // Get the assembly ID
+      auto const asy_id = _core.getChild(ixasy, iyasy);
+      ASSERT(asy_id >= 0);
+      ASSERT(asy_id < _assemblies.size());
+
+      // Increment the number of times we have seen this assembly
+      Int const asy_id_ctr = ++asy_found[asy_id];
+
+      // Get the assembly name
+      String const asy_name = "Assembly_" + getASCIINumber(asy_id) + "_" + getASCIINumber(asy_id_ctr);
+      LOG_DEBUG("Assembly name: ", asy_name);
+
+      // Create the assembly group
+      pugi::xml_node xasy_grid = xcore_grid.append_child("Grid");
+      xasy_grid.append_attribute("Name") = asy_name.data();
+      xasy_grid.append_attribute("GridType") = "Tree";
+      String const h5asy_grouppath = h5core_grouppath + "/" + asy_name;
+      H5::Group const h5asy_group = h5file.createGroup(h5asy_grouppath.data());
+
+      // Get the assembly offset (lower left corner)
+      Point2 const asy_ll = _core.grid().getBox(ixasy, iyasy).minima();
+
+      // Get the assembly
+      auto const & assembly = _assemblies[asy_id];
+      if (assembly.children().empty()) {
+        logger::error("Assembly has no children");
+        return; 
+      }
+
+      Int const nzlat = assembly.grid().numCells(0);
+
+      // Assembly NX_by_NY
+      pugi::xml_node xasy_info = xasy_grid.append_child("Information");
+      xasy_info.append_attribute("Name") = "NX_by_NY";
+      String const asy_nx_by_ny = String(nzlat) + " x 1"; 
+      xasy_info.append_child(pugi::node_pcdata).set_value(asy_nx_by_ny.data());
+
+      // For each lattice
+      for (Int izlat = 0; izlat < nzlat; ++izlat) {
+
+        // Get the lattice ID
+        auto const lat_id = assembly.getChild(izlat);
+        ASSERT(lat_id >= 0);
+        ASSERT(lat_id < _lattices.size());
+
+        // Increment the number of times we have seen this lattice
+        Int const lat_id_ctr = ++lat_found[lat_id];
+
+        // Get the lattice name
+        String const lat_name = "Lattice_" + getASCIINumber(lat_id) + "_" + getASCIINumber(lat_id_ctr);
+        LOG_DEBUG("Lattice name: ", lat_name);
+
+        // Create the lattice group
+        pugi::xml_node xlat_grid = xasy_grid.append_child("Grid");
+        xlat_grid.append_attribute("Name") = lat_name.data();
+        xlat_grid.append_attribute("GridType") = "Tree";
+        String const h5lat_grouppath = h5asy_grouppath + "/" + lat_name;
+        H5::Group const h5lat_group = h5file.createGroup(h5lat_grouppath.data());
+
+
+        // Get the lattice offset (z direction)
+        // The midplane is the location that the geometry was sampled at.
+        Float const low_z = assembly.grid().divs(0)[izlat];
+        Float const high_z = assembly.grid().divs(0)[izlat + 1];
+        Float const lat_z = (low_z + high_z) / 2;
+
+        // Add the lattice "Z" information
+        pugi::xml_node xlat_info = xlat_grid.append_child("Information");
+        xlat_info.append_attribute("Name") = "Z";
+        String const lat_z_str = String(low_z) + ", " + String(lat_z) + ", " + String(high_z);
+        xlat_info.append_child(pugi::node_pcdata).set_value(lat_z_str.data());
+
+        // Get the lattice
+        auto const & lattice = _lattices[lat_id];
+        if (lattice.children().empty()) {
+          logger::error("Lattice has no children");
+          return; 
+        }
+
+        Int const nyrtm = lattice.grid().numCells(1);
+        Int const nxrtm = lattice.grid().numCells(0);
+
+        // Lattice NX_by_NY
+        pugi::xml_node xlat_info2 = xlat_grid.append_child("Information");
+        xlat_info2.append_attribute("Name") = "NX_by_NY";
+        String const lat_nx_by_ny = String(nxrtm) + " x " + String(nyrtm);
+
+        // For each RTM
+        for (Int iyrtm = 0; iyrtm < nyrtm; ++iyrtm) {
+          for (Int ixrtm = 0; ixrtm < nxrtm; ++ixrtm) {
+
+            // Get the RTM ID
+            auto const rtm_id = lattice.getChild(ixrtm, iyrtm);
+            ASSERT(rtm_id >= 0);
+            ASSERT(rtm_id < _rtms.size());
+
+            // Increment the number of times we have seen this RTM
+            Int const rtm_id_ctr = ++rtm_found[rtm_id];
+
+            // Get the RTM name
+            String const rtm_name = "RTM_" + getASCIINumber(rtm_id) + "_" + getASCIINumber(rtm_id_ctr);
+            LOG_DEBUG("RTM name: ", rtm_name);
+
+            // Create the RTM group
+            pugi::xml_node xrtm_grid = xlat_grid.append_child("Grid");
+            xrtm_grid.append_attribute("Name") = rtm_name.data();
+            xrtm_grid.append_attribute("GridType") = "Tree";
+            String const h5rtm_grouppath = h5lat_grouppath + "/" + rtm_name;
+            H5::Group const h5rtm_group = h5file.createGroup(h5rtm_grouppath.data());
+
+            // Get the RTM offset (lower left corner)
+            Point2 const rtm_ll = lattice.grid().getBox(ixrtm, iyrtm).minima();
+
+            // Get the rtm
+            auto const & rtm = _rtms[rtm_id];
+            if (rtm.children().empty()) {
+              logger::error("RTM has no children");
+              return; 
+            }
+
+            Int const nycells = rtm.grid().numCells(1);
+            Int const nxcells = rtm.grid().numCells(0);
+
+            // RTM NX_by_NY
+            pugi::xml_node xrtm_info = xrtm_grid.append_child("Information");
+            xrtm_info.append_attribute("Name") = "NX_by_NY";
+            String const rtm_nx_by_ny = String(nxcells) + " x " + String(nycells);
+
+            // For each coarse cell
+            for (Int iycell = 0; iycell < nycells; ++iycell) {
+              for (Int ixcell = 0; ixcell < nxcells; ++ixcell) {
+
+                // Get the coarse cell ID
+                auto const & cell_id = rtm.getChild(ixcell, iycell);
+                ASSERT(cell_id >= 0);
+                ASSERT(cell_id < _coarse_cells.size());
+
+                // Increment the number of times we have seen this coarse cell
+                Int const cell_id_ctr = ++cc_found[cell_id];
+
+                // Get the coarse cell name
+                String const cell_name = "Coarse_Cell_" + getASCIINumber(cell_id) + "_" + getASCIINumber(cell_id_ctr);
+                LOG_DEBUG("Coarse cell name: ", cell_name);
+
+                // Get the cell offset (lower left corner)
+                Point2 const cell_ll = rtm.grid().getBox(ixcell, iycell).minima();
+
+                // Translate the cell_soup to the correct location
+                // global xyz offset
+                Point2 const xy_offset = cell_ll + rtm_ll + asy_ll;
+                Point3 const global_offset = Point3(xy_offset[0], xy_offset[1], lat_z);
+
+                auto const & cell_soup = coarse_cell_soups[cell_id];
+
+                writeXDMFUniformGrid(cell_name, xrtm_grid, h5file, h5filename,
+                    h5rtm_grouppath, cell_soup, global_offset);
+
+              } // for (ixcell)
+            }   // for (iycell)
+          }   // for (ixrtm)
+        }     // for (iyrtm)
+      } // for (izlat)
+    } // for (ixasy)
+  }   // for (iyasy)
+
+  // Write the XML file
+  xdoc.save_file(filepath.data(), "  ");
+
+  // Close the HDF5 file
+  h5file.close();
+
+  LOG_INFO("XDMF file written successfully");
+} // writeXDMFFile
+
+//==============================================================================
+// write
+//==============================================================================
+
+void
+Model::write(String const & filename) const
+{
+  if (filename.ends_with(".xdmf")) {
+    writeXDMFFile(filename);
+  } else {
+    logger::error("Unsupported file format.");
+  }
+}
+
 } // namespace um2::mpact

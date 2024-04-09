@@ -113,6 +113,7 @@ constexpr RectilinearPartition<D, P>::RectilinearPartition(
       _children[i * nx + j] = static_cast<P>(ids[ny - 1 - i][j]);
     }
   }
+  ASSERT(_grid.totalNumCells() == _children.size());
 }
 
 //==============================================================================

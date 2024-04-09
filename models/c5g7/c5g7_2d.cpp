@@ -6,15 +6,24 @@
 #include <um2.hpp>
 
 auto
-main() -> int
+main(int argc, char** argv) -> int
 {
   um2::initialize();
+
+  // Check the number of arguments
+  if (argc != 2) {
+    um2::logger::error("Usage: ./c5g7_2d num_coarse_cells");
+    return 1;
+  }
 
   //===========================================================================
   // Parametric study parameters
   //===========================================================================
 
-  Int const num_coarse_cells = 3; // Overlay N x N coarse cells on domain
+  char * end = nullptr;
+  Int const num_coarse_cells = um2::strto<Int>(argv[1], &end);
+  ASSERT(end != nullptr);
+  ASSERT(num_coarse_cells > 0);
 
   //===========================================================================
   // Model parameters
@@ -229,8 +238,9 @@ main() -> int
   //===========================================================================
 
   model.importCoarseCellMeshes("c5g7_2d.inp");
-//  um2::PolytopeSoup const soup(model);
-//  soup.write("c5g7_2s.xdmf");
+  um2::PolytopeSoup const soup(model);
+  String filename = "c5g7_2d_" + std::to_string(num_coarse_cells) + ".xdmf";
+  soup.write("c5g7_2d.xdmf");
   um2::finalize();
   return 0;
 }

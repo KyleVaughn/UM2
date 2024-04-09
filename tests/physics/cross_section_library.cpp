@@ -26,27 +26,9 @@ TEST_CASE(readMPACTLibrary)
   ASSERT(lib51.nuclides().size() == 298);
 }
 
-//TEST_CASE(getXS)
-//{
-//  um2::logger::level = um2::logger::levels::info;
-//  um2::XSLibrary const lib8(um2::settings::xs::library_path + "/" + um2::mpact::XSLIB_8G);
-//  um2::Material fuel;    
-//  fuel.setName("Fuel");    
-//  fuel.setDensity(castIfNot<Float>(10.42)); // g/cm^3, Table P1-2 (pg. 20)    
-//  fuel.setTemperature(castIfNot<Float>(565.0)); // K, Table P1-1 (pg. 20)    
-//  fuel.setColor(um2::forestgreen);    
-//  fuel.addNuclide("U235", castIfNot<Float>(1.0));    
-//  fuel.addNuclide("O16", castIfNot<Float>(1.0));
-//
-//  auto const xs = lib8.getXS(fuel);
-//  ASSERT_NEAR(xs.t(0), 9, 1)
-//  ASSERT_NEAR(xs.t(1), 14, 1)
-//}
-
 TEST_SUITE(XSLibrary) 
 { 
   TEST(readMPACTLibrary); 
-//  TEST(getXS);
 }
 
 auto

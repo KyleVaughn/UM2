@@ -166,6 +166,16 @@ public:
 
   void
   addNuclide(String const & symbol, Float num_density) noexcept;
+
+  [[nodiscard]] constexpr auto
+  hasXSec() const noexcept -> bool
+  {
+    return _xsec.isMacro() && !_xsec.t().empty();
+  }
+
+  void
+  populateXSec(XSLibrary const & xsec_lib) noexcept;
+
 };
 
 } // namespace um2

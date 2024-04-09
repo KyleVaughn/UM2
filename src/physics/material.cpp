@@ -49,4 +49,31 @@ Material::addNuclide(String const & symbol, Float num_density) noexcept
   addNuclide(toZAID(symbol), num_density);
 }
 
+void
+Material::populateXSec(XSLibrary const & xsec_lib) noexcept
+{
+  _xsec.t().clear();
+  // Ensure temperature, density, and number densities are set
+  validate();
+  _xsec.isMacro() = true;
+  Int const num_groups = xsec_lib.numGroups();
+  _xsec.t().resize(num_groups);
+  // For each nuclide in the material:
+  //  find the corresponding nuclide in the library
+  //  interpolate the cross sections to the temperature of the material
+  //  scale the cross sections by the atom density of the nuclide
+  //  reduce
+  Int const num_nuclides = numNuclides();
+  for (Int inuc = 0; inuc < num_nuclides; ++inuc) {
+    auto const zaid = _zaid[inuc];
+    auto const & lib_nuc = xsec_lib.getNuclide(zaid);
+    auto const xs_nuc = lib_nuc.interpXS(getTemperature());
+    auto const atom_density = numDensity(inuc);
+    for (Int ig = 0; ig < num_groups; ++ig) {
+      _xsec.t(ig) += xs_nuc.t(ig) * atom_density;
+    }
+  }
+  _xsec.validate();
+}
+
 } // namespace um2

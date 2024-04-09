@@ -11,49 +11,48 @@ namespace um2::mpact
 //==============================================================================
 // MPACT MODEL
 //==============================================================================
-///// An equivalent representation to the various mesh hierarchies in an MPACT model.
-/////
-/////  ************************
-/////  *****VERY IMPORTANT*****
-/////  ************************
-/////  - The pin mesh coordinate system origin in MPACT is the center of the pin. Here
-/////    we use the bottom left corner of the pin mesh as the origin.
-/////  - In MPACT, two pins with the same mesh but different heights are considered
-/////    different meshes. Here we consider them the same mesh.
-/////
-///// The MPACT spatial partition consists of:
-/////      1. Core
-/////          A rectilinear partition of the XY-domain into assemblies. The assemblies
-/////          must have the same start and stop heights.
-/////      2. Assembly
-/////          A rectilinear partition of the Z-domain into 2D axial slices (lattices).
-/////      3. Lattice
-/////          A regular partition of the XY-domain into equal-sized axis-aligned
-/////          rectangles, also known as "ray tracing modules" (RTMs).
-/////          Each lattice has a local coordinate system with (0, 0) in the bottom
-/////          left corner.
-/////      4. RTM
-/////          A rectilinear partition of the XY-domain into coarse cells.
-/////          Every RTM is exactly the same width and height in all lattices.
-/////          This property is a necessity for modular ray tracing.
-/////          Each RTM has a local coordinate system with (0, 0) in the bottom
-/////          left corner.
-/////      5. Coarse cell
-/////          A 2D axis-aligned box (AABB), containing a mesh which completely
-/////          fills the box's interior. This mesh is the "fine mesh". It is made
-/////          up of fine cells (triangles, quadrilaterals, etc.). Each of these
-/////          fine cells has an integer material ID. This structure is
-/////          represented as a fine mesh ID and a material ID list ID, allowing the
-/////          same mesh to be reused for multiple pins with different materials.
-/////          Each coarse cell has a local coordinate system with (0, 0) in the
-/////          bottom left corner.
-/////
-/////          In MPACT, the coarse cells typically contain the geometry for a single
-/////          pin, centered in middle of the coarse cell - hence the name "pin cell".
-/////          In this code, due to the arbitrary nature of the geometry, the coarse
-/////          cells may contain a piece of a pin, multiple pins, or any other
-/////          arbitrary geometry.
-/////
+// An equivalent representation to the various mesh hierarchies in an MPACT model.
+//
+//  ************************
+//  *****VERY IMPORTANT*****
+//  ************************
+//  - The pin mesh coordinate system origin in MPACT is the center of the pin. Here
+//    we use the bottom left corner of the pin mesh as the origin.
+//  - In MPACT, two pins with the same mesh but different heights are considered
+//    different meshes. Here we consider them the same mesh.
+//
+// The MPACT spatial partition consists of:
+//      1. Core
+//          A rectilinear partition of the XY-domain into assemblies. The assemblies
+//          must have the same start and stop heights.
+//      2. Assembly
+//          A rectilinear partition of the Z-domain into 2D axial slices (lattices).
+//      3. Lattice
+//          A regular partition of the XY-domain into equal-sized axis-aligned
+//          rectangles, also known as "ray tracing modules" (RTMs).
+//          Each lattice has a local coordinate system with (0, 0) in the bottom
+//          left corner.
+//      4. RTM
+//          A rectilinear partition of the XY-domain into coarse cells.
+//          Every RTM is exactly the same width and height in all lattices.
+//          This property is a necessity for modular ray tracing.
+//          Each RTM has a local coordinate system with (0, 0) in the bottom
+//          left corner.
+//      5. Coarse cell
+//          A 2D axis-aligned box (AABB), containing a mesh which completely
+//          fills the box's interior. This mesh is the "fine mesh". It is made
+//          up of fine cells (triangles, quadrilaterals, etc.). Each of these
+//          fine cells has an integer material ID. This structure is
+//          represented as a fine mesh ID and a material ID list ID, allowing the
+//          same mesh to be reused for multiple pins with different materials.
+//          Each coarse cell has a local coordinate system with (0, 0) in the
+//          bottom left corner.
+//
+//          In MPACT, the coarse cells typically contain the geometry for a single
+//          pin, centered in middle of the coarse cell - hence the name "pin cell".
+//          In this code, due to the arbitrary nature of the geometry, the coarse
+//          cells may contain a piece of a pin, multiple pins, or any other
+//          arbitrary geometry.
 
 class Model
 {
@@ -61,8 +60,8 @@ class Model
 public:
   struct CoarseCell {
     Vec2F xy_extents;
-    MeshType mesh_type = MeshType::None;
-    Int mesh_id = -1;                 // index into the corresponding mesh array
+    MeshType mesh_type = MeshType::Invalid;
+    Int mesh_id = -1;            // index into the corresponding mesh array
     Vector<MatID> material_ids;  // size = mesh.numFaces()
 
     PURE [[nodiscard]] constexpr auto
@@ -89,11 +88,15 @@ private:
   // Global materials
   Vector<Material> _materials;
 
-  // pin meshes
+  // Coarse cell meshes
   Vector<TriFVM> _tris;
   Vector<QuadFVM> _quads;
   Vector<Tri6FVM> _tri6s;
   Vector<Quad8FVM> _quad8s;
+
+  // Helper functions
+  void
+  writeXDMFFile(String const & filepath) const;
 
 public:
   //============================================================================
@@ -103,12 +106,9 @@ public:
   constexpr Model() noexcept = default;
 
   //============================================================================
-  // Accessors
+  // Capacity 
   //============================================================================
 
-//  PURE [[nodiscard]] constexpr auto
-//  numCoarseMeshes() const noexcept -> Int;
-//
   PURE [[nodiscard]] constexpr auto
   numCoarseCells() const noexcept -> Int;
 
@@ -120,6 +120,10 @@ public:
 
   PURE [[nodiscard]] constexpr auto
   numAssemblies() const noexcept -> Int;
+
+  //============================================================================
+  // Getters
+  //============================================================================
 
   PURE [[nodiscard]] constexpr auto
   getCoarseCell(Int cc_id) const noexcept -> CoarseCell const &;
@@ -149,7 +153,7 @@ public:
   getQuad8Mesh(Int mesh_id) const noexcept -> Quad8FVM const &;
 
   //============================================================================
-  // Methods
+  // Modifiers
   //============================================================================
 
   HOSTDEV void
@@ -170,7 +174,7 @@ public:
 
   auto
   addCoarseCell(Vec2F xy_extents,
-      MeshType mesh_type = MeshType::None,
+      MeshType mesh_type = MeshType::Invalid,
       Int mesh_id = -1,
       Vector<MatID> const & material_ids = {}) -> Int;
 
@@ -199,32 +203,61 @@ public:
   void
   importCoarseCellMeshes(String const & filename);
 
-//  // Assume everything fits in one of the next highest hierarchy levels.
-//  void
-//  fillHierarchy();
+  //============================================================================
+  // Methods
+  //============================================================================
 
-//  explicit operator PolytopeSoup() const noexcept;
+  // This can be very slow for large models. Used for debugging.
+  explicit operator PolytopeSoup() const noexcept;
 
-//  //  //  void
-//  //  //  getMaterialNames(Vector<String> & material_names) const;
-//  //  //
-//  //  //  void
-//  //  //  write(String const & filename, bool write_kn = false) const;
-//  //  //
-//  //  //  void
-//  //  //  writeXDMF(String const & filepath, bool write_kn = false) const;
-//  //  //
+  void
+  write(String const & filename) const;
+
 }; // struct Model
-//
+
 //=============================================================================
-// Accessors
+// Free functions
 //=============================================================================
 
-//PURE [[nodiscard]] constexpr auto
-//Model::numCoarseMeshes() const noexcept -> Int
-//{
-//  return _tris.size() + _quads.size() + _tri6s.size() + _quad8s.size();
-//}
+// We need to get labels like "Coarse_Cell_00001" or "Assembly_00021". Instead
+// of importing stringstream or doing string concatenation, we can use this 
+// function.
+template <typename Str>
+inline void
+incrementASCIINumber(Str & str)
+{
+  // '0' to '9' are contiguous in ASCII
+  // '0' = 48, '9' = 57
+  // While the back character is '9', set it to '0',
+  // move p to the next character to the left, and increment it.
+  ASSERT(!str.empty());
+  char * p = str.end() - 1;
+  while (*p == '9') {
+    *p-- = '0';
+  }
+  ASSERT(p >= str.begin());
+  ASSERT('0' <= *p);
+  ASSERT(*p <= '9');
+  ++(*p);
+}
+
+inline auto
+getASCIINumber(Int num)
+{
+  ASSERT(num >= 0);
+  ASSERT(num < 100000);
+  String str("00000"); // technically only need
+  char * p = str.end() - 1;
+  for (Int i = 0; i < 5; ++i) {
+    *p-- = static_cast<int8_t>(num % 10 + 48);
+    num /= 10;
+  }
+  return str;
+}
+
+//=============================================================================
+// Capacity 
+//=============================================================================
 
 PURE [[nodiscard]] constexpr auto
 Model::numCoarseCells() const noexcept -> Int
@@ -249,6 +282,10 @@ Model::numAssemblies() const noexcept -> Int
 {
   return _assemblies.size();
 }
+
+//=============================================================================
+// Getters
+//=============================================================================
 
 PURE [[nodiscard]] constexpr auto
 Model::getCoarseCell(Int cc_id) const noexcept -> CoarseCell const &

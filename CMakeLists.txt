@@ -165,13 +165,13 @@ set(UM2_SOURCES
     "src/physics/cross_section_library.cpp"
     "src/physics/material.cpp"
     "src/mpact/model.cpp"
-    "src/gmsh/base_gmsh_api.cpp"
-    "src/gmsh/io.cpp"
-    "src/gmsh/model.cpp"
-    "src/gmsh/mesh.cpp"
+    #"src/gmsh/base_gmsh_api.cpp"
+    #"src/gmsh/io.cpp"
+    #"src/gmsh/model.cpp"
+    #"src/gmsh/mesh.cpp"
     #    #    #    ##    # visualization
     #    #    #    ##    "src/visualization/Image2D.cpp"
-    "src/um2.cpp"
+    #"src/um2.cpp"
     #    #    "src/um2c.cpp"
   )
 

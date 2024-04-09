@@ -216,6 +216,7 @@ TEST_CASE(end_with)
   ASSERT(s.ends_with("StringView"));
   ASSERT(!s.ends_with("String"));
   ASSERT(!s.ends_with("StringView "));
+  ASSERT(s.ends_with("w"));
 }
 MAKE_CUDA_KERNEL(end_with)
 

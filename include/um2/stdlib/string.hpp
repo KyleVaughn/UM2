@@ -762,13 +762,13 @@ String::front() const noexcept -> char const &
 PURE HOSTDEV constexpr auto
 String::back() noexcept -> char &
 {
-  return *end();
+  return *(end() - 1);
 }
 
 PURE HOSTDEV constexpr auto
 String::back() const noexcept -> char const &
 {
-  return *end();
+  return *(end() - 1);
 }
 
 PURE HOSTDEV constexpr auto

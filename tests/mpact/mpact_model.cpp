@@ -1,10 +1,35 @@
 #include <um2/mpact/model.hpp>
+#include <um2/stdlib/algorithm/fill.hpp>
+#include <um2/common/string_to_lattice.hpp>
+#include <um2/common/logger.hpp>
 
 #include "../test_macros.hpp"
 
 #include <numeric> // std::reduce
 
-auto constexpr eps = um2::eps_distance; 
+#include <iostream>
+
+auto constexpr eps = um2::eps_distance;
+
+TEST_CASE(ASCII)
+{
+  // Increment a string ending in numbers
+  um2::String str("00000");
+  ASSERT(str == "00000");
+  um2::mpact::incrementASCIINumber(str);
+  ASSERT(str == "00001");
+  str = "_199";
+  um2::mpact::incrementASCIINumber(str);
+  ASSERT(str == "_200");
+
+  // Create a 5-digit string from an integer
+  str = um2::mpact::getASCIINumber(0);
+  ASSERT(str == "00000");
+  str = um2::mpact::getASCIINumber(199);
+  ASSERT(str == "00199");
+  str = um2::mpact::getASCIINumber(34578);
+  ASSERT(str == "34578");
+}
 
 TEST_CASE(addCylindricalPinMesh)
 {
@@ -88,14 +113,14 @@ TEST_CASE(addCoarseCell)
   // Check the properties of the coarse cell
   auto const & cell = model.getCoarseCell(id);
   ASSERT(cell.xy_extents.isApprox(dxdy));
-  ASSERT(cell.mesh_type == um2::MeshType::None);
+  ASSERT(cell.mesh_type == um2::MeshType::Invalid);
   ASSERT(cell.mesh_id == -1);
   ASSERT(cell.material_ids.empty());
 
   // Add a cell with full properties
   model.addRectangularPinMesh(dxdy, 2, 2);
   um2::Material umetal;
-  umetal.setName("U-metal"); 
+  umetal.setName("U-metal");
   umetal.setColor(um2::forestgreen);
   umetal.setTemperature(600);
   umetal.setDensity(castIfNot<Float>(10.5));
@@ -114,7 +139,7 @@ TEST_CASE(addCoarseCell)
       model.addCoarseCell(dxdy, um2::MeshType::Quad, 0, material_ids);
   ASSERT(id2 == 1);
   ASSERT(model.numCoarseCells() == 2);
-                                                 
+
   // Check the properties of the coarse cell
   auto const & cell2 = model.getCoarseCell(id2);
   ASSERT(cell2.xy_extents.isApprox(dxdy));
@@ -327,12 +352,12 @@ TEST_CASE(addCoarseGrid)
 
   auto const & cc0 = model.getCoarseCell(0);
   ASSERT(cc0.xy_extents.isApprox(um2::Vec2F(2, 1)));
-  ASSERT(cc0.mesh_type == um2::MeshType::None);
+  ASSERT(cc0.mesh_type == um2::MeshType::Invalid);
   ASSERT(cc0.mesh_id == -1);
   ASSERT(cc0.material_ids.empty());
   auto const & cc1 = model.getCoarseCell(1);
   ASSERT(cc1.xy_extents.isApprox(um2::Vec2F(2, 1)));
-  ASSERT(cc1.mesh_type == um2::MeshType::None);
+  ASSERT(cc1.mesh_type == um2::MeshType::Invalid);
   ASSERT(cc1.mesh_id == -1);
   ASSERT(cc1.material_ids.empty());
 
@@ -443,97 +468,380 @@ TEST_CASE(importCoarseCellMeshes)
   ASSERT(quad_mesh.faceVertexConn()[0][2] == 2);
   ASSERT(quad_mesh.faceVertexConn()[0][3] == 3);
 }
-////////
-//////// template <typename T, typename I>
-//////// TEST_CASE(toPolytopeSoup)
-////////{
-////////   //  using CoarseCell = typename um2::mpact::Model::CoarseCell;
-////////   um2::mpact::Model model_out;
-////////   model_out.addCoarseCell({1, 1});
-////////   model_out.addCoarseCell({1, 1});
-////////   model_out.addCoarseCell({1, 1});
-////////   model_out.addRTM({
-////////       {2, 2},
-////////       {0, 1}
-////////   });
-////////   model_out.addLattice({{0}});
-////////   model_out.addAssembly({0});
-////////   model_out.addCore({{0}});
-////////   model_out.importCoarseCellMeshes("./mpact_mesh_files/coarse_cells.inp");
-////////   um2::PolytopeSoup soup;
-////////   model_out.toPolytopeSoup(soup);
-////////   soup.write("./mpact_export_test_model.xdmf");
-////////
-////////   //  um2::exportMesh(filepath, model_out);
-////////   //  um2::mpact::Model model;
-////////   //  um2::importMesh(filepath, model);
-////////   //
-////////   //  ASSERT(model.numAssemblies() == 1);
-////////   //  ASSERT(model.numLattices() == 1);
-////////   //  ASSERT(model.numRTMs() == 1);
-////////   //  ASSERT(model.numCoarseCells() == 3);
-////////   //
-////////   //  ASSERT(model.tri.size() == 2);
-////////   //  CoarseCell const & cell = model.coarse_cells[0];
-////////   //  ASSERT(cell.mesh_type == um2::MeshType::Tri);
-////////   //  ASSERT(cell.mesh_id == 0);
-////////   //  ASSERT(cell.material_ids.size() == 2);
-////////   //  ASSERT(cell.material_ids[0] == 1);
-////////   //  ASSERT(cell.material_ids[1] == 2);
-////////   //  um2::TriMesh<2, T, I> const & tri_mesh = model.tri[0];
-////////   //  ASSERT(tri_mesh.numVertices() == 4);
-////////   //  ASSERT(um2::isApprox(tri_mesh.vertices[0], {0, 0}));
-////////   //  ASSERT(um2::isApprox(tri_mesh.vertices[1], {1, 0}));
-////////   //  ASSERT(um2::isApprox(tri_mesh.vertices[2], {1, 1}));
-////////   //  ASSERT(um2::isApprox(tri_mesh.vertices[3], {0, 1}));
-////////   //  ASSERT(tri_mesh.fv[0][0] == 0);
-////////   //  ASSERT(tri_mesh.fv[0][1] == 1);
-////////   //  ASSERT(tri_mesh.fv[0][2] == 2);
-////////   //  ASSERT(tri_mesh.fv[1][0] == 2);
-////////   //  ASSERT(tri_mesh.fv[1][1] == 3);
-////////   //  ASSERT(tri_mesh.fv[1][2] == 0);
-////////   //
-////////   //  CoarseCell const & cell1 = model.coarse_cells[1];
-////////   //  ASSERT(cell1.mesh_type == um2::MeshType::Tri);
-////////   //  ASSERT(cell1.mesh_id == 1);
-////////   //  ASSERT(cell1.material_ids.size() == 2);
-////////   //  ASSERT(cell1.material_ids[0] == 1);
-////////   //  ASSERT(cell1.material_ids[1] == 0);
-////////   //  um2::TriMesh<2, T, I> const & tri_mesh1 = model.tri[1];
-////////   //  ASSERT(tri_mesh1.vertices.size() == 4);
-////////   //  ASSERT(um2::isApprox(tri_mesh1.vertices[0], {0, 0}));
-////////   //  ASSERT(um2::isApprox(tri_mesh1.vertices[1], {0, 1}));
-////////   //  ASSERT(um2::isApprox(tri_mesh1.vertices[2], {1, 0}));
-////////   //  ASSERT(um2::isApprox(tri_mesh1.vertices[3], {1, 1}));
-////////   //  ASSERT(tri_mesh1.fv[0][0] == 0);
-////////   //  ASSERT(tri_mesh1.fv[0][1] == 2);
-////////   //  ASSERT(tri_mesh1.fv[0][2] == 1);
-////////   //  ASSERT(tri_mesh1.fv[1][0] == 2);
-////////   //  ASSERT(tri_mesh1.fv[1][1] == 3);
-////////   //  ASSERT(tri_mesh1.fv[1][2] == 1);
-////////   //
-////////   //  CoarseCell const & cell2 = model.coarse_cells[2];
-////////   //  ASSERT(cell2.mesh_type == um2::MeshType::Quad);
-////////   //  ASSERT(cell2.mesh_id == 0);
-////////   //  ASSERT(cell2.material_ids.size() == 1);
-////////   //  ASSERT(cell2.material_ids[0] == 0);
-////////   //  um2::QuadMesh<2, T, I> const & quad_mesh = model.quad[0];
-////////   //  ASSERT(quad_mesh.vertices.size() == 4);
-////////   //  ASSERT(um2::isApprox(quad_mesh.vertices[0], {1, 0}));
-////////   //  ASSERT(um2::isApprox(quad_mesh.vertices[1], {0, 0}));
-////////   //  ASSERT(um2::isApprox(quad_mesh.vertices[2], {1, 1}));
-////////   //  ASSERT(um2::isApprox(quad_mesh.vertices[3], {0, 1}));
-////////   //  ASSERT(quad_mesh.fv.size() == 1);
-////////   //  ASSERT(quad_mesh.fv[0][0] == 1);
-////////   //  ASSERT(quad_mesh.fv[0][1] == 0);
-////////   //  ASSERT(quad_mesh.fv[0][2] == 2);
-////////   //  ASSERT(quad_mesh.fv[0][3] == 3);
-////////   //
-////////   //  int stat = std::remove("./mpact_export_test_model.xdmf");
-////////   //  ASSERT(stat == 0);
-////////   //  stat = std::remove("./mpact_export_test_model.h5");
-////////   //  ASSERT(stat == 0);
-//////// }
+
+TEST_CASE(operator_PolytopeSoup)
+{
+  um2::mpact::Model model_out;
+
+  um2::Material clad;
+  clad.setName("Clad");
+  clad.xsec().isMacro() = true;
+  clad.xsec().t() = {1};
+
+  um2::Material h2o;
+  h2o.setName("H2O");
+  h2o.xsec().isMacro() = true;
+  h2o.xsec().t() = {1};
+
+  um2::Material uo2;
+  uo2.setName("UO2");
+  uo2.xsec().isMacro() = true;
+  uo2.xsec().t() = {1};
+
+  model_out.addMaterial(clad);
+  model_out.addMaterial(h2o);
+  model_out.addMaterial(uo2);
+
+  model_out.addCoarseCell({1, 1});
+  model_out.addCoarseCell({1, 1});
+  model_out.addCoarseCell({1, 1});
+  model_out.addRTM({
+      {2, 2},
+      {0, 1}
+  });
+  model_out.addLattice({{0}});
+  model_out.addAssembly({0});
+  model_out.addCore({{0}});
+  model_out.importCoarseCellMeshes("./mpact_mesh_files/coarse_cells.inp");
+  um2::PolytopeSoup const soup(model_out);
+
+  // conversion doesn't make mesh manifold, so we expect repeated vertices
+  ASSERT(soup.numVertices() == 16);
+  ASSERT(soup.getVertex(0).isApprox(um2::Point3(0, 0, 0)));
+  ASSERT(soup.getVertex(1).isApprox(um2::Point3(1, 0, 0)));
+  ASSERT(soup.getVertex(2).isApprox(um2::Point3(1, 1, 0)));
+  ASSERT(soup.getVertex(3).isApprox(um2::Point3(0, 1, 0)));
+
+  ASSERT(soup.getVertex(4).isApprox(um2::Point3(1, 0, 0)));
+  ASSERT(soup.getVertex(5).isApprox(um2::Point3(1, 1, 0)));
+  ASSERT(soup.getVertex(6).isApprox(um2::Point3(2, 0, 0)));
+  ASSERT(soup.getVertex(7).isApprox(um2::Point3(2, 1, 0)));
+
+  ASSERT(soup.getVertex(8).isApprox(um2::Point3(1, 1, 0)));
+  ASSERT(soup.getVertex(9).isApprox(um2::Point3(0, 1, 0)));
+  ASSERT(soup.getVertex(10).isApprox(um2::Point3(1, 2, 0)));
+  ASSERT(soup.getVertex(11).isApprox(um2::Point3(0, 2, 0)));
+
+  ASSERT(soup.getVertex(12).isApprox(um2::Point3(2, 1, 0)));
+  ASSERT(soup.getVertex(13).isApprox(um2::Point3(1, 1, 0)));
+  ASSERT(soup.getVertex(14).isApprox(um2::Point3(2, 2, 0)));
+  ASSERT(soup.getVertex(15).isApprox(um2::Point3(1, 2, 0)));
+
+  ASSERT(soup.numElements() == 6);
+  um2::Vector<Int> conn;
+  um2::VTKElemType type = um2::VTKElemType::Invalid;
+  soup.getElement(0, type, conn);
+  ASSERT(type == um2::VTKElemType::Triangle);
+  ASSERT(conn.size() == 3);
+  ASSERT(conn[0] == 0);
+  ASSERT(conn[1] == 1);
+  ASSERT(conn[2] == 2);
+
+  soup.getElement(4, type, conn);
+  ASSERT(type == um2::VTKElemType::Quad);
+  ASSERT(conn.size() == 4);
+  ASSERT(conn[0] == 9);
+  ASSERT(conn[1] == 8);
+  ASSERT(conn[2] == 10);
+  ASSERT(conn[3] == 11);
+
+  um2::String name;
+  um2::Vector<Int> ids;
+  um2::Vector<Float> data;
+  soup.getElset(0, name, ids, data);
+  ASSERT(name == "Assembly_00000_00000");
+  ASSERT(ids.size() == 6);
+  ASSERT(ids[0] == 0);
+  ASSERT(ids[1] == 1);
+  ASSERT(ids[2] == 2);
+  ASSERT(ids[3] == 3);
+  ASSERT(ids[4] == 4);
+  ASSERT(ids[5] == 5);
+
+  soup.getElset(1, name, ids, data);
+  ASSERT(name == "Coarse_Cell_00000_00000");
+  ASSERT(ids.size() == 2);
+  ASSERT(ids[0] == 0);
+  ASSERT(ids[1] == 1);
+
+  soup.getElset(2, name, ids, data);
+  ASSERT(name == "Coarse_Cell_00001_00000");
+  ASSERT(ids.size() == 2);
+  ASSERT(ids[0] == 2);
+  ASSERT(ids[1] == 3);
+
+  soup.getElset(3, name, ids, data);
+  ASSERT(name == "Coarse_Cell_00002_00000");
+  ASSERT(ids.size() == 1);
+  ASSERT(ids[0] == 4);
+
+  soup.getElset(4, name, ids, data);
+  ASSERT(name == "Coarse_Cell_00002_00001");
+  ASSERT(ids.size() == 1);
+  ASSERT(ids[0] == 5);
+
+}
+
+TEST_CASE(io)
+{
+  // This is C5G7. We build the model, write it, read it, and check that the 
+  // read model is the same as the original model.
+  um2::mpact::Model model_out;
+
+  //===========================================================================
+  // Materials
+  //===========================================================================
+
+  um2::Material uo2;
+  uo2.setName("UO2");
+  uo2.setColor(um2::forestgreen);
+  uo2.xsec().t() = {2.12450e-01, 3.55470e-01, 4.85540e-01, 5.59400e-01,
+                    3.18030e-01, 4.01460e-01, 5.70610e-01};
+  uo2.xsec().isMacro() = true;
+
+  um2::Material mox43;
+  mox43.setName("MOX_4.3");
+  mox43.setColor(um2::yellow);
+  mox43.xsec().t() = {2.11920e-01, 3.55810e-01, 4.88900e-01, 5.71940e-01,
+    4.32390e-01, 6.84950e-01, 6.88910e-01};
+  mox43.xsec().isMacro() = true;
+
+  um2::Material mox70;
+  mox70.setName("MOX_7.0");
+  mox70.setColor(um2::orange);
+  mox70.xsec().t() = {2.14540e-01, 3.59350e-01, 4.98910e-01,
+                      5.96220e-01, 4.80350e-01, 8.39360e-01,
+                      8.59480e-01};
+  mox70.xsec().isMacro() = true;
+
+  um2::Material mox87;
+  mox87.setName("MOX_8.7");
+  mox87.setColor(um2::red);
+  mox87.xsec().t() = {2.16280e-01, 3.61700e-01, 5.05630e-01,
+ 6.11170e-01, 5.08900e-01, 9.26670e-01,
+ 9.60990e-01};
+  mox87.xsec().isMacro() = true;
+
+  um2::Material fiss_chamber;
+  fiss_chamber.setName("Fission_Chamber");
+  fiss_chamber.setColor(um2::black);
+  fiss_chamber.xsec().t() = {1.90730e-01, 4.56520e-01, 6.40700e-01,
+ 6.49840e-01, 6.70630e-01, 8.75060e-01,
+ 1.43450e+00};
+  fiss_chamber.xsec().isMacro() = true;
+
+  um2::Material guide_tube;
+  guide_tube.setName("Guide_Tube");
+  guide_tube.setColor(um2::darkgrey);
+  guide_tube.xsec().t() = {1.90730e-01, 4.56520e-01, 6.40670e-01,
+ 6.49670e-01, 6.70580e-01, 8.75050e-01,
+ 1.43450e+00};
+  guide_tube.xsec().isMacro() = true;
+
+  um2::Material moderator;
+  moderator.setName("Moderator");
+  moderator.setColor(um2::royalblue);
+  moderator.xsec().t() = {2.30070e-01, 7.76460e-01, 1.48420e+00,
+ 1.50520e+00, 1.55920e+00, 2.02540e+00,
+ 3.30570e+00};
+  moderator.xsec().isMacro() = true;
+
+  // Safety checks
+  uo2.validate();
+  mox43.validate();
+  mox70.validate();
+  mox87.validate();
+  fiss_chamber.validate();
+  guide_tube.validate();
+  moderator.validate();
+
+  model_out.addMaterial(uo2);
+  model_out.addMaterial(mox43);
+  model_out.addMaterial(mox70);
+  model_out.addMaterial(mox87);
+  model_out.addMaterial(fiss_chamber);
+  model_out.addMaterial(guide_tube);
+  model_out.addMaterial(moderator);
+
+  //===========================================================================
+  // Geometry
+  //===========================================================================
+  
+  // Pin meshes
+  //---------------------------------------------------------------------------
+  auto const radius = castIfNot<Float>(0.54);
+  auto const pin_pitch = castIfNot<Float>(1.26);
+
+  um2::Vec2F const xy_extents = {pin_pitch, pin_pitch};
+
+  // Use the same mesh for all pins except the reflector
+  um2::Vector<Float> const radii = {radius, castIfNot<Float>(0.62)};
+  um2::Vector<Int> const rings = {3, 2};
+
+  // 8 azimuthal divisions, order 2 mesh
+  // The first 8 * 3 = 24 faces are the inner material
+  // The next 8 * 2 + 8 = 24 faces are moderator
+  auto const cyl_pin_mesh_type = um2::MeshType::QuadraticQuad; 
+  auto const cyl_pin_id = model_out.addCylindricalPinMesh(pin_pitch, radii, rings, 8, 2);
+
+  // 5 by 5 mesh for the reflector
+  auto const rect_pin_mesh_type = um2::MeshType::Quad;
+  auto const rect_pin_id = model_out.addRectangularPinMesh(xy_extents, 5, 5);
+
+  // Coarse cells
+  //---------------------------------------------------------------------------
+  // Pin ID  |  Material
+  // --------+----------------
+  // 0       |  UO2
+  // 1       |  MOX 4.3%
+  // 2       |  MOX 7.0%
+  // 3       |  MOX 8.7%
+  // 4       |  Fission Chamber
+  // 5       |  Guide Tube
+  // 6       |  Moderator
+
+  // Add the 6 cylindrical pins
+  um2::Vector<MatID> mat_ids(48, 6);
+  for (MatID i = 0; i < 6; ++i) {
+    um2::fill(mat_ids.begin(), mat_ids.begin() + 24, i);
+    model_out.addCoarseCell(xy_extents, cyl_pin_mesh_type, cyl_pin_id, mat_ids);
+  }
+
+  // Add the 1 rectangular pin
+  mat_ids.resize(25);
+  um2::fill(mat_ids.begin(), mat_ids.end(), static_cast<MatID>(6)); 
+  model_out.addCoarseCell(xy_extents, rect_pin_mesh_type, rect_pin_id, mat_ids); 
+
+  // RTMs
+  //---------------------------------------------------------------------------
+  // Use pin-modular ray tracing
+
+  um2::Vector<um2::Vector<Int>> ids = {{0}};
+  for (Int i = 0; i < 7; ++i) {
+    ids[0][0] = i;
+    model_out.addRTM(ids);
+  }
+
+  // Lattices
+  //---------------------------------------------------------------------------
+
+  // UO2 lattice pins (pg. 7)
+  um2::Vector<um2::Vector<Int>> const uo2_lattice = um2::stringToLattice<Int>(R"(
+      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+      0 0 0 0 0 5 0 0 5 0 0 5 0 0 0 0 0
+      0 0 0 5 0 0 0 0 0 0 0 0 0 5 0 0 0
+      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+      0 0 5 0 0 5 0 0 5 0 0 5 0 0 5 0 0
+      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+      0 0 5 0 0 5 0 0 4 0 0 5 0 0 5 0 0
+      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+      0 0 5 0 0 5 0 0 5 0 0 5 0 0 5 0 0
+      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+      0 0 0 5 0 0 0 0 0 0 0 0 0 5 0 0 0
+      0 0 0 0 0 5 0 0 5 0 0 5 0 0 0 0 0
+      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    )");
+
+  // MOX lattice pins (pg. 7)
+  um2::Vector<um2::Vector<Int>> const mox_lattice = um2::stringToLattice<Int>(R"(
+      1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+      1 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 1
+      1 2 2 2 2 5 2 2 5 2 2 5 2 2 2 2 1
+      1 2 2 5 2 3 3 3 3 3 3 3 2 5 2 2 1
+      1 2 2 2 3 3 3 3 3 3 3 3 3 2 2 2 1
+      1 2 5 3 3 5 3 3 5 3 3 5 3 3 5 2 1
+      1 2 2 3 3 3 3 3 3 3 3 3 3 3 2 2 1
+      1 2 2 3 3 3 3 3 3 3 3 3 3 3 2 2 1
+      1 2 5 3 3 5 3 3 4 3 3 5 3 3 5 2 1
+      1 2 2 3 3 3 3 3 3 3 3 3 3 3 2 2 1
+      1 2 2 3 3 3 3 3 3 3 3 3 3 3 2 2 1
+      1 2 5 3 3 5 3 3 5 3 3 5 3 3 5 2 1
+      1 2 2 2 3 3 3 3 3 3 3 3 3 2 2 2 1
+      1 2 2 5 2 3 3 3 3 3 3 3 2 5 2 2 1
+      1 2 2 2 2 5 2 2 5 2 2 5 2 2 2 2 1
+      1 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 1
+      1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+    )");
+
+    // Moderator lattice
+  um2::Vector<um2::Vector<Int>> const h2o_lattice = um2::stringToLattice<Int>(R"( 
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+    )");
+
+  // Ensure the lattices are the correct size
+  ASSERT(uo2_lattice.size() == 17);
+  ASSERT(uo2_lattice[0].size() == 17);
+  ASSERT(mox_lattice.size() == 17);
+  ASSERT(mox_lattice[0].size() == 17);
+  ASSERT(h2o_lattice.size() == 17);
+  ASSERT(h2o_lattice[0].size() == 17);
+
+  model_out.addLattice(uo2_lattice);
+  model_out.addLattice(mox_lattice);
+  model_out.addLattice(h2o_lattice);
+
+  // Assemblies
+  //---------------------------------------------------------------------------
+  // Evenly divide into 10 slices
+  // The normal model is 60 slices, but use 10 for the test
+  // The model is 9 parts fuel, 1 part moderator
+  auto const model_height = castIfNot<Float>(214.2);
+  auto const num_slices = 10;
+  auto const num_fuel_slices = 9 * num_slices / 10;
+  um2::Vector<Int> lattice_ids(num_slices, 2); // Fill with H20
+  um2::Vector<Float> z_slices(num_slices + 1);
+  for (Int i = 0; i <= num_slices; ++i) {
+    z_slices[i] = i * model_height / num_slices;
+  }
+
+  // uo2 assembly
+  um2::fill(lattice_ids.begin(), lattice_ids.begin() + num_fuel_slices, 0);
+  model_out.addAssembly(lattice_ids, z_slices);
+
+  // mox assembly
+  um2::fill(lattice_ids.begin(), lattice_ids.begin() + num_fuel_slices, 1);
+  model_out.addAssembly(lattice_ids, z_slices);
+
+  // moderator assembly 
+  um2::fill(lattice_ids.begin(), lattice_ids.begin() + num_slices, 2);
+  model_out.addAssembly(lattice_ids, z_slices);
+
+  // Core
+  //---------------------------------------------------------------------------
+  ids = um2::stringToLattice<Int>(R"(
+      0 1 2
+      1 0 2
+      2 2 2
+  )");
+  ASSERT(ids.size() == 3);
+  ASSERT(ids[0].size() == 3);
+
+  model_out.addCore(ids);
+
+  model_out.write("c5g7.xdmf"); 
+
+}
+
 ////////////// template <typename T, typename I>
 ////////////// TEST_CASE(test_coarse_cell_face_areas)
 ////////////// um2::mpact::Model model;
@@ -642,6 +950,7 @@ TEST_CASE(importCoarseCellMeshes)
 
 TEST_SUITE(mpact_Model)
 {
+  TEST(ASCII);
   TEST(addCylindricalPinMesh);
   TEST(addRectangularPinMesh);
   TEST(addCoarseCell);
@@ -652,7 +961,8 @@ TEST_SUITE(mpact_Model)
   TEST(addCore);
   TEST(addCoarseGrid);
   TEST(importCoarseCellMeshes);
-//  //  TEST((toPolytopeSoup));
+  TEST(operator_PolytopeSoup);
+  TEST(io)
 //  //    TEST_CASE("coarse_cell_face_areas", (test_coarse_cell_face_areas));
 //  //    TEST_CASE("coarse_cell_find_face", (test_coarse_cell_find_face));
 //  //    TEST_CASE("coarse_cell_ray_intersect", (test_coarse_cell_ray_intersect<T,

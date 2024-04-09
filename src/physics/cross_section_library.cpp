@@ -16,7 +16,7 @@ isSpace(char c) -> bool
 }
 
 static void
-// NOLINTNEXTLINE
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 readMPACTLibrary(String const & filename, XSLibrary & lib)
 {
   LOG_INFO("Reading MPACT cross section library: ", filename);
@@ -394,30 +394,4 @@ XSLibrary::getNuclide(Int zaid) const noexcept -> Nuclide const &
   return _nuclides[0];
 }
 
-//PURE [[nodiscard]] auto
-//XSLibrary::getXS(Material const & material) const noexcept -> XSec
-//{
-//  material.validate();
-//  XSec xs;
-//  xs.isMacro() = true;
-//  Int const num_groups = numGroups();
-//  xs.t().resize(num_groups);
-//  // For each nuclide in the material:
-//  //  find the corresponding nuclide in the library
-//  //  interpolate the cross sections to the temperature of the material
-//  //  scale the cross sections by the atom density of the nuclide
-//  //  reduce
-//  Int const num_nuclides = material.numNuclides();
-//  for (Int inuc = 0; inuc < num_nuclides; ++inuc) {
-//    auto const zaid = material.zaid(inuc);
-//    auto const & lib_nuc = getNuclide(zaid);
-//    auto const xs_nuc = lib_nuc.interpXS(material.getTemperature());
-//    auto const atom_density = material.numDensity(inuc);
-//    for (Int ig = 0; ig < num_groups; ++ig) {
-//      xs.t(ig) += xs_nuc.t(ig) * atom_density;
-//    }
-//  }
-//  xs.validate();
-//  return xs;
-//}
 } // namespace um2

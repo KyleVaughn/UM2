@@ -137,7 +137,7 @@ public:
 }; // class Nuclide
 
 //======================================================================
-// Non-member functions
+// Free functions
 //======================================================================
 
 // Convert from a string, like "U-235", to a ZAID.

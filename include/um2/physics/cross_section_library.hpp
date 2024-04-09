@@ -1,7 +1,6 @@
 #pragma once
 
 #include <um2/physics/nuclide.hpp>
-#include <um2/physics/material.hpp>
 
 //======================================================================
 // CROSS SECTION LIBRARY

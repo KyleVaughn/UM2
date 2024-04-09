@@ -1176,23 +1176,15 @@ overlayCoarseGrid(mpact::Model const & model, Material const & fill_material)
    // Fill material is assigned to all slice rectangles
    std::string const fill_mat_full_name = "Material_" + fill_material_name;
    addToPhysicalGroup(model_dim, cc_tags, -1, fill_mat_full_name);
+
    // Add a physical group for each coarse cell
+   std::string coarse_cell_name("Coarse_Cell_00000");
    for (Int i = 0; i < num_cc; ++i) {
-     // Print the coarse cell number with leading zeros
-     int32_t constexpr buf_size = 5;
-     char buffer[buf_size];
-     for (char & c : buffer) {
-       c = '0';
-     }
-     int32_t const len = snprintf(nullptr, 0, "%d", i);
-     int32_t const ret = snprintf(buffer + (5 - len), 
-          static_cast<uint64_t>(len + 1), "%d", i);
-     ASSERT(ret == len);
-     std::string coarse_cell_name("Coarse_Cell_");
-     coarse_cell_name.append(buffer, 5);
      gmsh::model::addPhysicalGroup(model_dim, {cc_tags[static_cast<size_t>(i)]}, -1,
                                    coarse_cell_name); 
+     incrementASCIINumber(coarse_cell_name);
    }
+
    // Fragment
    gmsh::vectorpair grid_dimtags(cc_tags.size());
    for (size_t i = 0; i < cc_tags.size(); ++i) {
