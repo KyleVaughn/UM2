@@ -1917,7 +1917,7 @@ readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5file,
 // readXDMFUniformGrid
 //==============================================================================
 
-static void
+void
 readXDMFUniformGrid(pugi::xml_node const & xgrid, H5::H5File const & h5file,
                     String const & h5filename, PolytopeSoup & soup)
 {

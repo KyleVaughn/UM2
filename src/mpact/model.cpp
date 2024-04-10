@@ -1,12 +1,16 @@
 #include <um2/mpact/model.hpp>
 
 #include <um2/common/logger.hpp>
+#include <um2/common/strto.hpp>
 #include <um2/stdlib/algorithm/is_sorted.hpp>
 #include <um2/stdlib/algorithm/fill.hpp>
 #include <um2/stdlib/numeric/iota.hpp>
+#include <um2/stdlib/utility/pair.hpp>
 
 #include <algorithm> // std::any_of
 #include <numeric> // std::reduce
+
+#include <iostream>
 
 namespace um2::mpact
 {
@@ -68,9 +72,11 @@ Model::clear() noexcept
 //=============================================================================
 
 auto
-Model::addMaterial(Material const & material) -> Int
+Model::addMaterial(Material const & material, bool const validate) -> Int
 {
-  material.validate();
+  if (validate) {
+    material.validate();
+  }
   _materials.emplace_back(material);
   return _materials.size() - 1;
 }
@@ -642,6 +648,46 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
     }
   }
   mesh.validate();
+  return mesh_id;
+}
+
+//=============================================================================
+// addMesh
+//=============================================================================
+
+auto
+Model::addTriMesh(TriFVM const & mesh) -> Int
+{
+  Int const mesh_id = _tris.size();
+  logger::info("Adding triangular mesh ", mesh_id);
+  _tris.emplace_back(mesh);
+  return mesh_id;
+}
+
+auto
+Model::addQuadMesh(QuadFVM const & mesh) -> Int
+{
+  Int const mesh_id = _quads.size();
+  logger::info("Adding quadrilateral mesh ", mesh_id);
+  _quads.emplace_back(mesh);
+  return mesh_id;
+}
+
+auto
+Model::addTri6Mesh(Tri6FVM const & mesh) -> Int
+{
+  Int const mesh_id = _tri6s.size();
+  logger::info("Adding quadratic triangular mesh ", mesh_id);
+  _tri6s.emplace_back(mesh);
+  return mesh_id;
+}
+
+auto
+Model::addQuad8Mesh(Quad8FVM const & mesh) -> Int
+{
+  Int const mesh_id = _quad8s.size();
+  logger::info("Adding quadratic quadrilateral mesh ", mesh_id);
+  _quad8s.emplace_back(mesh);
   return mesh_id;
 }
 
@@ -1355,38 +1401,49 @@ Model::operator PolytopeSoup() const noexcept
 } // operator PolytopeSoup
 
 //==============================================================================
-// writeXDMF
+// writeXDMFFile
 //==============================================================================
 
-void
+static void
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
-Model::writeXDMFFile(String const & filepath) const
+writeXDMFFile(String const & filepath, Model const & model)
 {
   LOG_INFO("Writing MPACT model to XDMF file: ", filepath);
 
-  if (_core.children().empty()) {
+  auto const & core = model.core();
+  auto const & assemblies = model.assemblies();
+  auto const & lattices = model.lattices();
+  auto const & rtms = model.rtms();
+  auto const & coarse_cells = model.coarseCells();
+  auto const & materials = model.materials();
+  auto const & tris = model.triMeshes();
+  auto const & quads = model.quadMeshes();
+  auto const & tri6s = model.tri6Meshes();
+  auto const & quad8s = model.quad8Meshes();
+
+  if (core.children().empty()) {
     logger::error("Core has no children");
     return;
   }
 
   // Store the one-group cross sections for each material
-  Vector<Float> one_group_xs(_materials.size());
-  for (Int imat = 0; imat < _materials.size(); ++imat) {
-    ASSERT(_materials[imat].xsec().isMacro());
-    auto const xs = _materials[imat].xsec().collapse();
+  Vector<Float> one_group_xs(materials.size());
+  for (Int imat = 0; imat < materials.size(); ++imat) {
+    ASSERT(materials[imat].xsec().isMacro());
+    auto const xs = materials[imat].xsec().collapse();
     one_group_xs[imat] = xs.t(0);
   }
 
   // Store a PolytopeSoup for each CoarseCell
-  Vector<PolytopeSoup> coarse_cell_soups(_coarse_cells.size());
+  Vector<PolytopeSoup> coarse_cell_soups(coarse_cells.size());
   {
     Vector<Float> mcls;
     Vector<Int> cell_ids;
     Vector<Float> mat_ids;
     Vector<Float> xsecs;
-    for (Int icc = 0; icc < _coarse_cells.size(); ++icc) {
+    for (Int icc = 0; icc < coarse_cells.size(); ++icc) {
       auto & cell_soup = coarse_cell_soups[icc];
-      auto const & coarse_cell = _coarse_cells[icc];
+      auto const & coarse_cell = coarse_cells[icc];
 
       // Get the mesh type and id of the coarse cell.
       MeshType const mesh_type = coarse_cell.mesh_type;
@@ -1397,35 +1454,35 @@ Model::writeXDMFFile(String const & filepath) const
       switch (mesh_type) {
       case MeshType::Tri:
         LOG_DEBUG("Mesh type: Tri");
-        cell_soup = _tris[mesh_id];
+        cell_soup = tris[mesh_id];
         for (Int i = 0; i < mcls.size(); ++i) {
-          mcls[i] = _tris[mesh_id].getFace(i).meanChordLength();
+          mcls[i] = tris[mesh_id].getFace(i).meanChordLength();
         }
         break;
       case MeshType::Quad:
         LOG_DEBUG("Mesh type: Quad");
-        cell_soup = _quads[mesh_id];
+        cell_soup = quads[mesh_id];
         for (Int i = 0; i < mcls.size(); ++i) {
-          mcls[i] = _quads[mesh_id].getFace(i).meanChordLength();
+          mcls[i] = quads[mesh_id].getFace(i).meanChordLength();
         }
         break;
       case MeshType::QuadraticTri:
         LOG_DEBUG("Mesh type: QuadraticTri");
-        cell_soup = _tri6s[mesh_id];
+        cell_soup = tri6s[mesh_id];
         for (Int i = 0; i < mcls.size(); ++i) {
-          mcls[i] = _tri6s[mesh_id].getFace(i).meanChordLength();
+          mcls[i] = tri6s[mesh_id].getFace(i).meanChordLength();
         }
         break;
       case MeshType::QuadraticQuad:
         LOG_DEBUG("Mesh type: QuadraticQuad");
-        cell_soup = _quad8s[mesh_id];
+        cell_soup = quad8s[mesh_id];
         for (Int i = 0; i < mcls.size(); ++i) {
-          mcls[i] = _quad8s[mesh_id].getFace(i).meanChordLength();
+          mcls[i] = quad8s[mesh_id].getFace(i).meanChordLength();
         }
         break;
       default:
         logger::error("Unsupported mesh type");
-        return; 
+        return;
       } // switch (mesh_type)
 
       cell_ids.resize(cell_soup.numElements());
@@ -1492,7 +1549,7 @@ Model::writeXDMFFile(String const & filepath) const
 
   // Write the material names as backup information
   Vector<String> material_names;
-  for (auto const & material : _materials) {
+  for (auto const & material : materials) {
     material_names.push_back(material.getName());
   }
   pugi::xml_node xinfo = xdomain.append_child("Information");
@@ -1515,18 +1572,18 @@ Model::writeXDMFFile(String const & filepath) const
   String const h5core_grouppath = "/" + name;
 
   // Allocate counters for each assembly, lattice, etc.
-  Vector<Int> asy_found(_assemblies.size(), -1);
-  Vector<Int> lat_found(_lattices.size(), -1);
-  Vector<Int> rtm_found(_rtms.size(), -1);
-  Vector<Int> cc_found(_coarse_cells.size(), -1);
+  Vector<Int> asy_found(assemblies.size(), -1);
+  Vector<Int> lat_found(lattices.size(), -1);
+  Vector<Int> rtm_found(rtms.size(), -1);
+  Vector<Int> cc_found(coarse_cells.size(), -1);
 
-  Int const nyasy = _core.grid().numCells(1);
-  Int const nxasy = _core.grid().numCells(0);
+  Int const nyasy = core.grid().numCells(1);
+  Int const nxasy = core.grid().numCells(0);
 
   // Core NX_by_NY
   pugi::xml_node xcore_info = xcore_grid.append_child("Information");
   xcore_info.append_attribute("Name") = "NX_by_NY";
-  String const core_nx_by_ny = String(nxasy) + " x " + String(nyasy); 
+  String const core_nx_by_ny = String(nxasy) + " x " + String(nyasy);
   xcore_info.append_child(pugi::node_pcdata).set_value(core_nx_by_ny.data());
 
   // For each assembly
@@ -1534,9 +1591,9 @@ Model::writeXDMFFile(String const & filepath) const
     for (Int ixasy = 0; ixasy < nxasy; ++ixasy) {
 
       // Get the assembly ID
-      auto const asy_id = _core.getChild(ixasy, iyasy);
+      auto const asy_id = core.getChild(ixasy, iyasy);
       ASSERT(asy_id >= 0);
-      ASSERT(asy_id < _assemblies.size());
+      ASSERT(asy_id < assemblies.size());
 
       // Increment the number of times we have seen this assembly
       Int const asy_id_ctr = ++asy_found[asy_id];
@@ -1553,13 +1610,13 @@ Model::writeXDMFFile(String const & filepath) const
       H5::Group const h5asy_group = h5file.createGroup(h5asy_grouppath.data());
 
       // Get the assembly offset (lower left corner)
-      Point2 const asy_ll = _core.grid().getBox(ixasy, iyasy).minima();
+      Point2 const asy_ll = core.grid().getBox(ixasy, iyasy).minima();
 
       // Get the assembly
-      auto const & assembly = _assemblies[asy_id];
+      auto const & assembly = assemblies[asy_id];
       if (assembly.children().empty()) {
         logger::error("Assembly has no children");
-        return; 
+        return;
       }
 
       Int const nzlat = assembly.grid().numCells(0);
@@ -1567,7 +1624,7 @@ Model::writeXDMFFile(String const & filepath) const
       // Assembly NX_by_NY
       pugi::xml_node xasy_info = xasy_grid.append_child("Information");
       xasy_info.append_attribute("Name") = "NX_by_NY";
-      String const asy_nx_by_ny = String(nzlat) + " x 1"; 
+      String const asy_nx_by_ny = String(nzlat) + " x 1";
       xasy_info.append_child(pugi::node_pcdata).set_value(asy_nx_by_ny.data());
 
       // For each lattice
@@ -1576,7 +1633,7 @@ Model::writeXDMFFile(String const & filepath) const
         // Get the lattice ID
         auto const lat_id = assembly.getChild(izlat);
         ASSERT(lat_id >= 0);
-        ASSERT(lat_id < _lattices.size());
+        ASSERT(lat_id < lattices.size());
 
         // Increment the number of times we have seen this lattice
         Int const lat_id_ctr = ++lat_found[lat_id];
@@ -1606,10 +1663,10 @@ Model::writeXDMFFile(String const & filepath) const
         xlat_info.append_child(pugi::node_pcdata).set_value(lat_z_str.data());
 
         // Get the lattice
-        auto const & lattice = _lattices[lat_id];
+        auto const & lattice = lattices[lat_id];
         if (lattice.children().empty()) {
           logger::error("Lattice has no children");
-          return; 
+          return;
         }
 
         Int const nyrtm = lattice.grid().numCells(1);
@@ -1619,6 +1676,7 @@ Model::writeXDMFFile(String const & filepath) const
         pugi::xml_node xlat_info2 = xlat_grid.append_child("Information");
         xlat_info2.append_attribute("Name") = "NX_by_NY";
         String const lat_nx_by_ny = String(nxrtm) + " x " + String(nyrtm);
+        xlat_info2.append_child(pugi::node_pcdata).set_value(lat_nx_by_ny.data());
 
         // For each RTM
         for (Int iyrtm = 0; iyrtm < nyrtm; ++iyrtm) {
@@ -1627,7 +1685,7 @@ Model::writeXDMFFile(String const & filepath) const
             // Get the RTM ID
             auto const rtm_id = lattice.getChild(ixrtm, iyrtm);
             ASSERT(rtm_id >= 0);
-            ASSERT(rtm_id < _rtms.size());
+            ASSERT(rtm_id < rtms.size());
 
             // Increment the number of times we have seen this RTM
             Int const rtm_id_ctr = ++rtm_found[rtm_id];
@@ -1647,10 +1705,10 @@ Model::writeXDMFFile(String const & filepath) const
             Point2 const rtm_ll = lattice.grid().getBox(ixrtm, iyrtm).minima();
 
             // Get the rtm
-            auto const & rtm = _rtms[rtm_id];
+            auto const & rtm = rtms[rtm_id];
             if (rtm.children().empty()) {
               logger::error("RTM has no children");
-              return; 
+              return;
             }
 
             Int const nycells = rtm.grid().numCells(1);
@@ -1660,6 +1718,7 @@ Model::writeXDMFFile(String const & filepath) const
             pugi::xml_node xrtm_info = xrtm_grid.append_child("Information");
             xrtm_info.append_attribute("Name") = "NX_by_NY";
             String const rtm_nx_by_ny = String(nxcells) + " x " + String(nycells);
+            xrtm_info.append_child(pugi::node_pcdata).set_value(rtm_nx_by_ny.data());
 
             // For each coarse cell
             for (Int iycell = 0; iycell < nycells; ++iycell) {
@@ -1668,7 +1727,7 @@ Model::writeXDMFFile(String const & filepath) const
                 // Get the coarse cell ID
                 auto const & cell_id = rtm.getChild(ixcell, iycell);
                 ASSERT(cell_id >= 0);
-                ASSERT(cell_id < _coarse_cells.size());
+                ASSERT(cell_id < coarse_cells.size());
 
                 // Increment the number of times we have seen this coarse cell
                 Int const cell_id_ctr = ++cc_found[cell_id];
@@ -1715,7 +1774,632 @@ void
 Model::write(String const & filename) const
 {
   if (filename.ends_with(".xdmf")) {
-    writeXDMFFile(filename);
+    writeXDMFFile(filename, *this);
+  } else {
+    logger::error("Unsupported file format.");
+  }
+}
+
+//==============================================================================
+// readXDMFFile
+//==============================================================================
+
+static void
+getNXbyNY(pugi::xml_node const & xgrid, Int & nx, Int & ny)
+{
+  pugi::xml_node const xinfo = xgrid.child("Information");
+  pugi::xml_attribute const xname = xinfo.attribute("Name");
+  if (strcmp("NX_by_NY", xname.value()) != 0) {
+    logger::error("XDMF XML information name is not NX_by_NY");
+    return;
+  }
+  // String of the form "nx x ny"
+  String const nx_by_ny = xinfo.child_value();
+  StringView sv(nx_by_ny);
+  StringView const nx_token = sv.getTokenAndShrink();
+  sv.remove_prefix(2);
+  char * end = nullptr;
+  nx = strto<Int>(nx_token.data(), &end);
+  ASSERT(end != nullptr);
+  end = nullptr;
+  ny = strto<Int>(sv.data(), &end);
+  ASSERT(end != nullptr);
+}
+
+// y
+// ^
+// | { { 7, 8, 9},
+// |   { 4, 5, 6}
+// |   { 1, 2, 3} }
+// |
+// +---------> x
+// flat | value | (i, j)
+// -----+-------+-------
+// 0    | 1     | (0, 2)
+// 1    | 2     | (1, 2)
+// 2    | 3     | (2, 2)
+// 3    | 4     | (0, 1)
+// 4    | 5     | (1, 1)
+// 5    | 6     | (2, 1)
+// 6    | 7     | (0, 0)
+// 7    | 8     | (1, 0)
+// 8    | 9     | (2, 0)
+// Map a flat lattice: flat_idx to 2D lattice: (i, j)
+static auto
+mapFlatIndexToLattice2D(Int const flat_idx, Int const nx, Int const ny) -> Vec2I
+{
+  ASSERT(nx > 0);
+  ASSERT(ny > 0);
+  Int const i = flat_idx % nx;
+  Int const j = ny - (flat_idx / nx) - 1;
+  ASSERT(0 <= i);
+  ASSERT(i < nx);
+  ASSERT(0 <= j);
+  ASSERT(j < ny);
+  return {i, j};
+}
+
+static void
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+readXDMFFile(String const & filename, Model & model)
+{
+  LOG_INFO("Reading MPACT model from XDMF file: ", filename);
+
+    // Open HDF5 file
+  Int last_slash = filename.find_last_of('/');
+  if (last_slash == String::npos) {
+    last_slash = 0;
+  }
+  Int const h5filepath_end = last_slash == 0 ? 0 : last_slash + 1;
+  ASSERT(h5filepath_end < filename.size());
+  String const h5filename =
+      filename.substr(h5filepath_end, filename.size() - 5 - h5filepath_end) + ".h5";
+  String const h5filepath = filename.substr(0, h5filepath_end);
+  String const h5fullpath = h5filepath + h5filename;
+  H5::H5File const h5file(h5fullpath.data(), H5F_ACC_RDONLY);
+
+  // Setup XML file
+  pugi::xml_document xdoc;
+  pugi::xml_parse_result const result = xdoc.load_file(filename.data());
+  if (!result) {
+    logger::error("XDMF XML parse error: ", result.description(),
+               ", character pos= ", result.offset);
+    return;
+  }
+  pugi::xml_node const xroot = xdoc.child("Xdmf");
+  if (strcmp("Xdmf", xroot.name()) != 0) {
+    logger::error("XDMF XML root node is not Xdmf");
+    return;
+  }
+  pugi::xml_node const xdomain = xroot.child("Domain");
+  if (strcmp("Domain", xdomain.name()) != 0) {
+    logger::error("XDMF XML domain node is not Domain");
+    return;
+  }
+
+  // Get the material names
+  pugi::xml_node const xinfo = xdomain.child("Information");
+  if (strcmp("Information", xinfo.name()) != 0) {
+    logger::error("XDMF XML information node is not Information");
+    return;
+  }
+  // Get the "Name" attribute
+  pugi::xml_attribute const xname = xinfo.attribute("Name");
+  if (strcmp("Materials", xname.value()) != 0) {
+    logger::error("XDMF XML information name is not Materials");
+    return;
+  }
+
+  // Add the materials
+  //---------------------------------------------------------------------------
+  {
+    // Get the material names
+    String const mats = xinfo.child_value();
+    StringView mats_view(mats);
+    while (mats_view.find_first_of(',') != StringView::npos) {
+      StringView token = mats_view.getTokenAndShrink(',');
+      token.removeLeadingSpaces();
+      Material mat;
+      mat.setName(String(token));
+      model.addMaterial(mat, /*validate=*/false);
+    }
+    // Add the final material
+    mats_view.removeLeadingSpaces();
+    Material mat;
+    mat.setName(String(mats_view));
+    model.addMaterial(mat, /*validate=*/false);
+  }
+
+  //============================================================================
+  // Algorithm for populating the model
+  //============================================================================
+  //
+  // Constraints:
+  // - We want to use the makeCore, makeAssembly, makeLattice,
+  // makeRTM, and makeCoarseCell methods to create the model. These functions take
+  // children IDs as arguments.
+  // - We have to create ID 1 before ID 2, ID 2 before ID 3, etc.
+  // We have to construct the model in a bottom-up fashion, i.e. we have to create
+  // the coarse cells before we can create the RTMs, etc.
+  // - We want to avoid making multiple passes over the XDMF file.
+  //
+  // Algorithm:
+  // ========================================================================
+  // Get the core node
+  // Get the NX by NY size of the core
+  // Allocate core_assembly_ids to be NX by NY
+  // Loop over all assemblies
+  //   Get the assembly node
+  //   Extract the assembly ID from the name
+  //   Write the assembly ID to core_assembly_ids
+  //   If the assembly ID is not in assembly_ids
+  //     Insert the ID to assembly_ids
+  //     Get NX by NY size of the assembly (N = 1 always)
+  //     Allocate assembly_lattice_ids to M
+  //     Allocate assembly_lattice_zs to M + 1
+  //     Loop over all lattices
+  //       Get the lattice node
+  //       Extract the lattice ID from the name
+  //       Write the lattice ID to assembly_lattice_ids
+  //       Get the Z positions of the lattice
+  //       If this is the first lattice write the top and bottom Z positions to
+  //       assembly_lattice_zs Else write the top Z position to assembly_lattice_zs
+  //       If the lattice ID is not in lattice_ids
+  //         Insert the ID to lattice_ids
+  //         Get the NX by NY size of the lattice
+  //         Allocate lattice_rtm_ids to NX by NY
+  //         Loop over all RTMs
+  //           Get the RTM node
+  //           Extract the RTM ID from the name
+  //           Write the RTM ID to lattice_rtm_ids
+  //           If the RTM ID is not in rtm_ids
+  //             Insert the ID to rtm_ids
+  //             Get the NX by NY size of the RTM
+  //             Allocate rtm_coarse_cell_ids to NX by NY
+  //             Loop over all coarse cells
+  //               Get the coarse cell node
+  //               Extract the coarse cell ID from the name
+  //               Write the coarse cell ID to rtm_coarse_cell_ids
+  //               If the coarse cell ID is not in coarse_cell_ids
+  //                 Insert the ID to coarse_cell_ids
+  //                 Read the mesh into a PolytopeSoup object using readXDMFUniformGrid
+  //                 Set the coarse cell mesh type, mesh id, and material IDs
+  //                 Create the mesh
+  //                 Use the bounding box of the mesh to set the coarse cell xy_extent
+  //
+  // Now that we have all the IDs we can create the model
+  // For each coarse cell,
+  //   Use makeCoarseCell to create the coarse cell
+  //   Add the mesh to the model
+  //   Adjust the mesh id of the coarse cell to be the index of the mesh in the model
+  // For each RTM,
+  //   Use makeRTM to create the RTM
+  // For each lattice,
+  //   Use makeLattice to create the lattice
+  // For each assembly,
+  //   Use makeAssembly to create the assembly
+  // Use makeCore to create the core
+
+  // 2D map of assembly IDs in the core
+  Vector<Vector<Int>> core_assembly_ids;
+  // 1D map of lattice IDs in each assembly
+  Vector<Vector<Int>> assembly_lattice_ids;
+  // 1D map of Z positions of each lattice in each assembly
+  Vector<Vector<Float>> assembly_lattice_zs;
+  // 2D map of RTM IDs in each lattice
+  Vector<Vector<Vector<Int>>> lattice_rtm_ids;
+  // 2D map of coarse cell IDs in each RTM
+  Vector<Vector<Vector<Int>>> rtm_coarse_cell_ids;
+
+  Vector<Int> assembly_ids; // IDs of all unique assemblies
+  Vector<Int> lattice_ids; // IDs of all unique lattices
+  Vector<Int> rtm_ids; // IDs of all unique RTMs
+  Vector<Int> coarse_cell_ids; // IDs of all unique coarse cells
+
+  Vector<Pair<MeshType, Int>> mesh_types_ids;
+  Int tris_count = 0;
+  Int quads_count = 0;
+  Int tri6s_count = 0;
+  Int quad8s_count = 0;
+  Vector<Vec2F> xy_extents;
+  Vector<Vector<MatID>> coarse_cell_material_ids;
+
+  // Get the core node
+  pugi::xml_node const xcore = xdomain.child("Grid");
+  if (strcmp("Grid", xcore.name()) != 0) {
+    logger::error("XDMF XML core node is not Grid");
+    return;
+  }
+  if (strcmp("Tree", xcore.attribute("GridType").value()) != 0) {
+    logger::error("Expected core GridType=Tree");
+    return;
+  }
+  // Get the nx by ny size of the core
+  Int core_nx = 0;
+  Int core_ny = 0;
+  getNXbyNY(xcore, core_nx, core_ny);
+  ASSERT(core_nx > 0);
+  ASSERT(core_ny > 0);
+  LOG_DEBUG("Core NX_by_NY: ", core_nx, " x ", core_ny);
+
+  // Allocate core_assembly_ids
+  core_assembly_ids.resize(core_ny);
+  for (Int iy = 0; iy < core_ny; ++iy) {
+    core_assembly_ids[iy].resize(core_nx);
+    um2::fill(core_assembly_ids[iy].begin(), core_assembly_ids[iy].end(), -1);
+  }
+
+  char * end = nullptr;
+
+  Int assembly_count = 0;
+  // Loop over all assemblies
+  for (auto const & assembly_node : xcore.children("Grid")) {
+    // Extract the assembly ID from the name
+    // Of the form Assembly_XXXXX_YYYYY, where XXXXX is the assembly ID
+    String const assembly_name = assembly_node.attribute("Name").value();
+    String const assembly_id_str = assembly_name.substr(9, 5);
+    Int const assembly_id = strto<Int>(assembly_id_str.data(), &end);
+    ASSERT(end != nullptr);
+    end = nullptr;
+
+    // Write the assembly ID to core_assembly_ids
+    auto const core_ij = mapFlatIndexToLattice2D(assembly_count, core_nx, core_ny);
+    core_assembly_ids[core_ij[1]][core_ij[0]] = assembly_id;
+    ++assembly_count;
+
+    // If the assembly ID is not in assembly_ids, we need to find the ids of the
+    // lattices, RTMs, and coarse cells in the assembly
+    bool asy_id_found = false;
+    for (auto const & asy_id : assembly_ids) {
+      if (asy_id == assembly_id) {
+        asy_id_found = true;
+        break;
+      }
+    }
+    if (asy_id_found) {
+      continue;
+    }
+
+    LOG_DEBUG("New assembly ID: ", assembly_id);
+    assembly_ids.emplace_back(assembly_id);
+
+    // Get NX by NY size of the assembly (NY = 1 always)
+    Int assembly_nx = 0;
+    Int assembly_ny = 0;
+    getNXbyNY(assembly_node, assembly_nx, assembly_ny);
+    ASSERT(assembly_nx > 0);
+    if (assembly_ny != 1) {
+      logger::error("Assembly NX_by_NY is not NX x 1");
+      return;
+    }
+    LOG_DEBUG("Assembly NX_by_NY: ", assembly_nx, " x ", assembly_ny);
+
+    // Allocate assembly_lattice_ids to NX
+    assembly_lattice_ids.emplace_back(assembly_nx);
+
+    // Allocate assembly_lattice_zs to NX + 1
+    assembly_lattice_zs.emplace_back(assembly_nx + 1);
+
+    // Loop over all lattices
+    Int lattice_count = 0;
+    for (auto const & lattice_node : assembly_node.children("Grid")) {
+      // Extract the lattice ID from the name
+      // Of the form Lattice_XXXXX_YYYYY, where XXXXX is the lattice ID
+      String const lattice_name = lattice_node.attribute("Name").value();
+      String const lattice_id_str = lattice_name.substr(8, 5);
+      Int const lattice_id = strto<Int>(lattice_id_str.data(), &end);
+      ASSERT(end != nullptr);
+      end = nullptr;
+
+      // Write the lattice ID to assembly_lattice_ids
+      assembly_lattice_ids.back()[lattice_count] = lattice_id;
+
+      // Get the Z positions of the lattice
+      Float low_z = inf_distance;
+      Float high_z = -inf_distance;
+      pugi::xml_node const lattice_info = lattice_node.child("Information");
+      if (strcmp("Information", lattice_info.name()) != 0) {
+        logger::error("XDMF XML lattice information node is not Information");
+        return;
+      }
+      if (strcmp("Z", lattice_info.attribute("Name").value()) != 0) {
+        logger::error("XDMF XML lattice information name is not Z");
+        return;
+      }
+      String const z_str = lattice_info.child_value();
+      StringView z_view(z_str);
+      StringView const token = z_view.getTokenAndShrink(',');
+      low_z = strto<Float>(token.data(), &end);
+      ASSERT(end != nullptr);
+      end = nullptr;
+      z_view.getTokenAndShrink(',');
+      high_z = strto<Float>(z_view.data(), &end);
+      ASSERT(end != nullptr);
+      end = nullptr;
+      ASSERT(low_z < high_z);
+      LOG_DEBUG("Lattice Z: ", low_z, ", ", high_z);
+
+      // If this is the first lattice, write the top and bottom Z positions to
+      // assembly_lattice_zs else write the top Z position to assembly_lattice_zs
+      if (lattice_count == 0) {
+        assembly_lattice_zs.back()[lattice_count] = low_z;
+      }
+      assembly_lattice_zs.back()[lattice_count + 1] = high_z;
+      ++lattice_count;
+
+      // If the lattice ID is not in lattice_ids, we need to find the ids of the
+      // RTMs and coarse cells in the lattice
+      bool lat_id_found = false;
+      for (auto const & lat_id : lattice_ids) {
+        if (lat_id == lattice_id) {
+          lat_id_found = true;
+          break;
+        }
+      }
+      if (lat_id_found) {
+        continue;
+      }
+
+      LOG_DEBUG("New lattice ID: ", lattice_id);
+      lattice_ids.emplace_back(assembly_id);
+
+      // Get NX by NY size of the lattice
+      Int lattice_nx = 0;
+      Int lattice_ny = 0;
+      // Do this one manually
+      {
+        pugi::xml_node const xlat_nxny = lattice_node.child("Information").next_sibling("Information");
+        pugi::xml_attribute const xlatname = xlat_nxny.attribute("Name");
+        if (strcmp("NX_by_NY", xlatname.value()) != 0) {
+          logger::error("XDMF XML information name is not NX_by_NY");
+          return;
+        }
+        // String of the form "nx x ny"
+        String const nx_by_ny = xlat_nxny.child_value();
+        StringView sv(nx_by_ny);
+        StringView const nx_token = sv.getTokenAndShrink();
+        sv.remove_prefix(2);      
+        lattice_nx = strto<Int>(nx_token.data(), &end);
+        ASSERT(end != nullptr);
+        end = nullptr;
+        lattice_ny = strto<Int>(sv.data(), &end);
+        ASSERT(end != nullptr);
+        end = nullptr;
+      }
+      ASSERT(lattice_nx > 0);
+      ASSERT(lattice_ny > 0);
+      LOG_DEBUG("Lattice NX_by_NY: ", lattice_nx, " x ", lattice_ny);
+
+      // Allocate lattice_rtm_ids to NX by NY
+      lattice_rtm_ids.emplace_back(lattice_ny);
+      for (Int iy = 0; iy < lattice_ny; ++iy) {
+        auto & row = lattice_rtm_ids.back()[iy];
+        row.resize(lattice_nx);
+        um2::fill(row.begin(), row.end(), -1);
+      }
+
+      // Loop over all RTMs
+      Int rtm_count = 0;
+      for (auto const & rtm_node : lattice_node.children("Grid")) {
+        // Extract the RTM ID from the name
+        // Of the form RTM_XXXXX_YYYYY, where XXXXX is the RTM ID
+        String const rtm_name = rtm_node.attribute("Name").value();
+        String const rtm_id_str = rtm_name.substr(4, 5);
+        Int const rtm_id = strto<Int>(rtm_id_str.data(), &end);
+        ASSERT(end != nullptr);
+        end = nullptr;
+
+        // Write the RTM ID to lattice_rtm_ids
+        auto const lattice_ij = mapFlatIndexToLattice2D(rtm_count, lattice_nx, lattice_ny);
+        lattice_rtm_ids.back()[lattice_ij[1]][lattice_ij[0]] = rtm_id;
+        ++rtm_count;
+
+        // If the RTM ID is not in rtm_ids, we need to find the ids of the
+        // coarse cells in the RTM
+        bool rtm_id_found = false;
+        for (auto const & rtm_idv : rtm_ids) {
+          if (rtm_id == rtm_idv) {
+            rtm_id_found = true;
+            break;
+          }
+        }
+        if (rtm_id_found) {
+          continue;
+        }
+
+        LOG_DEBUG("New RTM ID: ", rtm_id);
+        rtm_ids.emplace_back(rtm_id);
+
+        // Get NX by NY size of the RTM
+        Int rtm_nx = 0;
+        Int rtm_ny = 0;
+        getNXbyNY(rtm_node, rtm_nx, rtm_ny);
+        ASSERT(rtm_nx > 0);
+        ASSERT(rtm_ny > 0);
+        LOG_DEBUG("RTM NX_by_NY: ", rtm_nx, " x ", rtm_ny);
+
+        // Allocate rtm_coarse_cell_ids to NX by NY
+        rtm_coarse_cell_ids.emplace_back(rtm_ny);
+        for (Int iy = 0; iy < rtm_ny; ++iy) {
+          auto & row = rtm_coarse_cell_ids.back()[iy];
+          row.resize(rtm_nx);
+          um2::fill(row.begin(), row.end(), -1);
+        }
+
+        // Loop over all coarse cells
+        Int coarse_cell_count = 0;
+        for (auto const & coarse_cell_node : rtm_node.children("Grid")) {
+          // Extract the coarse cell ID from the name
+          // Of the form Coarse_Cell_XXXXX_YYYYY, where XXXXX is the coarse cell ID
+          String const coarse_cell_name = coarse_cell_node.attribute("Name").value();
+          String const coarse_cell_id_str = coarse_cell_name.substr(12, 5);
+          Int const coarse_cell_id = strto<Int>(coarse_cell_id_str.data(), &end);
+          ASSERT(end != nullptr);
+          end = nullptr;
+
+          // Write the coarse cell ID to rtm_coarse_cell_ids
+          auto const rtm_ij = mapFlatIndexToLattice2D(coarse_cell_count, rtm_nx, rtm_ny);
+          rtm_coarse_cell_ids.back()[rtm_ij[1]][rtm_ij[0]] = coarse_cell_id;
+          ++coarse_cell_count;
+
+          // If the coarse cell ID is not in coarse_cell_ids, we need to read the mesh
+          // and create the coarse cell
+          bool coarse_cell_id_found = false;
+          for (auto const & cc_id : coarse_cell_ids) {
+            if (cc_id == coarse_cell_id) {
+              coarse_cell_id_found = true;
+              break;
+            }
+          }
+          if (coarse_cell_id_found) {
+            continue;
+          }
+          LOG_DEBUG("New coarse cell ID: ", coarse_cell_id);
+          coarse_cell_ids.emplace_back(coarse_cell_id);
+
+          // Read the mesh into a PolytopeSoup using readXDMFUniformGrid
+          PolytopeSoup soup;
+          readXDMFUniformGrid(coarse_cell_node, h5file, h5filename, soup);
+
+          // Determine the mesh type
+          MeshType const mesh_type = getMeshType(soup.getElemTypes());
+          ASSERT(mesh_type != MeshType::Invalid);
+          ASSERT(mesh_type != MeshType::TriQuad);
+          ASSERT(mesh_type != MeshType::QuadraticTriQuad);
+
+          // Create the FVM and get the ID
+          switch(mesh_type) {
+            case MeshType::Tri: 
+              {
+              TriFVM const mesh(soup);
+              xy_extents.emplace_back(mesh.boundingBox().extents());
+              model.addTriMesh(mesh);
+              mesh_types_ids.emplace_back(mesh_type, tris_count); 
+              ++tris_count;
+              }
+              break;
+            case MeshType::Quad: 
+              {
+              QuadFVM const mesh(soup);
+              xy_extents.emplace_back(mesh.boundingBox().extents());
+              model.addQuadMesh(mesh);
+              mesh_types_ids.emplace_back(mesh_type, quads_count); 
+              ++quads_count;
+              }
+              break;
+            case MeshType::QuadraticTri:
+              { 
+              Tri6FVM const mesh(soup);
+              xy_extents.emplace_back(mesh.boundingBox().extents());
+              model.addTri6Mesh(mesh);
+              mesh_types_ids.emplace_back(mesh_type, tri6s_count);
+              ++tri6s_count;
+              }
+              break;
+            case MeshType::QuadraticQuad:
+              {
+              Quad8FVM const mesh(soup);
+              xy_extents.emplace_back(mesh.boundingBox().extents());
+              model.addQuad8Mesh(mesh);
+              mesh_types_ids.emplace_back(mesh_type, quad8s_count);
+              ++quad8s_count;
+              }
+              break;
+            default:
+              logger::error("Unsupported mesh type");
+              return;
+          }
+
+          // Get the material IDs (an elset as Floats)
+          Vector<Int> ids;
+          Vector<Float> data;
+          soup.getElset("Material_ID", ids, data);
+          ASSERT(ids.size() == soup.numElements());
+          ASSERT(data.size() == soup.numElements());
+          for (Int i = 0; i < ids.size(); ++i) {
+            ASSERT(ids[i] == i);
+          }
+          coarse_cell_material_ids.emplace_back(data.size());
+          for (Int i = 0; i < data.size(); ++i) {
+            coarse_cell_material_ids.back()[i] = static_cast<MatID>(data[i]);
+          }
+        } // Coarse cell loop
+      } // RTM loop
+    } // Lattice loop
+  } // Assembly loop
+
+  // Create the pin meshes and coarse cells
+  for (Int i = 0; i < mesh_types_ids.size(); ++i) {
+    // Get the index of the i-th mesh
+    Int idx = 0;
+    for (auto const & cc_id : coarse_cell_ids) {
+      if (cc_id == i) {
+        break;
+      }
+      ++idx;
+    }
+    ASSERT(idx < coarse_cell_ids.size());
+    auto const mesh_type = mesh_types_ids[idx].first;
+    auto const mesh_id = mesh_types_ids[idx].second;
+    Vec2F const & xy_extent = xy_extents[idx];
+    model.addCoarseCell(xy_extent, mesh_type, mesh_id, coarse_cell_material_ids[idx]); 
+  }
+
+  // Create the RTMs
+  for (Int i = 0; i < rtm_ids.size(); ++i) {
+    // Get the index of the i-th RTM
+    Int idx = 0;
+    for (auto const & rtm_id : rtm_ids) {
+      if (rtm_id == i) {
+        break;
+      }
+      ++idx;
+    }
+    ASSERT(idx < rtm_ids.size());
+    model.addRTM(rtm_coarse_cell_ids[idx]);
+  }
+
+  // Create the lattices
+  for (Int i = 0; i < lattice_ids.size(); ++i) {
+    // Get the index of the i-th lattice
+    Int idx = 0;
+    for (auto const & lat_id : lattice_ids) {
+      if (lat_id == i) {
+        break;
+      }
+      ++idx;
+    }
+    ASSERT(idx < lattice_ids.size());
+    model.addLattice(lattice_rtm_ids[idx]);
+  }
+
+  // Create the assemblies
+  for (Int i = 0; i < assembly_ids.size(); ++i) {
+    // Get the index of the i-th assembly
+    Int idx = 0;
+    for (auto const & asy_id : assembly_ids) {
+      if (asy_id == i) {
+        break;
+      }
+      ++idx;
+    }
+    ASSERT(idx < assembly_ids.size());
+    model.addAssembly(assembly_lattice_ids[idx], assembly_lattice_zs[idx]);
+  }
+
+  // Create the core
+  model.addCore(core_assembly_ids);
+}
+
+//==============================================================================
+// read
+//==============================================================================
+
+void
+Model::read(String const & filename)
+{
+  if (filename.ends_with(".xdmf")) {
+    readXDMFFile(filename, *this);
   } else {
     logger::error("Unsupported file format.");
   }

@@ -170,6 +170,10 @@ writeXDMFUniformGrid(String const & name,
                      Point3 const & origin = {0, 0, 0}
                      );
 
+void
+readXDMFUniformGrid(pugi::xml_node const & xgrid, H5::H5File const & h5file,
+                    String const & h5filename, PolytopeSoup & soup);
+
 //==============================================================================
 // Member access
 //==============================================================================

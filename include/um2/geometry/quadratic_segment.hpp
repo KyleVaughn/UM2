@@ -254,8 +254,6 @@ template <Int D>
 PURE HOSTDEV constexpr auto
 isStraight(QuadraticSegment<D> const & q) noexcept -> bool
 {
-  // Assume ‖p2 - p0‖ < ‖p1 - p0‖
-  ASSERT(q[0].squaredDistanceTo(q[1]) > q[0].squaredDistanceTo(q[2]));
   // Area of triangle = 1/2 base * height. 
   // base = ‖p1 - p0‖
   // height = p2's displacement from the line(p0, p1) 
@@ -264,11 +262,18 @@ isStraight(QuadraticSegment<D> const & q) noexcept -> bool
   // We can avoid a square root by comparing the squared distance.
   auto const v10 = q[1] - q[0];
   auto const v20 = q[2] - q[0];
+  auto const v10_sq = v10.squaredNorm();
+  auto const v20_sq = v20.squaredNorm();
+  // If the distance to p2 is greater than the distance to p1, then the segment not
+  // straight.
+  if (v20_sq >= v10_sq) {
+    return false;
+  }
   auto const cp = v10.cross(v20);
   if constexpr (D == 2) {
-    return (cp * cp) / v10.squaredNorm() < eps_distance2; 
+    return (cp * cp) / v10_sq < eps_distance2; 
   } else {
-    return cp.squaredNorm() / v10.squaredNorm() < eps_distance2;
+    return cp.squaredNorm() / v10_sq < eps_distance2;
   }
 }
 

@@ -94,16 +94,46 @@ private:
   Vector<Tri6FVM> _tri6s;
   Vector<Quad8FVM> _quad8s;
 
-  // Helper functions
-  void
-  writeXDMFFile(String const & filepath) const;
-
 public:
   //============================================================================
   // Constructors
   //============================================================================
 
   constexpr Model() noexcept = default;
+
+  //============================================================================
+  // Member access
+  //============================================================================
+
+  PURE [[nodiscard]] constexpr auto
+  core() const noexcept -> Core const &;
+
+  PURE [[nodiscard]] constexpr auto
+  assemblies() const noexcept -> Vector<Assembly> const &;
+
+  PURE [[nodiscard]] constexpr auto
+  lattices() const noexcept -> Vector<Lattice> const &;
+
+  PURE [[nodiscard]] constexpr auto
+  rtms() const noexcept -> Vector<RTM> const &;
+
+  PURE [[nodiscard]] constexpr auto
+  coarseCells() const noexcept -> Vector<CoarseCell> const &;
+
+  PURE [[nodiscard]] constexpr auto
+  materials() const noexcept -> Vector<Material> const &;
+
+  PURE [[nodiscard]] constexpr auto
+  triMeshes() const noexcept -> Vector<TriFVM> const &;
+
+  PURE [[nodiscard]] constexpr auto
+  quadMeshes() const noexcept -> Vector<QuadFVM> const &;
+
+  PURE [[nodiscard]] constexpr auto
+  tri6Meshes() const noexcept -> Vector<Tri6FVM> const &;
+
+  PURE [[nodiscard]] constexpr auto
+  quad8Meshes() const noexcept -> Vector<Quad8FVM> const &;
 
   //============================================================================
   // Capacity 
@@ -160,7 +190,7 @@ public:
   clear() noexcept;
 
   auto
-  addMaterial(Material const & material) -> Int;
+  addMaterial(Material const & material, bool validate = true) -> Int;
 
   auto
   addCylindricalPinMesh(Float pitch,
@@ -171,6 +201,18 @@ public:
 
   auto
   addRectangularPinMesh(Vec2F xy_extents, Int nx_faces, Int ny_faces) -> Int;
+
+  auto
+  addTriMesh(TriFVM const & mesh) -> Int;
+
+  auto
+  addQuadMesh(QuadFVM const & mesh) -> Int;
+
+  auto
+  addTri6Mesh(Tri6FVM const & mesh) -> Int;
+
+  auto
+  addQuad8Mesh(Quad8FVM const & mesh) -> Int;
 
   auto
   addCoarseCell(Vec2F xy_extents,
@@ -209,6 +251,9 @@ public:
 
   // This can be very slow for large models. Used for debugging.
   explicit operator PolytopeSoup() const noexcept;
+
+  void
+  read(String const & filename);
 
   void
   write(String const & filename) const;
@@ -253,6 +298,70 @@ getASCIINumber(Int num)
     num /= 10;
   }
   return str;
+}
+
+//=============================================================================
+// Member access
+//=============================================================================
+
+PURE [[nodiscard]] constexpr auto
+Model::core() const noexcept -> Core const &
+{
+  return _core;
+}
+
+PURE [[nodiscard]] constexpr auto
+Model::assemblies() const noexcept -> Vector<Assembly> const &
+{
+  return _assemblies;
+}
+
+PURE [[nodiscard]] constexpr auto
+Model::lattices() const noexcept -> Vector<Lattice> const &
+{
+  return _lattices;
+}
+
+PURE [[nodiscard]] constexpr auto
+Model::rtms() const noexcept -> Vector<RTM> const &
+{
+  return _rtms;
+}
+
+PURE [[nodiscard]] constexpr auto
+Model::coarseCells() const noexcept -> Vector<CoarseCell> const &
+{
+  return _coarse_cells;
+}
+
+PURE [[nodiscard]] constexpr auto
+Model::materials() const noexcept -> Vector<Material> const &
+{
+  return _materials;
+}
+
+PURE [[nodiscard]] constexpr auto
+Model::triMeshes() const noexcept -> Vector<TriFVM> const &
+{
+  return _tris;
+}
+
+PURE [[nodiscard]] constexpr auto
+Model::quadMeshes() const noexcept -> Vector<QuadFVM> const &
+{
+  return _quads;
+}
+
+PURE [[nodiscard]] constexpr auto
+Model::tri6Meshes() const noexcept -> Vector<Tri6FVM> const &
+{
+  return _tri6s;
+}
+
+PURE [[nodiscard]] constexpr auto
+Model::quad8Meshes() const noexcept -> Vector<Quad8FVM> const &
+{
+  return _quad8s;
 }
 
 //=============================================================================
