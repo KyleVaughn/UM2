@@ -59,9 +59,9 @@ groupPreservingIntersect(gmsh::vectorpair const & object_dimtags,
 //addCylindricalPin2D(Vec2d const & center, std::vector<double> const & radii,
 //                    std::vector<Material> const & materials) -> std::vector<int>;
 
-//auto
-//addCylindricalPin2D(Vec2d const & center, Vector<double> const & radii,
-//                    Vector<Material> const & materials) -> um2::Vector<int>;
+auto
+addCylindricalPin2D(Vec2F const & center, Vector<Float> const & radii,
+                    Vector<Material> const & materials) -> um2::Vector<Int>;
 
 auto
 addCylindricalPinLattice2D(Vector<Vector<Int>> const & pin_ids,

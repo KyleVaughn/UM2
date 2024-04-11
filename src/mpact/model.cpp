@@ -10,8 +10,6 @@
 #include <algorithm> // std::any_of
 #include <numeric> // std::reduce
 
-#include <iostream>
-
 namespace um2::mpact
 {
 
@@ -593,6 +591,67 @@ Model::addCylindricalPinMesh(
   }
   logger::error("Only linear and quadratic meshes are supported for a cylindrical pin mesh");
   return -1;
+}
+
+//=============================================================================
+// addCylindricalPinCell
+//=============================================================================
+
+auto
+Model::addCylindricalPinCell(Float const pitch,
+                      Vector<Float> const & radii,
+                      Vector<Material> const & materials,
+                      Vector<Int> const & num_rings,
+                      Int const num_azimuthal,
+                      Int const mesh_order) -> Int
+{
+  // Make the mesh
+  Int const mesh_id = addCylindricalPinMesh(pitch, radii, num_rings, num_azimuthal, mesh_order);
+
+  // We need 1 more material than the number of rings
+  if (materials.size() != num_rings.size() + 1) {
+    logger::error("The number of materials must be one more than the number of rings");
+    return -1;
+  }
+
+  // Get the index of each of the materials
+  Vector<Int> mat_idx(materials.size());
+  for (Int imat = 0; imat < materials.size(); ++imat) {
+    bool found = false;
+    for (Int i = 0; i < _materials.size(); ++i) {
+      if (_materials[i].getName() == materials[imat].getName()) {
+        mat_idx[imat] = i;
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      logger::error("Material ", materials[imat].getName(), " not found in model");
+      return -1;
+    }
+  }
+
+  Vec2F const xy_extents(pitch, pitch);
+  MeshType const mesh_type = mesh_order == 1 ? MeshType::Quad : MeshType::QuadraticQuad;
+
+  Int const total_rings = std::reduce(num_rings.cbegin(), num_rings.cend(), 0);
+  Vector<MatID> material_ids((total_rings + 1) * num_azimuthal);
+
+  // For each material, get the number of faces (num_azimuthal * num_rings)
+  Int ctr = 0;
+  for (Int imat = 0; imat < materials.size() - 1; ++imat) {
+    for (Int ir = 0; ir < num_rings[imat]; ++ir) {
+      for (Int ia = 0; ia < num_azimuthal; ++ia, ++ctr) {
+        material_ids[ctr] = static_cast<MatID>(mat_idx[imat]);
+      }
+    }
+  }
+  // Last faces outside the last ring
+  for (Int ia = 0; ia < num_azimuthal; ++ia, ++ctr) {
+    material_ids[ctr] = static_cast<MatID>(mat_idx.back());
+  }
+
+  return addCoarseCell(xy_extents, mesh_type, mesh_id, material_ids);
 }
 
 //=============================================================================
@@ -2158,7 +2217,7 @@ readXDMFFile(String const & filename, Model & model)
         String const nx_by_ny = xlat_nxny.child_value();
         StringView sv(nx_by_ny);
         StringView const nx_token = sv.getTokenAndShrink();
-        sv.remove_prefix(2);      
+        sv.remove_prefix(2);
         lattice_nx = strto<Int>(nx_token.data(), &end);
         ASSERT(end != nullptr);
         end = nullptr;
@@ -2269,26 +2328,26 @@ readXDMFFile(String const & filename, Model & model)
 
           // Create the FVM and get the ID
           switch(mesh_type) {
-            case MeshType::Tri: 
+            case MeshType::Tri:
               {
               TriFVM const mesh(soup);
               xy_extents.emplace_back(mesh.boundingBox().extents());
               model.addTriMesh(mesh);
-              mesh_types_ids.emplace_back(mesh_type, tris_count); 
+              mesh_types_ids.emplace_back(mesh_type, tris_count);
               ++tris_count;
               }
               break;
-            case MeshType::Quad: 
+            case MeshType::Quad:
               {
               QuadFVM const mesh(soup);
               xy_extents.emplace_back(mesh.boundingBox().extents());
               model.addQuadMesh(mesh);
-              mesh_types_ids.emplace_back(mesh_type, quads_count); 
+              mesh_types_ids.emplace_back(mesh_type, quads_count);
               ++quads_count;
               }
               break;
             case MeshType::QuadraticTri:
-              { 
+              {
               Tri6FVM const mesh(soup);
               xy_extents.emplace_back(mesh.boundingBox().extents());
               model.addTri6Mesh(mesh);
@@ -2342,7 +2401,7 @@ readXDMFFile(String const & filename, Model & model)
     auto const mesh_type = mesh_types_ids[idx].first;
     auto const mesh_id = mesh_types_ids[idx].second;
     Vec2F const & xy_extent = xy_extents[idx];
-    model.addCoarseCell(xy_extent, mesh_type, mesh_id, coarse_cell_material_ids[idx]); 
+    model.addCoarseCell(xy_extent, mesh_type, mesh_id, coarse_cell_material_ids[idx]);
   }
 
   // Create the RTMs

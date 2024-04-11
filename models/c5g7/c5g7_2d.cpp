@@ -238,9 +238,7 @@ main(int argc, char** argv) -> int
   //===========================================================================
 
   model.importCoarseCellMeshes("c5g7_2d.inp");
-  um2::PolytopeSoup const soup(model);
-  String filename = "c5g7_2d_" + std::to_string(num_coarse_cells) + ".xdmf";
-  soup.write("c5g7_2d.xdmf");
+  model.write("c5g7_2d_" + um2::String(num_coarse_cells) + "_grid.xdmf");
   um2::finalize();
   return 0;
 }

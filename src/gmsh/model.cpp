@@ -3,11 +3,6 @@
 #if UM2_USE_GMSH
 
 #include <um2/common/logger.hpp>
-//#  include <um2/geometry/axis_aligned_box.hpp>
-//#  include <um2/mesh/rectilinear_grid.hpp>
-//
-#  include <iomanip>
-
 #include <um2/stdlib/algorithm/is_sorted.hpp>
 
 namespace um2::gmsh::model
@@ -574,62 +569,66 @@ groupPreservingIntersect(gmsh::vectorpair const & object_dimtags,
 // addCylindricalPin2D
 //=============================================================================
 
-//auto
-//addCylindricalPin2D(Vec2d const & center, std::vector<double> const & radii,
-//                    std::vector<Material> const & materials) -> std::vector<int>
-//{
-//  LOG_INFO("Adding 2D cylindrical pin");
-//  std::vector<int> out_tags;
-//  // Input checking
-//  size_t const nradii = radii.size();
-//  if (nradii == 0) {
-//    LOG_ERROR("radii must not be empty");
-//    return out_tags;
-//  }
-//  if (nradii != materials.size()) {
-//    LOG_ERROR("Number of radii must equal to the number of materials");
-//  }
-//  if (radii[0] <= 0.0) {
-//    LOG_ERROR("radii must be positive");
-//  }
-//  if (!um2::is_sorted(radii.cbegin(), radii.cend())) {
-//    LOG_ERROR("radii must be strictly increasing");
-//  }
-//  // Create the pin geometry
-//  out_tags.reserve(nradii);
-//  double const x = center[0];
-//  double const y = center[1];
-//  // Do the innermost disk
-//  int const circle0_tag = gmsh::model::occ::addCircle(x, y, 0.0, radii[0]);
-//  int const loop0_tag = gmsh::model::occ::addCurveLoop({circle0_tag});
-//  int const disk_tag = gmsh::model::occ::addPlaneSurface({loop0_tag});
-//  out_tags.emplace_back(disk_tag);
-//  // Do the annuli
-//  int prev_loop_tag = loop0_tag;
-//  for (size_t i = 1; i < nradii; ++i) {
-//    int const circle_tag = gmsh::model::occ::addCircle(x, y, 0.0, radii[i]);
-//    int const loop_tag = gmsh::model::occ::addCurveLoop({circle_tag});
-//    int const annulus_tag = gmsh::model::occ::addPlaneSurface({loop_tag, prev_loop_tag});
-//    out_tags.emplace_back(annulus_tag);
-//    prev_loop_tag = loop_tag;
-//  }
-//  gmsh::model::occ::synchronize();
-//  // Add materials
-//  for (size_t i = 0; i < nradii; ++i) {
-//    addToPhysicalGroup(2, {out_tags[i]}, -1,
-//                       "Material_" + std::string(materials[i].getName().data()));
-//    // Color entities according to materials
-//    Color const color = materials[i].getColor();
-//    gmsh::model::setColor(
-//        {
-//            {2, out_tags[i]}
-//    }, // Entities to color
-//        static_cast<int>(color.r()), static_cast<int>(color.g()),
-//        static_cast<int>(color.b()), static_cast<int>(color.a()),
-//        /*recursive=*/true);
-//  }
-//  return out_tags;
-//}
+auto
+addCylindricalPin2D(Vec2F const & center, Vector<Float> const & radii,
+                    Vector<Material> const & materials) -> Vector<Int>
+{
+  LOG_INFO("Adding 2D cylindrical pin");
+  Vector<Int> out_tags;
+  // Input checking
+  Int const nradii = radii.size();
+  if (nradii == 0) {
+    LOG_ERROR("radii must not be empty");
+    return out_tags;
+  }
+  if (nradii != materials.size()) {
+    LOG_ERROR("Number of radii must equal to the number of materials");
+    return out_tags;
+  }
+  if (radii[0] <= 0.0) {
+    LOG_ERROR("radii must be positive");
+    return out_tags;
+  }
+  if (!um2::is_sorted(radii.cbegin(), radii.cend())) {
+    LOG_ERROR("radii must be strictly increasing");
+    return out_tags;
+  }
+  // Create the pin geometry
+  out_tags.reserve(nradii);
+  auto const x = castIfNot<double>(center[0]);
+  auto const y = castIfNot<double>(center[1]);
+  // Do the innermost disk
+  int const circle0_tag = gmsh::model::occ::addCircle(x, y, 0.0, radii[0]);
+  int const loop0_tag = gmsh::model::occ::addCurveLoop({circle0_tag});
+  int const disk_tag = gmsh::model::occ::addPlaneSurface({loop0_tag});
+  out_tags.emplace_back(castIfNot<Int>(disk_tag));
+  // Do the annuli
+  int prev_loop_tag = loop0_tag;
+  for (Int i = 1; i < nradii; ++i) {
+    int const circle_tag = gmsh::model::occ::addCircle(x, y, 0.0, radii[i]);
+    int const loop_tag = gmsh::model::occ::addCurveLoop({circle_tag});
+    int const annulus_tag = gmsh::model::occ::addPlaneSurface({loop_tag, prev_loop_tag});
+    out_tags.emplace_back(castIfNot<Int>(annulus_tag));
+    prev_loop_tag = loop_tag;
+  }
+  gmsh::model::occ::synchronize();
+  // Add materials
+  for (Int i = 0; i < nradii; ++i) {
+    ASSERT(!materials[i].getName().empty());
+    addToPhysicalGroup(2, {castIfNot<int>(out_tags[i])}, -1,
+                       "Material_" + std::string(materials[i].getName().data()));
+    // Color entities according to materials
+    Color const color = materials[i].getColor();
+    gmsh::model::setColor(
+        {
+            {2, castIfNot<int>(out_tags[i])}
+    }, // Entities to color
+        static_cast<int>(color.r()), static_cast<int>(color.g()),
+        static_cast<int>(color.b()), static_cast<int>(color.a()),
+        /*recursive=*/true);
+  }
+  return out_tags;
+}
 
 //auto
 //addCylindricalPin2D(Vec2d const & center, Vector<double> const & radii,
@@ -1116,6 +1115,7 @@ overlayCoarseGrid(mpact::Model const & model, Material const & fill_material)
    // Get materials and see if the fill material already exists
    // If it does, move it to the end of the material hierarchy, otherwise
    // append it to the end.
+   ASSERT(!fill_material.getName().empty());
    std::string const fill_material_name(fill_material.getName().data());
    Color const fill_material_color = fill_material.getColor();
    std::vector<Material> materials;
@@ -1182,7 +1182,7 @@ overlayCoarseGrid(mpact::Model const & model, Material const & fill_material)
    for (Int i = 0; i < num_cc; ++i) {
      gmsh::model::addPhysicalGroup(model_dim, {cc_tags[static_cast<size_t>(i)]}, -1,
                                    coarse_cell_name); 
-     incrementASCIINumber(coarse_cell_name);
+     mpact::incrementASCIINumber(coarse_cell_name);
    }
 
    // Fragment

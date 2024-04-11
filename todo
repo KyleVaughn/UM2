@@ -1,9 +1,25 @@
+Finish MPACT io test -> Check full model parameters
+
+rescue vis
+
+tests for gmsh overlay grid
+
+test for gmsh mesh functions
+
+Finish Gmsh model functions for model creation
+
+enable OMP/TBB -> But where?
+
+build UM2 without gmsh for MPACT
+
+docs
+tutorial
+models
+
 split by assembly, lattice, etc. allow each to be read as model
 
 make model.writeXDMFFile private
 MPACT model from polytopesoup
-
-model.read(convert from soup)
 
 Definitely need a more efficient read/write for mpact model
 
@@ -37,9 +53,6 @@ gmsh io no allocations
 
 Vector versions of gmsh funcinos
   -> If user space, yes.
-
-Material as an integer set?
-  -> Ensure numbers to output
 
 move on to next dir and save powers and such for spatial partition
 

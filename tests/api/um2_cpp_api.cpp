@@ -7,7 +7,6 @@ TEST_CASE(initialize_finalize)
   um2::initialize();
 #if UM2_USE_GMSH
   ASSERT(um2::gmsh::isInitialized());
-  ASSERT(um2::Log::getMaxVerbosityLevel() == um2::LogVerbosity::Info);
 #endif
   um2::finalize();
 }

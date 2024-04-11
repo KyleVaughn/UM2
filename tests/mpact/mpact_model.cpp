@@ -861,112 +861,6 @@ TEST_CASE(io)
   ASSERT(model_in.core().getChild(2, 2) == 2);
 }
 
-////////////// template <typename T, typename I>
-////////////// TEST_CASE(test_coarse_cell_face_areas)
-////////////// um2::mpact::Model model;
-////////////// model.addCoarseCell({1, 1});
-////////////// model.addCoarseCell({1, 1});
-////////////// model.addCoarseCell({1, 1});
-////////////// model.make_rtm({
-//////////////     {2, 2},
-//////////////     {0, 1}
-////////////// });
-////////////// model.make_lattice({{0}});
-////////////// model.make_assembly({0});
-////////////// model.make_core({{0}});
-////////////// model.import_coarse_cells("./test/mpact/mesh_files/coarse_cells.inp");
-//////////////
-////////////// um2::Vector<Float> areas;
-////////////// model.coarse_cell_face_areas(0, areas);
-////////////// ASSERT(areas.size() == 2, "areas");
-////////////// ASSERT_NEAR(areas[0], 0.5, 1e-4, "areas");
-////////////// ASSERT_NEAR(areas[1], 0.5, 1e-4, "areas");
-////////////// model.coarse_cell_face_areas(1, areas);
-////////////// ASSERT(areas.size() == 2, "areas");
-////////////// ASSERT_NEAR(areas[0], 0.5, 1e-4, "areas");
-////////////// ASSERT_NEAR(areas[1], 0.5, 1e-4, "areas");
-////////////// model.coarse_cell_face_areas(2, areas);
-////////////// ASSERT(areas.size() == 1, "areas");
-////////////// ASSERT_NEAR(areas[0], 1.0, 1e-4, "areas");
-////////////// END_TEST_CASE
-//////////////
-////////////// template <typename T, typename I>
-////////////// TEST_CASE(test_coarse_cell_find_face)
-////////////// um2::mpact::Model model;
-////////////// model.addCoarseCell({1, 1});
-////////////// model.addCoarseCell({1, 1});
-////////////// model.addCoarseCell({1, 1});
-////////////// model.make_rtm({
-//////////////     {2, 2},
-//////////////     {0, 1}
-////////////// });
-////////////// model.make_lattice({{0}});
-////////////// model.make_assembly({0});
-////////////// model.make_core({{0}});
-////////////// model.import_coarse_cells("./test/mpact/mesh_files/coarse_cells.inp");
-//////////////
-////////////// length_t face_id = model.coarse_cell_find_face(
-//////////////     2, um2::Point2<Float>(castIfNot<Float>(0.5), castIfNot<Float>(0.5)));
-////////////// ASSERT(face_id == 0, "face_id");
-////////////// face_id = -2;
-////////////// face_id = model.coarse_cell_find_face(
-//////////////     2, um2::Point2<Float>(castIfNot<Float>(0.5), castIfNot<Float>(1.5)));
-////////////// ASSERT(face_id == -1, "face_id");
-////////////// face_id = -2;
-//////////////
-////////////// face_id = model.coarse_cell_find_face(
-//////////////     1, um2::Point2<Float>(castIfNot<Float>(0.5), castIfNot<Float>(0.05)));
-////////////// ASSERT(face_id == 0, "face_id");
-////////////// face_id = -2;
-////////////// face_id = model.coarse_cell_find_face(
-//////////////     1, um2::Point2<Float>(castIfNot<Float>(0.5), castIfNot<Float>(-0.05)));
-////////////// ASSERT(face_id == -1, "face_id");
-////////////// face_id = -2;
-////////////// face_id = model.coarse_cell_find_face(
-//////////////     1, um2::Point2<Float>(castIfNot<Float>(0.5), castIfNot<Float>(0.95)));
-////////////// ASSERT(face_id == 1, "face_id");
-////////////// face_id = -2;
-////////////// END_TEST_CASE
-//////////////
-////////////// template <typename T, typename I>
-////////////// TEST_CASE(test_coarse_cell_ray_intersect)
-////////////// um2::mpact::Model model;
-////////////// model.addCoarseCell({1, 1});
-////////////// model.addCoarseCell({1, 1});
-////////////// model.addCoarseCell({1, 1});
-////////////// model.make_rtm({
-//////////////     {2, 2},
-//////////////     {0, 1}
-////////////// });
-////////////// model.make_lattice({{0}});
-////////////// model.make_assembly({0});
-////////////// model.make_core({{0}});
-////////////// model.import_coarse_cells("./test/mpact/mesh_files/coarse_cells.inp");
-//////////////
-////////////// um2::Ray2<Float> ray(um2::Point2<Float>(castIfNot<Float>(0),
-///////////// castIfNot<Float>(0.5)), /                  um2::Vec2<Float>(1, 0)); / int n = 8; /
-/////////// T
-/////////////* intersections = new T[n]; / model.intersect_coarse_cell(0, ray, intersections,
-/////////&n);
-////////////// ASSERT(n == 4, "intersections");
-////////////// for (int i = 0; i < n; i++)
-//////////////   std::cout << intersections[i] << std::endl;
-////////////// ASSERT_NEAR(intersections[0], 0.0, 1e-4, "intersections");
-////////////// ASSERT_NEAR(intersections[1], 0.5, 1e-4, "intersections");
-////////////// ASSERT_NEAR(intersections[2], 0.5, 1e-4, "intersections");
-////////////// ASSERT_NEAR(intersections[3], 1.0, 1e-4, "intersections");
-//////////////
-////////////// n = 8;
-////////////// model.intersect_coarse_cell(1, ray, intersections, &n);
-////////////// ASSERT(n == 4, "intersections");
-////////////// ASSERT_NEAR(intersections[0], 0.0, 1e-4, "intersections");
-////////////// ASSERT_NEAR(intersections[1], 0.5, 1e-4, "intersections");
-////////////// ASSERT_NEAR(intersections[2], 0.5, 1e-4, "intersections");
-////////////// ASSERT_NEAR(intersections[3], 1.0, 1e-4, "intersections");
-//////////////
-////////////// delete[] intersections;
-////////////// END_TEST_CASE
-
 TEST_SUITE(mpact_Model)
 {
   TEST(ASCII);
@@ -982,10 +876,6 @@ TEST_SUITE(mpact_Model)
   TEST(importCoarseCellMeshes);
   TEST(operator_PolytopeSoup);
   TEST(io)
-//  //    TEST_CASE("coarse_cell_face_areas", (test_coarse_cell_face_areas));
-//  //    TEST_CASE("coarse_cell_find_face", (test_coarse_cell_find_face));
-//  //    TEST_CASE("coarse_cell_ray_intersect", (test_coarse_cell_ray_intersect<T,
-//  //    I>));
 }
 
 auto

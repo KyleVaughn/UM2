@@ -2,9 +2,6 @@
 
 #if UM2_USE_GMSH
 
-//#  include <um2/math/stats.hpp>
-//#include <um2/physics/cross_section_library.hpp>
-
 namespace um2::gmsh::model::mesh
 {
 
@@ -25,7 +22,6 @@ setGlobalMeshSize(double const size)
 // generateMesh
 //=============================================================================
 
-// generateMesh(MeshType const mesh_type, int const opt_iters, int const smooth_iters)
 void
 generateMesh(MeshType const mesh_type, int const smooth_iters)
 {
@@ -57,7 +53,7 @@ generateMesh(MeshType const mesh_type, int const smooth_iters)
     LOG_INFO("Generating quadratic quadrilateral mesh");
     gmsh::option::setNumber("Mesh.RecombineAll", 1);
     gmsh::option::setNumber("Mesh.Algorithm", 8); // Frontal-Delaunay for quads.
-    gmsh::option::setNumber("Mesh.SubdivisionAlgorithm", 1);   // All quads
+//    gmsh::option::setNumber("Mesh.SubdivisionAlgorithm", 1);   // All quads
     gmsh::option::setNumber("Mesh.RecombinationAlgorithm", 2); // simple full-quad
     gmsh::model::mesh::generate(2);
     gmsh::option::setNumber("Mesh.HighOrderOptimize", 2); // elastic + opt

@@ -215,6 +215,14 @@ public:
   addQuad8Mesh(Quad8FVM const & mesh) -> Int;
 
   auto
+  addCylindricalPinCell(Float pitch, 
+                        Vector<Float> const & radii, 
+                        Vector<Material> const & materials, 
+                        Vector<Int> const & num_rings,
+                        Int num_azimuthal,
+                        Int mesh_order = 1) -> Int;
+
+  auto
   addCoarseCell(Vec2F xy_extents,
       MeshType mesh_type = MeshType::Invalid,
       Int mesh_id = -1,
@@ -276,11 +284,11 @@ incrementASCIINumber(Str & str)
   // While the back character is '9', set it to '0',
   // move p to the next character to the left, and increment it.
   ASSERT(!str.empty());
-  char * p = str.end() - 1;
+  char * p = str.data() + str.size() - 1;
   while (*p == '9') {
     *p-- = '0';
   }
-  ASSERT(p >= str.begin());
+  ASSERT(p >= str.data());
   ASSERT('0' <= *p);
   ASSERT(*p <= '9');
   ++(*p);

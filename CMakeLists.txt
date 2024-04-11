@@ -50,8 +50,8 @@ option(UM2_BUILD_SHARED_LIB "Build UM2 as shared library"       ON)
 # Use external dependencies
 option(UM2_USE_CUDA         "Enable CUDA"                       OFF)
 option(UM2_USE_GMSH         "Enable Gmsh"                       ON)
-option(UM2_USE_OPENMP       "Enable OpenMP"                     ON)
-option(UM2_USE_TBB          "Enable Intel TBB"                  ON)
+option(UM2_USE_OPENMP       "Enable OpenMP"                     OFF)
+option(UM2_USE_TBB          "Enable Intel TBB"                  OFF)
 
 # Enable/disable features
 option(UM2_ENABLE_FASTMATH  "Enable fast math optimizations"       ON) # CPU and GPU
@@ -165,14 +165,12 @@ set(UM2_SOURCES
     "src/physics/cross_section_library.cpp"
     "src/physics/material.cpp"
     "src/mpact/model.cpp"
-    #"src/gmsh/base_gmsh_api.cpp"
-    #"src/gmsh/io.cpp"
-    #"src/gmsh/model.cpp"
-    #"src/gmsh/mesh.cpp"
-    #    #    #    ##    # visualization
-    #    #    #    ##    "src/visualization/Image2D.cpp"
-    #"src/um2.cpp"
-    #    #    "src/um2c.cpp"
+    "src/gmsh/base_gmsh_api.cpp"
+    "src/gmsh/io.cpp"
+    "src/gmsh/model.cpp"
+    "src/gmsh/mesh.cpp"
+    "src/um2.cpp"
+    "src/um2c.cpp"
   )
 
 

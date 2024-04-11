@@ -8,9 +8,6 @@
 #  include <um2/mesh/element_types.hpp>
 #  include <um2/physics/material.hpp>
 
-//#  include <string> // std::string
-//#  include <vector> // std::vector
-
 namespace um2::gmsh::model::mesh
 {
 
