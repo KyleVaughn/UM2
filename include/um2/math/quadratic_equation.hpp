@@ -70,7 +70,9 @@ solveQuadratic(Float const a, Float const b, Float const c) -> Vec2F
 
   if (a == 0) {
     // Case 3 or 4. Assert that b != 0, so not case 1 or 2.
-    ASSERT(b != 0);
+    if (b == 0) {
+      return roots;
+    } 
     roots[0] = -c / b;
     return roots;
   }
