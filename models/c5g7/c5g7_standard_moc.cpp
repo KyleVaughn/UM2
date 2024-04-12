@@ -4,40 +4,19 @@
 //  NEA/NSC/DOC(2001)4
 
 #include <um2.hpp>
+#include <um2/stdlib/algorithm.hpp>
 
 auto
-main(int argc, char** argv) -> int
+main() -> int
 {
   um2::initialize();
 
-  // Check the number of arguments
-  if (argc != 2) {
-    um2::logger::error("Usage: ./c5g7_2d num_coarse_cells");
-    return 1;
-  }
-
-  //===========================================================================
-  // Parametric study parameters
-  //===========================================================================
-
-  char * end = nullptr;
-  Int const num_coarse_cells = um2::strto<Int>(argv[1], &end);
-  ASSERT(end != nullptr);
-  ASSERT(num_coarse_cells > 0);
-
-  //===========================================================================
-  // Model parameters
-  //===========================================================================
-   
-  Float const radius = 0.54;          // Pin radius = 0.54 cm (pg. 3)
-  Float const pin_pitch = 1.26;       // Pin pitch = 1.26 cm (pg. 3)
-  Float const assembly_pitch = 21.42; // Assembly pitch = 21.42 cm (pg. 3)
+  um2::mpact::Model model;
 
   //===========================================================================
   // Materials
   //===========================================================================
-  // See tables for cross sections
-  
+
   um2::Material uo2;
   uo2.setName("UO2");
   uo2.setColor(um2::forestgreen);
@@ -48,10 +27,10 @@ main(int argc, char** argv) -> int
   um2::Material mox43;
   mox43.setName("MOX_4.3");
   mox43.setColor(um2::yellow);
-  mox43.xsec().t() = {2.11920e-01, 3.55810e-01, 4.88900e-01, 5.71940e-01, 
+  mox43.xsec().t() = {2.11920e-01, 3.55810e-01, 4.88900e-01, 5.71940e-01,
     4.32390e-01, 6.84950e-01, 6.88910e-01};
   mox43.xsec().isMacro() = true;
-  
+
   um2::Material mox70;
   mox70.setName("MOX_7.0");
   mox70.setColor(um2::orange);
@@ -59,7 +38,7 @@ main(int argc, char** argv) -> int
                       5.96220e-01, 4.80350e-01, 8.39360e-01,
                       8.59480e-01};
   mox70.xsec().isMacro() = true;
-  
+
   um2::Material mox87;
   mox87.setName("MOX_8.7");
   mox87.setColor(um2::red);
@@ -67,7 +46,7 @@ main(int argc, char** argv) -> int
  6.11170e-01, 5.08900e-01, 9.26670e-01,
  9.60990e-01};
   mox87.xsec().isMacro() = true;
-  
+
   um2::Material fiss_chamber;
   fiss_chamber.setName("Fission_Chamber");
   fiss_chamber.setColor(um2::black);
@@ -75,7 +54,7 @@ main(int argc, char** argv) -> int
  6.49840e-01, 6.70630e-01, 8.75060e-01,
  1.43450e+00};
   fiss_chamber.xsec().isMacro() = true;
-  
+
   um2::Material guide_tube;
   guide_tube.setName("Guide_Tube");
   guide_tube.setColor(um2::darkgrey);
@@ -83,7 +62,7 @@ main(int argc, char** argv) -> int
  6.49670e-01, 6.70580e-01, 8.75050e-01,
  1.43450e+00};
   guide_tube.xsec().isMacro() = true;
-  
+
   um2::Material moderator;
   moderator.setName("Moderator");
   moderator.setColor(um2::royalblue);
@@ -101,10 +80,41 @@ main(int argc, char** argv) -> int
   guide_tube.validate();
   moderator.validate();
 
+  model.addMaterial(uo2);
+  model.addMaterial(mox43);
+  model.addMaterial(mox70);
+  model.addMaterial(mox87);
+  model.addMaterial(fiss_chamber);
+  model.addMaterial(guide_tube);
+  model.addMaterial(moderator);
+
   //===========================================================================
   // Geometry
   //===========================================================================
 
+  // Pin meshes
+  //---------------------------------------------------------------------------
+  auto const radius = castIfNot<Float>(0.54);
+  auto const pin_pitch = castIfNot<Float>(1.26);
+
+  um2::Vec2F const xy_extents = {pin_pitch, pin_pitch};
+
+  // Use the same mesh for all pins except the reflector
+  um2::Vector<Float> const radii = {radius, castIfNot<Float>(0.62)};
+  um2::Vector<Int> const rings = {3, 2};
+
+  // 8 azimuthal divisions, order 2 mesh
+  // The first 8 * 3 = 24 faces are the inner material
+  // The next 8 * 2 + 8 = 24 faces are moderator
+  auto const cyl_pin_mesh_type = um2::MeshType::QuadraticQuad; 
+  auto const cyl_pin_id = model.addCylindricalPinMesh(pin_pitch, radii, rings, 8, 2);
+
+  // 5 by 5 mesh for the reflector
+  auto const rect_pin_mesh_type = um2::MeshType::Quad;
+  auto const rect_pin_id = model.addRectangularPinMesh(xy_extents, 5, 5);
+
+  // Coarse cells
+  //---------------------------------------------------------------------------
   // Pin ID  |  Material
   // --------+----------------
   // 0       |  UO2
@@ -113,15 +123,32 @@ main(int argc, char** argv) -> int
   // 3       |  MOX 8.7%
   // 4       |  Fission Chamber
   // 5       |  Guide Tube
+  // 6       |  Moderator
 
-  // Each pin has the same radius and pitch
-  um2::Vector<um2::Vector<Float>> const pin_radii(6, {radius});
-  um2::Vec2F const pin_size = {pin_pitch, pin_pitch};
-  um2::Vector<um2::Vec2F> const xy_extents(6, pin_size);
+  // Add the 6 cylindrical pins
+  um2::Vector<MatID> mat_ids(48, 6);
+  for (MatID i = 0; i < 6; ++i) {
+    um2::fill(mat_ids.begin(), mat_ids.begin() + 24, i);
+    model.addCoarseCell(xy_extents, cyl_pin_mesh_type, cyl_pin_id, mat_ids);
+  }
 
-  // Each pin contains a single material
-  um2::Vector<um2::Vector<um2::Material>> const pin_mats = {
-      {uo2}, {mox43}, {mox70}, {mox87}, {fiss_chamber}, {guide_tube}};
+  // Add the 1 rectangular pin
+  mat_ids.resize(25);
+  um2::fill(mat_ids.begin(), mat_ids.end(), static_cast<MatID>(6)); 
+  model.addCoarseCell(xy_extents, rect_pin_mesh_type, rect_pin_id, mat_ids); 
+
+  // RTMs
+  //---------------------------------------------------------------------------
+  // Use pin-modular ray tracing
+
+  um2::Vector<um2::Vector<Int>> ids = {{0}};
+  for (Int i = 0; i < 7; ++i) {
+    ids[0][0] = i;
+    model.addRTM(ids);
+  }
+
+  // Lattices
+  //---------------------------------------------------------------------------
 
   // UO2 lattice pins (pg. 7)
   um2::Vector<um2::Vector<Int>> const uo2_lattice = um2::stringToLattice<Int>(R"(
@@ -165,80 +192,79 @@ main(int argc, char** argv) -> int
       1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
     )");
 
+  // Moderator lattice
+  um2::Vector<um2::Vector<Int>> const h2o_lattice = um2::stringToLattice<Int>(R"( 
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+    )");
+
   // Ensure the lattices are the correct size
   ASSERT(uo2_lattice.size() == 17);
   ASSERT(uo2_lattice[0].size() == 17);
   ASSERT(mox_lattice.size() == 17);
   ASSERT(mox_lattice[0].size() == 17);
+  ASSERT(h2o_lattice.size() == 17);
+  ASSERT(h2o_lattice[0].size() == 17);
 
-  // Make the calls a bit more readable using an alias
-  namespace factory = um2::gmsh::model::occ;
+  model.addLattice(uo2_lattice);
+  model.addLattice(mox_lattice);
+  model.addLattice(h2o_lattice);
 
-  // We want to set up the problem to look like the following:
-  //  +---------+---------+---------+
-  //  |         |         |         |
-  //  |   UO2   |   MOX   |   H2O   |
-  //  |         |         |         |
-  //  +---------+---------+---------+
-  //  |         |         |         |
-  //  |   MOX   |   UO2   |   H2O   |
-  //  |         |         |         |
-  //  +---------+---------+---------+
-  //  |         |         |         |
-  //  |   H2O   |   H2O   |   H2O   |
-  //  |         |         |         |
-  //  +---------+---------+---------+
-  //
-  // Create UO2 lattices
-  factory::addCylindricalPinLattice2D(uo2_lattice, xy_extents,
-                                      pin_radii, pin_mats,
-                                      assembly_pitch * um2::Point2(0, 2));
-  factory::addCylindricalPinLattice2D(uo2_lattice, xy_extents,
-                                      pin_radii, pin_mats,
-                                      assembly_pitch * um2::Point2(1, 1));
+  // Assemblies
+  //---------------------------------------------------------------------------
+  // Evenly divide into 10 slices
+  // The normal model is 60 slices, but use 10 for the test
+  // The model is 9 parts fuel, 1 part moderator
+  auto const model_height = castIfNot<Float>(214.2);
+  auto const num_slices = 10;
+  auto const num_fuel_slices = 9 * num_slices / 10;
+  um2::Vector<Int> lattice_ids(num_slices, 2); // Fill with H20
+  um2::Vector<Float> z_slices(num_slices + 1);
+  for (Int i = 0; i <= num_slices; ++i) {
+    z_slices[i] = i * model_height / num_slices;
+  }
 
-  // Create MOX lattices
-  factory::addCylindricalPinLattice2D(mox_lattice, xy_extents,
-                                      pin_radii, pin_mats,
-                                      assembly_pitch * um2::Point2(0, 1));
-  factory::addCylindricalPinLattice2D(mox_lattice, xy_extents,
-                                      pin_radii, pin_mats,
-                                      assembly_pitch * um2::Point2(1, 2));
+  // uo2 assembly
+  um2::fill(lattice_ids.begin(), lattice_ids.begin() + num_fuel_slices, 0);
+  model.addAssembly(lattice_ids, z_slices);
 
-  //===========================================================================
-  // Overlay CMFD mesh
-  //===========================================================================
+  // mox assembly
+  um2::fill(lattice_ids.begin(), lattice_ids.begin() + num_fuel_slices, 1);
+  model.addAssembly(lattice_ids, z_slices);
 
-  // Construct the MPACT model 
-  um2::mpact::Model model;
-  model.addMaterial(uo2);
-  model.addMaterial(mox43);
-  model.addMaterial(mox70);
-  model.addMaterial(mox87);
-  model.addMaterial(fiss_chamber);
-  model.addMaterial(guide_tube);
-  model.addMaterial(moderator);
+  // moderator assembly 
+  um2::fill(lattice_ids.begin(), lattice_ids.begin() + num_slices, 2);
+  model.addAssembly(lattice_ids, z_slices);
 
-  // Add a coarse grid that evenly subdivides the domain
-  um2::Vec2F const domain_extents(3 * assembly_pitch, 3 * assembly_pitch);
-  um2::Vec2I const num_cells(num_coarse_cells, num_coarse_cells);
-  model.addCoarseGrid(domain_extents, num_cells);
-  um2::gmsh::model::occ::overlayCoarseGrid(model, moderator);
+  // Core
+  //---------------------------------------------------------------------------
+  ids = um2::stringToLattice<Int>(R"(
+      0 1 2
+      1 0 2
+      2 2 2
+  )");
+  ASSERT(ids.size() == 3);
+  ASSERT(ids[0].size() == 3);
 
-  //===========================================================================
-  // Generate the mesh
-  //===========================================================================
+  model.addCore(ids);
 
-  um2::gmsh::model::mesh::setGlobalMeshSize(pin_pitch / 6);
-  um2::gmsh::model::mesh::generateMesh(um2::MeshType::QuadraticTri);
-  um2::gmsh::write("c5g7_2d.inp");
+  model.write("c5g7.xdmf");
 
-  //===========================================================================
-  // Complete the MPACT model and write the mesh
-  //===========================================================================
-
-  model.importCoarseCellMeshes("c5g7_2d.inp");
-  model.write("c5g7_2d_" + um2::String(num_coarse_cells) + "_grid.xdmf");
   um2::finalize();
   return 0;
 }

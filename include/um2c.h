@@ -136,9 +136,9 @@ um2MPACTLatticeHeights(void * model, Int * n, Int ** lat_ids, Float ** heights);
 void
 um2MPACTAssemblyHeights(void * model, Int asy_id, Float * heights);
 
-//void
-//um2MPACTCoarseCellFaceData(void * model, Int cc_id, Int * mesh_type, Int * num_vertices,
-//                           Int * num_faces, Float ** vertices, Int ** fv);
+void
+um2MPACTCoarseCellFaceData(void * model, Int cc_id, Int * mesh_type, Int * num_vertices,
+                           Int * num_faces, Float ** vertices, Int ** fv);
 
 #ifdef __cplusplus
 }

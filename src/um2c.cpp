@@ -619,7 +619,7 @@ um2MPACTCoarseCellFaceData(void * const model, Int const cc_id, Int * const mesh
     using Vertex = um2::QuadFVM::Vertex;
     using FaceConn = um2::QuadFVM::FaceConn;
 
-    auto const & mesh = sp.getTriMesh(mesh_id);
+    auto const & mesh = sp.getQuadMesh(mesh_id);
     *num_vertices = mesh.numVertices();
     *num_faces = mesh.numFaces();
 
@@ -636,7 +636,7 @@ um2MPACTCoarseCellFaceData(void * const model, Int const cc_id, Int * const mesh
     using Vertex = um2::Tri6FVM::Vertex;
     using FaceConn = um2::Tri6FVM::FaceConn;
 
-    auto const & mesh = sp.getTriMesh(mesh_id);
+    auto const & mesh = sp.getTri6Mesh(mesh_id);
     *num_vertices = mesh.numVertices();
     *num_faces = mesh.numFaces();
 
@@ -653,7 +653,7 @@ um2MPACTCoarseCellFaceData(void * const model, Int const cc_id, Int * const mesh
     using Vertex = um2::Quad8FVM::Vertex;
     using FaceConn = um2::Quad8FVM::FaceConn;
 
-    auto const & mesh = sp.getTriMesh(mesh_id);
+    auto const & mesh = sp.getQuad8Mesh(mesh_id);
     *num_vertices = mesh.numVertices();
     *num_faces = mesh.numFaces();
 

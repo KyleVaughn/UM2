@@ -719,6 +719,7 @@ Model::addTriMesh(TriFVM const & mesh) -> Int
 {
   Int const mesh_id = _tris.size();
   logger::info("Adding triangular mesh ", mesh_id);
+  ASSERT(mesh.boundingBox().minima().norm() < eps_distance);
   _tris.emplace_back(mesh);
   return mesh_id;
 }
@@ -728,6 +729,7 @@ Model::addQuadMesh(QuadFVM const & mesh) -> Int
 {
   Int const mesh_id = _quads.size();
   logger::info("Adding quadrilateral mesh ", mesh_id);
+  ASSERT(mesh.boundingBox().minima().norm() < eps_distance);
   _quads.emplace_back(mesh);
   return mesh_id;
 }
@@ -737,6 +739,7 @@ Model::addTri6Mesh(Tri6FVM const & mesh) -> Int
 {
   Int const mesh_id = _tri6s.size();
   logger::info("Adding quadratic triangular mesh ", mesh_id);
+  ASSERT(mesh.boundingBox().minima().norm() < eps_distance);
   _tri6s.emplace_back(mesh);
   return mesh_id;
 }
@@ -746,6 +749,7 @@ Model::addQuad8Mesh(Quad8FVM const & mesh) -> Int
 {
   Int const mesh_id = _quad8s.size();
   logger::info("Adding quadratic quadrilateral mesh ", mesh_id);
+  ASSERT(mesh.boundingBox().minima().norm() < eps_distance);
   _quad8s.emplace_back(mesh);
   return mesh_id;
 }
@@ -1406,7 +1410,6 @@ Model::operator PolytopeSoup() const noexcept
                 Point2 const xy_offset = cell_ll + rtm_ll + asy_ll;
                 Point3 const global_offset = Point3(xy_offset[0], xy_offset[1], lat_z);
                 cell_soup.translate(global_offset);
-
 
                 Vector<Int> cell_ids(cell_soup.numElements());
                 um2::iota(cell_ids.begin(), cell_ids.end(), 0);
@@ -2330,8 +2333,13 @@ readXDMFFile(String const & filename, Model & model)
           switch(mesh_type) {
             case MeshType::Tri:
               {
-              TriFVM const mesh(soup);
-              xy_extents.emplace_back(mesh.boundingBox().extents());
+              TriFVM mesh(soup);
+              auto const bb = mesh.boundingBox();
+              auto const minima = bb.minima();
+              for (auto & vert : mesh.vertices()) {
+                vert -= minima;
+              }
+              xy_extents.emplace_back(bb.extents());
               model.addTriMesh(mesh);
               mesh_types_ids.emplace_back(mesh_type, tris_count);
               ++tris_count;
@@ -2339,8 +2347,13 @@ readXDMFFile(String const & filename, Model & model)
               break;
             case MeshType::Quad:
               {
-              QuadFVM const mesh(soup);
-              xy_extents.emplace_back(mesh.boundingBox().extents());
+              QuadFVM mesh(soup);
+              auto const bb = mesh.boundingBox();
+              auto const minima = bb.minima();
+              for (auto & vert : mesh.vertices()) {
+                vert -= minima;
+              }
+              xy_extents.emplace_back(bb.extents());
               model.addQuadMesh(mesh);
               mesh_types_ids.emplace_back(mesh_type, quads_count);
               ++quads_count;
@@ -2348,8 +2361,13 @@ readXDMFFile(String const & filename, Model & model)
               break;
             case MeshType::QuadraticTri:
               {
-              Tri6FVM const mesh(soup);
-              xy_extents.emplace_back(mesh.boundingBox().extents());
+              Tri6FVM mesh(soup);
+              auto const bb = mesh.boundingBox();
+              auto const minima = bb.minima();
+              for (auto & vert : mesh.vertices()) {
+                vert -= minima;
+              }
+              xy_extents.emplace_back(bb.extents());
               model.addTri6Mesh(mesh);
               mesh_types_ids.emplace_back(mesh_type, tri6s_count);
               ++tri6s_count;
@@ -2357,8 +2375,13 @@ readXDMFFile(String const & filename, Model & model)
               break;
             case MeshType::QuadraticQuad:
               {
-              Quad8FVM const mesh(soup);
-              xy_extents.emplace_back(mesh.boundingBox().extents());
+              Quad8FVM mesh(soup);
+              auto const bb = mesh.boundingBox();
+              auto const minima = bb.minima();
+              for (auto & vert : mesh.vertices()) {
+                vert -= minima;
+              }
+              xy_extents.emplace_back(bb.extents());
               model.addQuad8Mesh(mesh);
               mesh_types_ids.emplace_back(mesh_type, quad8s_count);
               ++quad8s_count;

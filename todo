@@ -1,3 +1,9 @@
+check quadratic faces for self intersection
+
+Investigate negative MCL and negative KN
+Mesh statistics
+grid optical thickness
+
 modify MPACT to accept the face ids of the intersection points
 
 Finish MPACT io test -> Check full model parameters

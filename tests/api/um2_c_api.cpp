@@ -263,6 +263,19 @@ TEST_CASE(coarse_cell_functions)
   }
   ASSERT(um2::is_sorted(buffer, buffer + n));
 
+  // FaceData
+  Int mesh_type = -1;
+  Int num_vertices = -1;
+  Int num_faces = -1;
+  Float * vertices = nullptr;
+  Int * faces = nullptr;
+  um2MPACTCoarseCellFaceData(sp, 0, &mesh_type, &num_vertices, &num_faces,
+      &vertices, &faces);
+  ASSERT(mesh_type == 8);
+  ASSERT(num_faces == 48);
+  ASSERT(vertices != nullptr);
+  ASSERT(faces != nullptr);
+
   um2DeleteMPACTModel(sp);
   um2Finalize();
 }

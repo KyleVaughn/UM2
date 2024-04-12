@@ -96,6 +96,7 @@ perimeter(LinearPolygon<N, D> const & p) noexcept -> Float
   for (Int i = 0; i < N - 1; ++i) {
     result += p[i].distanceTo(p[i + 1]);
   }
+  ASSERT(result > 0);
   return result;
 }
 
@@ -109,6 +110,7 @@ perimeter(QuadraticPolygon<N, D> const & p) noexcept -> Float
   for (Int i = 1; i < m; ++i) {
     result += p.getEdge(i).length();
   }
+  ASSERT(result > 0);
   return result;
 }
 
@@ -145,6 +147,7 @@ area(PlanarLinearPolygon<N> const & p) noexcept -> Float
   for (Int i = 0; i < N - 1; ++i) {
     sum += (p[i]).cross(p[i + 1]);
   }
+  ASSERT(sum > 0);
   return sum / 2;
 }
 
@@ -160,6 +163,7 @@ area(PlanarQuadraticPolygon<N> const & q) noexcept -> Float
   for (Int i = 0; i < num_edges; ++i) {
     result += enclosedArea(q.getEdge(i));
   }
+  ASSERT(result > 0);
   return result;
 }
 
@@ -232,7 +236,9 @@ template <Int P, Int N>
 PURE HOSTDEV constexpr auto
 meanChordLength(PlanarPolygon<P, N> const & p) noexcept -> Float
 {
-  return um2::pi<Float> * p.area() / p.perimeter();
+  auto const result = um2::pi<Float> * p.area() / p.perimeter();
+  ASSERT(result > 0);
+  return result;
 }
 
 //==============================================================================
