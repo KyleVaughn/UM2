@@ -17,6 +17,7 @@
 //  - contains(Point2)
 //  - meanChordLength
 //  - intersect(Ray2)
+//  - hasSelfIntersection (quadratic polygons only)
 
 #define STATIC_ASSERT_VALID_POLYGON \
   static_assert(D >= 2, "Polygons must be embedded in at least 2 dimensions"); \
@@ -256,5 +257,19 @@ intersect(PlanarPolygon<P, N> const & poly, Ray2 const & ray, Float * const buff
   }
   return hits;
 }
+
+//==============================================================================
+// hasSelfIntersection 
+//==============================================================================
+// Quadratic polygons only. 
+//
+// Edge i will trivially intersect edge i + 1 at the common vertex. We want to 
+// fine any non-trivial intersections.
+//
+// Newtwon raphson method:
+//
+//
+//
+
 
 } // namespace um2

@@ -838,13 +838,12 @@ TEST_CASE(io)
 
   model_out.addCore(ids);
 
-  //model_out.write("c5g7_out.xdmf"); 
+  model_out.write("c5g7_out.xdmf"); 
 
   um2::mpact::Model model_in;
   model_in.read("c5g7_out.xdmf");
 
   // Check the pin meshes. These are duplicated if there are repeated meshes.
-
 
   // Check core
   ASSERT(!model_in.core().children().empty());

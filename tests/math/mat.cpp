@@ -104,6 +104,27 @@ TEST_CASE(makeRotationMatrix)
   ASSERT_NEAR(mv270[1], 1, static_cast<T>(1e-6));
 }
 
+template <typename T>
+HOSTDEV
+TEST_CASE(inv)
+{
+  um2::Mat2x2<T> m;
+  m(0, 0) = 4;
+  m(0, 1) = 3;
+  m(1, 0) = 1;
+  m(1, 1) = 1;
+  um2::Mat2x2<T> const m_inv = um2::inv(m);
+  ASSERT_NEAR(m_inv(0, 0), 1, static_cast<T>(1e-6));
+  ASSERT_NEAR(m_inv(0, 1), -3, static_cast<T>(1e-6));
+  ASSERT_NEAR(m_inv(1, 0), -1, static_cast<T>(1e-6));
+  ASSERT_NEAR(m_inv(1, 1), 4, static_cast<T>(1e-6));
+  um2::Mat2x2<T> const m_id = m * m_inv;
+  ASSERT_NEAR(m_id(0, 0), 1, static_cast<T>(1e-6));
+  ASSERT_NEAR(m_id(0, 1), 0, static_cast<T>(1e-6));
+  ASSERT_NEAR(m_id(1, 0), 0, static_cast<T>(1e-6));
+  ASSERT_NEAR(m_id(1, 1), 1, static_cast<T>(1e-6));
+}
+
 #if UM2_USE_CUDA
 template <Int M, Int N, typename T>
 MAKE_CUDA_KERNEL(accessors, M, N, T);
@@ -120,6 +141,7 @@ TEST_SUITE(Mat)
   TEST_HOSTDEV(mat_vec, M, N, T);
   if constexpr (M == 2 && N == 2 && std::floating_point<T>) { 
     TEST_HOSTDEV(makeRotationMatrix, T);
+    TEST_HOSTDEV(inv, T);
   }
 }
 

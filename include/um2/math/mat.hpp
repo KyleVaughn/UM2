@@ -143,6 +143,13 @@ operator*(Mat2x2<T> const & a, Vec2<T> const & x) noexcept -> Vec2<T>
 
 template <typename T>
 PURE HOSTDEV constexpr auto
+operator*(Mat2x2<T> const & a, Mat2x2<T> const & b) noexcept -> Mat2x2<T>
+{
+  return Mat2x2<T>{a * b.col(0), a * b.col(1)};
+}
+
+template <typename T>
+PURE HOSTDEV constexpr auto
 operator*(Mat3x3<T> const & a, Vec3<T> const & x) noexcept -> Vec3<T>
 {
   return Vec3<T>{a(0, 0) * x[0] + a(0, 1) * x[1] + a(0, 2) * x[2],
@@ -158,6 +165,26 @@ makeRotationMatrix(T angle) noexcept -> Mat2x2<T>
   T const c = um2::cos(angle);
   T const s = um2::sin(angle);
   return Mat2x2<T>{Vec2<T>{c, s}, Vec2<T>{-s, c}};
+}
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+inv(Mat2x2<T> const & m) noexcept -> Mat2x2<T>
+{
+  // [a b
+  //  c d]
+  T const a = m(0, 0);
+  T const b = m(0, 1);
+  T const c = m(1, 0);
+  T const d = m(1, 1);
+  T const det = det2x2(a, b, c, d);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+  // NOLINTNEXTLINE(clang-diagnostic-float-equal)
+  ASSERT(det != 0);
+#pragma GCC diagnostic pop
+  return Mat2x2<T>{Vec2<T>{d / det, -c / det},
+                   Vec2<T>{-b / det, a / det}};
 }
 
 } // namespace um2

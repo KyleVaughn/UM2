@@ -1,6 +1,14 @@
-check quadratic faces for self intersection
+compute optical thickness of coarse cell
+  -> Modular ray params
+  -> Shoot rays and weight by one group cross section
+  -> Can multithread here easily
+    -> Ensure no interference between threads
 
-Investigate negative MCL and negative KN
+validate FVM
+  hasSelfIntersection
+    newton method
+      invert 2x2
+
 Mesh statistics
 grid optical thickness
 
@@ -17,6 +25,7 @@ test for gmsh mesh functions
 Finish Gmsh model functions for model creation
 
 enable OMP/TBB -> But where?
+  compute
 
 build UM2 without gmsh for MPACT
 

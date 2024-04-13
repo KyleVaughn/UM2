@@ -4,6 +4,7 @@
 #include "../../test_macros.hpp"
 
 #include <random>
+#include <iostream>
 
 // Description of the quadratic segments used in test cases
 // --------------------------------------------------------
@@ -899,6 +900,121 @@ TEST_CASE(enclosedCentroid)
   ASSERT(centroid6.isApprox(centroid6_rot));
 }
 
+HOSTDEV
+TEST_CASE(intersect_quadratic_segment)
+{
+  //============================================================================
+  // No intersection
+  //============================================================================
+
+  // parallel straight lines
+  //---------------------------------------------------------------------------
+  um2::QuadraticSegment2 seg1;
+  seg1[0] = um2::Point2(0, 0);
+  seg1[1] = um2::Point2(2, 0);
+  seg1[2] = um2::Point2(1, 0);
+
+  um2::Point2 offset; 
+  offset[0] = 0;
+  offset[1] = castIfNot<Float>(0.5);
+
+  um2::QuadraticSegment2 seg2;
+  seg2[0] = seg1[0] + offset; 
+  seg2[1] = seg1[1] + offset; 
+  seg2[2] = seg1[2] + offset;
+
+  um2::Point2 buf[8];
+  Int hits = um2::intersect(seg1, seg2, buf);
+  ASSERT(hits == 0);
+
+  // parallel quadratic segments with overlapping bounding boxes
+  //---------------------------------------------------------------------------
+  seg1[2] = um2::Point2(1, 1);
+  seg2[2] = seg1[2] + offset; 
+  hits = um2::intersect(seg1, seg2, buf);
+  ASSERT(hits == 0);
+
+  // parallel quadratic segments that are VERY close to each other
+  //---------------------------------------------------------------------------
+  offset[0] = 0;
+  offset[1] = 100 * um2::eps_distance; 
+  seg2[0] = seg1[0] + offset; 
+  seg2[1] = seg1[1] + offset;
+  seg2[2] = seg1[2] + offset;
+  hits = um2::intersect(seg1, seg2, buf);
+  ASSERT(hits == 0);
+
+  // quadratic segments that intersect outside of r,s ∈ [0, 1]
+  //---------------------------------------------------------------------------
+  seg1[0] = um2::Point2(0, 0);
+  seg1[1] = um2::Point2(1, 1);
+  seg1[2] = um2::Point2(2, 0);
+
+  seg2[0] = um2::Point2(0, 2);
+  seg2[1] = um2::Point2(castIfNot<Float>(1.0), castIfNot<Float>(1.001));
+  seg2[2] = um2::Point2(1, 2);
+
+  hits = um2::intersect(seg1, seg2, buf);
+  ASSERT(hits == 0);
+
+  //============================================================================
+  // One intersection
+  //============================================================================
+
+  // intersection at midpoint of two straight lines
+  //---------------------------------------------------------------------------
+  seg1[0] = um2::Point2(0, 0);
+  seg1[1] = um2::Point2(2, 0);
+  seg1[2] = um2::Point2(1, 0);
+
+  seg2[0] = um2::Point2(1, 1);
+  seg2[1] = um2::Point2(1, -1);
+  seg2[2] = um2::Point2(1, 0);
+
+  hits = um2::intersect(seg1, seg2, buf);
+  ASSERT(hits == 1);
+  ASSERT(buf[0].isApprox(um2::Point2(1, 0)));
+
+  // intersection at endpoint of two curved segments
+  //---------------------------------------------------------------------------
+  seg2[0] = um2::Point2(2, 0);
+  seg2[1] = um2::Point2(1, 3);
+  seg2[2] = um2::Point2(2, 1);
+
+  hits = um2::intersect(seg1, seg2, buf);
+  ASSERT(hits == 1);
+  ASSERT(buf[0].isApprox(um2::Point2(2, 0)));
+
+  //============================================================================
+  // Two intersections
+  //============================================================================
+
+  seg1[0] = um2::Point2(0, 0);
+  seg1[1] = um2::Point2(3, 0);
+  seg1[2] = um2::Point2(2, 1);
+
+  seg2[0] = um2::Point2(3, 0);
+  seg2[1] = um2::Point2(0, 1);
+  seg2[2] = um2::Point2(2, -1);
+
+  hits = um2::intersect(seg1, seg2, buf);
+  ASSERT(hits == 2);
+  um2::Point2 const p0(castIfNot<Float>(0.48), castIfNot<Float>(0.36));
+  um2::Point2 const p1(3, 0);
+  ASSERT(buf[0].isApprox(p0));
+  ASSERT(buf[1].isApprox(p1));
+
+  hits = seg1.intersect(seg2, buf);
+  ASSERT(hits == 2);
+  ASSERT(buf[0].isApprox(p0));
+  ASSERT(buf[1].isApprox(p1));
+
+  hits = seg2.intersect(seg1, buf);
+  ASSERT(hits == 2);
+  ASSERT(buf[0].isApprox(p1));
+  ASSERT(buf[1].isApprox(p0));
+}
+
 template <Int D>
 TEST_SUITE(QuadraticSegment)
 {
@@ -913,6 +1029,7 @@ TEST_SUITE(QuadraticSegment)
     TEST_HOSTDEV(intersect);
     TEST_HOSTDEV(enclosedArea);
     TEST_HOSTDEV(enclosedCentroid);
+    TEST_HOSTDEV(intersect_quadratic_segment);
   }
 }
 

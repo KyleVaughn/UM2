@@ -276,6 +276,8 @@ TEST_CASE(coarse_cell_functions)
   ASSERT(vertices != nullptr);
   ASSERT(faces != nullptr);
 
+  um2Free(vertices);
+  um2Free(faces);
   um2DeleteMPACTModel(sp);
   um2Finalize();
 }
