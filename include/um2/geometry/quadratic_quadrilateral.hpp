@@ -121,6 +121,12 @@ public:
   intersect(Ray2 ray, Float * buffer) const noexcept -> Int
   requires(D == 2);
 
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  hasSelfIntersection() const noexcept -> bool requires(D == 2);
+
+  HOSTDEV [[nodiscard]] constexpr auto
+  hasSelfIntersection(Point2 * buffer) const noexcept -> bool requires(D == 2);
+
 }; // QuadraticQuadrilateral
 
 //==============================================================================
@@ -348,6 +354,27 @@ HOSTDEV constexpr auto
 QuadraticQuadrilateral<D>::intersect(Ray2 const ray, Float * const buffer) const noexcept -> Int 
 requires(D == 2) {
   return um2::intersect(*this, ray, buffer); 
+}
+
+
+//==============================================================================
+// hasSelfIntersection
+//==============================================================================
+// Defined in polygon.hpp
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+QuadraticQuadrilateral<D>::hasSelfIntersection() const noexcept -> bool requires(D == 2)
+{
+  return um2::hasSelfIntersection(*this);
+}
+
+template <Int D>
+HOSTDEV constexpr auto
+QuadraticQuadrilateral<D>::hasSelfIntersection(Point2 * const buffer) const noexcept -> bool
+requires(D == 2)
+{
+  return um2::hasSelfIntersection(*this, buffer);
 }
 
 } // namespace um2

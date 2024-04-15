@@ -31,7 +31,7 @@ makeTri2() -> um2::QuadraticTriangle<D>
 {
   um2::QuadraticTriangle<D> this_tri;
   for (Int i = 0; i < 6; ++i) {
-    this_tri[i] = 0; 
+    this_tri[i] = 0;
   }
   this_tri[1][0] = castIfNot<Float>(1);
   this_tri[2][1] = castIfNot<Float>(1);
@@ -356,6 +356,49 @@ TEST_CASE(intersect)
   }
 }
 
+HOSTDEV
+TEST_CASE(hasSelfIntersection)
+{
+  auto tri = makeTri<2>();
+  ASSERT(!tri.hasSelfIntersection());
+  tri[4][0] = castIfNot<Float>(0.3);
+  tri[4][1] = castIfNot<Float>(0.25);
+  ASSERT(!tri.hasSelfIntersection());
+
+  {
+    um2::Point2 const p0(castIfNot<Float>(1.35267), castIfNot<Float>(0.626669));
+    um2::Point2 const p1(castIfNot<Float>(1.39696), castIfNot<Float>(0.798261));
+    um2::Point2 const p2(castIfNot<Float>(1.38913), castIfNot<Float>(0.821739));
+    um2::Point2 const p3(castIfNot<Float>(1.37481), castIfNot<Float>(0.712465));
+    um2::Point2 const p4(castIfNot<Float>(1.39304), castIfNot<Float>(0.81));
+    um2::Point2 const p5(castIfNot<Float>(1.37994), castIfNot<Float>(0.722514));
+    tri[0] = p0;
+    tri[1] = p1;
+    tri[2] = p2;
+    tri[3] = p3;
+    tri[4] = p4;
+    tri[5] = p5;
+    ASSERT(tri.hasSelfIntersection());
+  }
+
+  {
+    um2::Point2 const p0(castIfNot<Float>(1.38913), castIfNot<Float>(0));
+    um2::Point2 const p1(castIfNot<Float>(1.39696), castIfNot<Float>(0));
+    um2::Point2 const p2(castIfNot<Float>(1.35656), castIfNot<Float>(0.184691));
+    um2::Point2 const p3(castIfNot<Float>(1.39304), castIfNot<Float>(0));
+    um2::Point2 const p4(castIfNot<Float>(1.37676), castIfNot<Float>(0.0923454));
+    um2::Point2 const p5(castIfNot<Float>(1.38093), castIfNot<Float>(0.09377));
+    tri[0] = p0;
+    tri[1] = p1;
+    tri[2] = p2;
+    tri[3] = p3;
+    tri[4] = p4;
+    tri[5] = p5;
+    ASSERT(tri.hasSelfIntersection());
+  }
+
+}
+
 template <Int D>
 TEST_SUITE(QuadraticTriangle)
 {
@@ -371,6 +414,7 @@ TEST_SUITE(QuadraticTriangle)
     TEST_HOSTDEV(contains);
     TEST_HOSTDEV(meanChordLength);
     TEST_HOSTDEV(intersect);
+    TEST_HOSTDEV(hasSelfIntersection);
   }
 }
 

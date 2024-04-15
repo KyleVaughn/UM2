@@ -262,14 +262,43 @@ intersect(PlanarPolygon<P, N> const & poly, Ray2 const & ray, Float * const buff
 // hasSelfIntersection 
 //==============================================================================
 // Quadratic polygons only. 
-//
-// Edge i will trivially intersect edge i + 1 at the common vertex. We want to 
-// fine any non-trivial intersections.
-//
-// Newtwon raphson method:
-//
-//
-//
 
+template <Int N>
+HOSTDEV constexpr auto
+hasSelfIntersection(PlanarQuadraticPolygon<N> const & poly, Point2 * buffer) noexcept -> bool
+{
+  // Edge i should intersect edge i + 1 exactly once.
+  Int constexpr m = polygonNumEdges<2, N>();
+  for (Int i = 0; i < m - 1; ++i) {
+    if (poly.getEdge(i).intersect(poly.getEdge(i + 1), buffer) > 1) {
+      return true;
+    }
+  }
+  
+  // Edge m - 1 should intersect edge 0 exactly once.
+  if (poly.getEdge(m - 1).intersect(poly.getEdge(0), buffer) > 1) {
+    return true;
+  }
+
+  // If this is a quadratic quadrilateral, we need to check i vs i + 2.
+  if constexpr (m == 4) {
+    if (poly.getEdge(0).intersect(poly.getEdge(2), buffer) > 1) {
+      return true;
+    }
+    if (poly.getEdge(1).intersect(poly.getEdge(3), buffer) > 1) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+template <Int N>
+HOSTDEV constexpr auto
+hasSelfIntersection(PlanarQuadraticPolygon<N> const & poly) noexcept -> bool
+{
+  Point2 buffer[2 * N];
+  return hasSelfIntersection(poly, buffer);
+}
 
 } // namespace um2

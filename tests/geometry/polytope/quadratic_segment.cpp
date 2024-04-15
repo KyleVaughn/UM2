@@ -926,6 +926,8 @@ TEST_CASE(intersect_quadratic_segment)
   um2::Point2 buf[8];
   Int hits = um2::intersect(seg1, seg2, buf);
   ASSERT(hits == 0);
+  ASSERT(!seg1.intersects(seg2));
+  ASSERT(!seg2.intersects(seg1));
 
   // parallel quadratic segments with overlapping bounding boxes
   //---------------------------------------------------------------------------
@@ -933,6 +935,8 @@ TEST_CASE(intersect_quadratic_segment)
   seg2[2] = seg1[2] + offset; 
   hits = um2::intersect(seg1, seg2, buf);
   ASSERT(hits == 0);
+  ASSERT(!seg1.intersects(seg2));
+  ASSERT(!seg2.intersects(seg1));
 
   // parallel quadratic segments that are VERY close to each other
   //---------------------------------------------------------------------------
@@ -943,6 +947,8 @@ TEST_CASE(intersect_quadratic_segment)
   seg2[2] = seg1[2] + offset;
   hits = um2::intersect(seg1, seg2, buf);
   ASSERT(hits == 0);
+  ASSERT(!seg1.intersects(seg2));
+  ASSERT(!seg2.intersects(seg1));
 
   // quadratic segments that intersect outside of r,s ∈ [0, 1]
   //---------------------------------------------------------------------------
@@ -956,6 +962,8 @@ TEST_CASE(intersect_quadratic_segment)
 
   hits = um2::intersect(seg1, seg2, buf);
   ASSERT(hits == 0);
+  ASSERT(!seg1.intersects(seg2));
+  ASSERT(!seg2.intersects(seg1));
 
   //============================================================================
   // One intersection
@@ -974,6 +982,8 @@ TEST_CASE(intersect_quadratic_segment)
   hits = um2::intersect(seg1, seg2, buf);
   ASSERT(hits == 1);
   ASSERT(buf[0].isApprox(um2::Point2(1, 0)));
+  ASSERT(seg1.intersects(seg2));
+  ASSERT(seg2.intersects(seg1));
 
   // intersection at endpoint of two curved segments
   //---------------------------------------------------------------------------
@@ -984,6 +994,8 @@ TEST_CASE(intersect_quadratic_segment)
   hits = um2::intersect(seg1, seg2, buf);
   ASSERT(hits == 1);
   ASSERT(buf[0].isApprox(um2::Point2(2, 0)));
+  ASSERT(seg1.intersects(seg2));
+  ASSERT(seg2.intersects(seg1));
 
   //============================================================================
   // Two intersections
@@ -1003,16 +1015,22 @@ TEST_CASE(intersect_quadratic_segment)
   um2::Point2 const p1(3, 0);
   ASSERT(buf[0].isApprox(p0));
   ASSERT(buf[1].isApprox(p1));
+  ASSERT(seg1.intersects(seg2));
+  ASSERT(seg2.intersects(seg1));
 
   hits = seg1.intersect(seg2, buf);
   ASSERT(hits == 2);
   ASSERT(buf[0].isApprox(p0));
   ASSERT(buf[1].isApprox(p1));
+  ASSERT(seg1.intersects(seg2));
+  ASSERT(seg2.intersects(seg1));
 
   hits = seg2.intersect(seg1, buf);
   ASSERT(hits == 2);
   ASSERT(buf[0].isApprox(p1));
   ASSERT(buf[1].isApprox(p0));
+  ASSERT(seg1.intersects(seg2));
+  ASSERT(seg2.intersects(seg1));
 }
 
 template <Int D>

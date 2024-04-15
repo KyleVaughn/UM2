@@ -131,6 +131,11 @@ public:
   intersect(QuadraticSegment2 const & other, Point2 * buffer) const noexcept -> Int
   requires(D == 2);
 
+  // Intersects with another segment.
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  intersects(QuadraticSegment2 const & other) const noexcept -> bool
+  requires(D == 2);
+
   // The segment extends to the right, curving left from v[0] to v[1].
   PURE HOSTDEV [[nodiscard]] constexpr auto
   curvesLeft() const noexcept -> bool requires(D == 2);
@@ -708,8 +713,8 @@ intersect(QuadraticSegment2 const & q1, QuadraticSegment2 const & q2, Point2 * b
     return 0;
   }
 
-  // If the number of iterations is greater than 4, use Newton's method to find the
-  // zero of the function quickly.
+  // If the number of iterations is greater than 4, we are reasonably sure that there
+  // is an intersection. Use Newton's method to find the zero of the function quickly.
   // F(r, s) = Q1(r) - Q2(s)
   if (iters > 4) {
     Vec2F rs(0, 0);
@@ -734,7 +739,9 @@ intersect(QuadraticSegment2 const & q1, QuadraticSegment2 const & q2, Point2 * b
         return 0;
       }
       #pragma GCC diagnostic pop
-      rs -= inv(jac) * f_rs;
+      Mat2x2F const inv_jac(Vec2F{d / det, -c / det},    
+                            Vec2F{-b / det, a / det}); 
+      rs -= inv_jac * f_rs;
       f_rs = q1(rs[0]) - q2(rs[1]);
       ++nr_iters;
       err_next = f_rs.squaredNorm();
@@ -782,6 +789,74 @@ intersect(QuadraticSegment2 const & q1, QuadraticSegment2 const & q2, Point2 * b
   return num_intersections;
 }
 
+PURE HOSTDEV constexpr auto
+// NOLINTNEXTLINE(misc-no-recursion)
+intersects(QuadraticSegment2 const & q1, QuadraticSegment2 const & q2, Int iters = 0) noexcept -> bool
+{
+  // Scale each of the bounding boxes by a small amount to ensure
+  // floating point errors do not cause the intersection to be missed.
+  auto constexpr scaling = castIfNot<Float>(1.015625);
+  auto bb1 = q1.boundingBox();
+  bb1.scale(scaling);
+  auto bb2 = q2.boundingBox();
+  bb2.scale(scaling);
+  if (!bb1.intersects(bb2)) {
+    return false;
+  }
+
+  // If the number of iterations is greater than 4, we are reasonably sure that there
+  // is an intersection. Use Newton's method to find the zero of the function quickly.
+  // F(r, s) = Q1(r) - Q2(s)
+  if (iters > 4) {
+    Vec2F rs(0, 0);
+    Vec2F f_rs = q1(rs[0]) - q2(rs[1]);
+    Float err_prev = f_rs.squaredNorm();
+    Float err_next = err_prev;
+    Int nr_iters = 0;
+    do {
+      err_prev = err_next;
+      Mat2x2F const jac = Mat2x2F(q1.jacobian(rs[0]), -q2.jacobian(rs[1]));
+      // Manually compute the inverse of the 2x2 matrix, exiting early if the
+      // determinant is zero.
+      Float const a = jac(0, 0);    
+      Float const b = jac(0, 1);    
+      Float const c = jac(1, 0);    
+      Float const d = jac(1, 1);    
+      Float const det = det2x2(a, b, c, d);
+      #pragma GCC diagnostic push    
+      #pragma GCC diagnostic ignored "-Wfloat-equal"    
+      // NOLINTNEXTLINE(clang-diagnostic-float-equal)
+      if (det == 0) {
+        return false;
+      }
+      #pragma GCC diagnostic pop
+      Mat2x2F const inv_jac(Vec2F{d / det, -c / det},    
+                            Vec2F{-b / det, a / det}); 
+      rs -= inv_jac * f_rs;
+      f_rs = q1(rs[0]) - q2(rs[1]);
+      ++nr_iters;
+      err_next = f_rs.squaredNorm();
+    } while (err_next < err_prev && nr_iters < 10);
+
+    // This has to be fuzzy, since we incur floating point errors as we bisect the
+    // segment.
+    auto constexpr err_tol = 100 * eps_distance;
+    return (err_next < err_tol && -err_tol <= rs[0] && rs[0] <= 1 + err_tol && 
+                                  -err_tol <= rs[1] && rs[1] <= 1 + err_tol);
+  }
+
+  // QuadraticSegment bisection:
+  // q0 ------- q(0.25) ------- q2 ------- q(0.75) ------- q1
+  auto constexpr fourth = castIfNot<Float>(0.25);
+  auto constexpr three_fourths = castIfNot<Float>(0.75);
+  QuadraticSegment2 const q1l(q1[0], q1[2], q1(fourth));
+  QuadraticSegment2 const q1r(q1[2], q1[1], q1(three_fourths));
+  QuadraticSegment2 const q2l(q2[0], q2[2], q2(fourth));
+  QuadraticSegment2 const q2r(q2[2], q2[1], q2(three_fourths));
+  ++iters;
+  return (intersects(q1l, q2l, iters) || intersects(q1l, q2r, iters) ||
+          intersects(q1r, q2l, iters) || intersects(q1r, q2r, iters));
+}
 
 template <Int D>
 HOSTDEV [[nodiscard]] constexpr auto
@@ -789,6 +864,14 @@ QuadraticSegment<D>::intersect(QuadraticSegment2 const & other, Point2 * buffer)
   requires(D == 2)
 {
   return um2::intersect(*this, other, buffer); 
+}
+
+template <Int D>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+QuadraticSegment<D>::intersects(QuadraticSegment2 const & other) const noexcept -> bool
+  requires(D == 2)
+{
+  return um2::intersects(*this, other);
 }
 
 //==============================================================================

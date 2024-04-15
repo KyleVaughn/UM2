@@ -399,9 +399,24 @@ checkManifoldWatertight(FaceVertexMesh<P, N> const & mesh)
   }
 } // checkManifoldWatertight
 
+template <Int N>
+static void
+checkSelfIntersections(FaceVertexMesh<2, N> const & mesh)
+{
+  Int const num_faces = mesh.numFaces();
+  Point2 buffer[2 * N];
+  for (Int iface = 0; iface < num_faces; ++iface) {
+    if (mesh.getFace(iface).hasSelfIntersection(buffer)) {
+      logger::error("Mesh has self-intersecting face at index: ", iface);
+      return;
+    }
+  }
+}
+
 // Check for:
 // - Counter-clockwise faces (warn and fix)
 // - Manifoldness/watertight (error)
+// - Self-intersections (error, Quadratic elements only)
 template <Int P, Int N>
 void
 FaceVertexMesh<P, N>::validate()
@@ -411,6 +426,10 @@ FaceVertexMesh<P, N>::validate()
 
   // Check that the mesh is manifold and watertight.
   checkManifoldWatertight(*this);
+
+  if constexpr (P == 2) {
+    checkSelfIntersections(*this);
+  }
 }
 
 //==============================================================================

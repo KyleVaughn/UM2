@@ -4,10 +4,11 @@ compute optical thickness of coarse cell
   -> Can multithread here easily
     -> Ensure no interference between threads
 
+  -> Accumulate per ray, not per intersectio nfor better rounding.
+  -> Check to see if we ca do some arithmetic related to MCL 
+
 validate FVM
   hasSelfIntersection
-    newton method
-      invert 2x2
 
 Mesh statistics
 grid optical thickness
@@ -34,8 +35,6 @@ tutorial
 models
 
 split by assembly, lattice, etc. allow each to be read as model
-
-make model.writeXDMFFile private
 MPACT model from polytopesoup
 
 Definitely need a more efficient read/write for mpact model
