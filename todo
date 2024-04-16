@@ -1,3 +1,23 @@
+Bmeet:
+  intersection alg/paper on quadratic mesh algs
+  MPACT dependency, just use regular cmake and 8.3 if don't compile with gmsh
+  grid refinement 
+  graphs
+
+do grid overlay hierarchically.
+  overlay big grid, then
+
+INL debug
+INL release
+
+same ray params as MPACT?
+
+assembly grid study with very fine grid
+
+measure overlay time?
+
+Add debug statements to overlay grid. Why 20 mins for 153 by 153 but 46 sec for 102
+
 compute optical thickness of coarse cell
   -> Modular ray params
   -> Shoot rays and weight by one group cross section
@@ -6,9 +26,6 @@ compute optical thickness of coarse cell
 
   -> Accumulate per ray, not per intersectio nfor better rounding.
   -> Check to see if we ca do some arithmetic related to MCL 
-
-validate FVM
-  hasSelfIntersection
 
 Mesh statistics
 grid optical thickness

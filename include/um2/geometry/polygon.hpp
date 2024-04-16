@@ -294,7 +294,7 @@ hasSelfIntersection(PlanarQuadraticPolygon<N> const & poly, Point2 * buffer) noe
 }
 
 template <Int N>
-HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 hasSelfIntersection(PlanarQuadraticPolygon<N> const & poly) noexcept -> bool
 {
   Point2 buffer[2 * N];

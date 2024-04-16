@@ -20,7 +20,7 @@ makeGrid() -> um2::RegularGrid<D>
   return {minima, spacing, num_cells};
 }
 
-PURE HOSTDEV auto
+CONST HOSTDEV auto
 factorial(Int n) -> Int
 {
   Int result = 1;

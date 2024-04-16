@@ -158,7 +158,11 @@ getMeshType(Vector<VTKElemType> const & elem_types) noexcept -> MeshType
   }
   if (elem_types.size() == 2) {
     VTKElemType e0 = elem_types[0];
+    // GCC compiler bug. This can't be out of bounds if we have verified the size.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
     VTKElemType e1 = elem_types[1];
+#pragma GCC diagnostic pop
     if (static_cast<int>(e0) > static_cast<int>(e1)) {
       um2::swap(e0, e1);
     }

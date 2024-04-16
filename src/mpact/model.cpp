@@ -126,7 +126,9 @@ Model::addCylindricalPinMesh(
   }
 
   Float constexpr eps = eps_distance;
+#if UM2_ENABLE_ASSERTS
   Float constexpr big_eps = 100 * eps;
+#endif
 
   // radial region = region containing different materials (rings + outside of
   // the last radius)
@@ -189,10 +191,12 @@ Model::addCylindricalPinMesh(
     LOG_DEBUG("Ring ", i ," area: ", ring_areas[i]);
   }
   LOG_DEBUG("The area outside of the last ring is ", ring_areas[ctr]);
+#if UM2_ENABLE_ASSERTS
   // Ensure the sum of the ring areas is equal to pitch^2
   Float const sum_ring_areas =
       std::reduce(ring_areas.begin(), ring_areas.end());
   ASSERT_NEAR(sum_ring_areas, pitch * pitch, eps);
+#endif
   auto const num_azimuthal_t = static_cast<Float>(num_azimuthal);
   if (mesh_order == 1) {
     // Get the equivalent radius of each ring if it were a quadrilateral
@@ -222,6 +226,7 @@ Model::addCylindricalPinMesh(
     }
     // Sanity check: ensure the sum of the quadrilateral areas in a ring is equal to
     // the ring area
+#if UM2_ENABLE_ASSERTS
     ASSERT_NEAR(eq_radii[0] * eq_radii[0] * sin_theta / 2,
                 ring_areas[0] / num_azimuthal_t, big_eps);
     for (Int i = 1; i < total_rings; ++i) {
@@ -229,6 +234,7 @@ Model::addCylindricalPinMesh(
           (eq_radii[i] * eq_radii[i] - eq_radii[i - 1] * eq_radii[i - 1]) * sin_theta / 2;
       ASSERT_NEAR(area, ring_areas[i] / num_azimuthal_t, big_eps);
     }
+#endif
 
     //------------------------------------------------------------------------
     // Get the points that make up the mesh

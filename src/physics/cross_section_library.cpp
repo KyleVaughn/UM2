@@ -213,10 +213,12 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
 
     // Get the index of the nuclide
     token = line_view.getTokenAndShrink();
+#if UM2_ENABLE_ASSERTS
     Int const index = strto<Int>(token.data(), &end);
     ASSERT(end != nullptr);
     end = nullptr;
     ASSERT(index == nuclide_ctr + 1);
+#endif
     auto & nuclide = nuclides[nuclide_ctr];
 
     // Get the ZAID of the nuclide
@@ -293,17 +295,21 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
 
         // Group index
         token = line_view.getTokenAndShrink();
+#if UM2_ENABLE_ASSERTS
         Int const group_index = strto<Int>(token.data(), &end);
         ASSERT(end != nullptr);
         end = nullptr;
         ASSERT(group_index == ig + 1);
+#endif
 
         // Temperature index
         token = line_view.getTokenAndShrink();
+#if UM2_ENABLE_ASSERTS
         Int const temp_index = strto<Int>(token.data(), &end);
         ASSERT(end != nullptr);
         end = nullptr;
         ASSERT(temp_index == itemp + 1);
+#endif
 
         // Absorption
         token = line_view.getTokenAndShrink();

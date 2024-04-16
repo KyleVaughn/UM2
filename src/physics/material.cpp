@@ -10,6 +10,7 @@ namespace um2
 void
 Material::validate() const noexcept
 {
+#if UM2_ENABLE_ASSERTS
   ASSERT(!_name.empty());
   // If the cross section is non-empty, disregard physical properties
   if (!_xsec.t().empty()) {
@@ -27,17 +28,20 @@ Material::validate() const noexcept
       ASSERT(zaid > 0);
     }
   }
+#endif
 }
 
 void
 Material::addNuclide(Int zaid, Float num_density) noexcept
 {
+#if UM2_ENABLE_ASSERTS
   ASSERT(zaid > 0);
   ASSERT(num_density >= 0);
   // Check if the nuclide is already in the list
   for (auto const & z : _zaid) {
     ASSERT(z != zaid);
   }
+#endif
   _zaid.emplace_back(zaid);
   _num_density.emplace_back(num_density);
 }

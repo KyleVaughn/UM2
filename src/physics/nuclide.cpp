@@ -26,6 +26,7 @@ Nuclide::clear() noexcept
 void
 Nuclide::validate() const noexcept
 {
+#if UM2_ENABLE_ASSERTS
   ASSERT(_zaid > 0);
   ASSERT(_mass > 0);
   for (auto const & xsec : _xs) {
@@ -37,6 +38,7 @@ Nuclide::validate() const noexcept
     ASSERT(temp > 0)
   }
   ASSERT(um2::is_sorted(_temperatures.begin(), _temperatures.end()))
+#endif
 }
 
 PURE [[nodiscard]] auto

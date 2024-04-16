@@ -19,6 +19,9 @@ TEST_CASE(base_gmsh_api)
 TEST_SUITE(gmsh_wrapper) { TEST(base_gmsh_api); }
 #endif // UM2_USE_GMSH
 
+#if !UM2_USE_GMSH
+CONST
+#endif
 auto
 main() -> int
 {
