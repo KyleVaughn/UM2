@@ -229,7 +229,7 @@ main(int argc, char** argv) -> int
   // Generate the mesh
   //===========================================================================
 
-  um2::gmsh::model::mesh::setGlobalMeshSize(pin_pitch / 6);
+  um2::gmsh::model::mesh::setGlobalMeshSize(pin_pitch / 12);
   um2::gmsh::model::mesh::generateMesh(um2::MeshType::QuadraticTri);
   um2::gmsh::write("c5g7_2d.inp");
 

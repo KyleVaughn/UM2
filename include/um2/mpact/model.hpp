@@ -80,19 +80,19 @@ private:
 
   // Spatial hierarchy
   Core _core;
-  Vector<Assembly> _assemblies;
-  Vector<Lattice> _lattices;
-  Vector<RTM> _rtms;
-  Vector<CoarseCell> _coarse_cells;
+  Vector<Assembly> _assemblies;     // Unique assemblies
+  Vector<Lattice> _lattices;        // Unique lattices
+  Vector<RTM> _rtms;                // Unique RTMs
+  Vector<CoarseCell> _coarse_cells; // Unique coarse cells
 
   // Global materials
-  Vector<Material> _materials;
+  Vector<Material> _materials; // Unique materials
 
   // Coarse cell meshes
-  Vector<TriFVM> _tris;
-  Vector<QuadFVM> _quads;
-  Vector<Tri6FVM> _tri6s;
-  Vector<Quad8FVM> _quad8s;
+  Vector<TriFVM> _tris;     // Unique triangle meshes
+  Vector<QuadFVM> _quads;   // Unique quadrilateral meshes
+  Vector<Tri6FVM> _tri6s;   // Unique triangle6 meshes
+  Vector<Quad8FVM> _quad8s; // Unique quadrilateral8 meshes
 
 public:
   //============================================================================
@@ -136,20 +136,44 @@ public:
   quad8Meshes() const noexcept -> Vector<Quad8FVM> const &;
 
   //============================================================================
-  // Capacity 
+  // Capacity
   //============================================================================
 
+  // Number of unique coarse cells
   PURE [[nodiscard]] constexpr auto
   numCoarseCells() const noexcept -> Int;
 
+  // Number of unique RTMs
   PURE [[nodiscard]] constexpr auto
   numRTMs() const noexcept -> Int;
 
+  // Number of unique lattices
   PURE [[nodiscard]] constexpr auto
   numLattices() const noexcept -> Int;
 
+  // Number of unique assemblies
   PURE [[nodiscard]] constexpr auto
   numAssemblies() const noexcept -> Int;
+
+  // Total number of assemblies in the model (including duplicates)
+  PURE [[nodiscard]] constexpr auto
+  numAssembliesTotal() const noexcept -> Int;
+
+  // Total number of lattices in the model (including duplicates)
+  PURE [[nodiscard]] constexpr auto
+  numLatticesTotal() const noexcept -> Int;
+
+  // Total number of RTMs in the model (including duplicates)
+  PURE [[nodiscard]] constexpr auto
+  numRTMsTotal() const noexcept -> Int;
+
+  // Total number of coarse cells in the model (including duplicates)
+  PURE [[nodiscard]] constexpr auto
+  numCoarseCellsTotal() const noexcept -> Int;
+
+  // Total number of fine cells in the model
+  PURE [[nodiscard]] constexpr auto
+  numFineCellsTotal() const noexcept -> Int;
 
   //============================================================================
   // Getters
@@ -215,9 +239,9 @@ public:
   addQuad8Mesh(Quad8FVM const & mesh) -> Int;
 
   auto
-  addCylindricalPinCell(Float pitch, 
-                        Vector<Float> const & radii, 
-                        Vector<Material> const & materials, 
+  addCylindricalPinCell(Float pitch,
+                        Vector<Float> const & radii,
+                        Vector<Material> const & materials,
                         Vector<Int> const & num_rings,
                         Int num_azimuthal,
                         Int mesh_order = 1) -> Int;
@@ -273,7 +297,7 @@ public:
 //=============================================================================
 
 // We need to get labels like "Coarse_Cell_00001" or "Assembly_00021". Instead
-// of importing stringstream or doing string concatenation, we can use this 
+// of importing stringstream or doing string concatenation, we can use this
 // function.
 template <typename Str>
 inline void
@@ -373,7 +397,7 @@ Model::quad8Meshes() const noexcept -> Vector<Quad8FVM> const &
 }
 
 //=============================================================================
-// Capacity 
+// Capacity
 //=============================================================================
 
 PURE [[nodiscard]] constexpr auto
@@ -398,6 +422,64 @@ PURE [[nodiscard]] constexpr auto
 Model::numAssemblies() const noexcept -> Int
 {
   return _assemblies.size();
+}
+
+PURE [[nodiscard]] constexpr auto
+Model::numAssembliesTotal() const noexcept -> Int
+{
+  return _core.children().size();
+}
+
+PURE [[nodiscard]] constexpr auto
+Model::numLatticesTotal() const noexcept -> Int
+{
+  Int total = 0;
+  for (auto const & asy_id : _core.children()) {
+    total += _assemblies[asy_id].children().size();
+  }
+  return total;
+}
+
+PURE [[nodiscard]] constexpr auto
+Model::numRTMsTotal() const noexcept -> Int
+{
+  Int total = 0;
+  for (auto const & asy_id : _core.children()) {
+    for (auto const & lat_id : _assemblies[asy_id].children()) {
+      total += _lattices[lat_id].children().size();
+    }
+  }
+  return total;
+}
+
+PURE [[nodiscard]] constexpr auto
+Model::numCoarseCellsTotal() const noexcept -> Int
+{
+  Int total = 0;
+  for (auto const & asy_id : _core.children()) {
+    for (auto const & lat_id : _assemblies[asy_id].children()) {
+      for (auto const & rtm_id : _lattices[lat_id].children()) {
+        total += _rtms[rtm_id].children().size();
+      }
+    }
+  }
+  return total;
+}
+
+PURE [[nodiscard]] constexpr auto
+Model::numFineCellsTotal() const noexcept -> Int
+{
+  Int total = 0;
+  for (auto const & asy_id : _core.children()) {
+    for (auto const & lat_id : _assemblies[asy_id].children()) {
+      for (auto const & rtm_id : _lattices[lat_id].children()) {
+        for (auto const & cc_id : _rtms[rtm_id].children()) {
+          total += _coarse_cells[cc_id].numFaces();
+        }
+      }
+    }
+  }
+  return total;
 }
 
 //=============================================================================

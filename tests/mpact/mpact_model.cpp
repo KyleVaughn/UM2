@@ -838,6 +838,14 @@ TEST_CASE(io)
 
   model_out.addCore(ids);
 
+  // Test the numXXXXTotal functions
+  ASSERT(model_out.numAssembliesTotal() == 9);
+  ASSERT(model_out.numLatticesTotal() == 9 * 10);
+  ASSERT(model_out.numRTMsTotal() == 9 * 10 * 17 * 17);
+  ASSERT(model_out.numCoarseCellsTotal() == 9 * 10 * 17 * 17);
+  // 9 * 17 * 17 * (4 * 48 + 5 * 25) + 1 * 17 * 17 * (9 * 25)
+  ASSERT(model_out.numFineCellsTotal() == 889542);
+
   model_out.write("c5g7_out.xdmf"); 
 
   um2::mpact::Model model_in;
@@ -874,7 +882,7 @@ TEST_SUITE(mpact_Model)
   TEST(addCoarseGrid);
   TEST(importCoarseCellMeshes);
   TEST(operator_PolytopeSoup);
-  TEST(io)
+  TEST(io);
 }
 
 auto

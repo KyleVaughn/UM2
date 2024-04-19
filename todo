@@ -1,14 +1,17 @@
+write cross section to mpact file
+read cross section from mpact file
+add options for what is written to mpact file
+
+write iterators for mesh and mpact to iterate over faces, coarse cells, etc without so much hassle
 Bmeet:
   intersection alg/paper on quadratic mesh algs
   MPACT dependency, just use regular cmake and 8.3 if don't compile with gmsh
   grid refinement 
   graphs
+  3D MCL
 
 do grid overlay hierarchically.
   overlay big grid, then
-
-INL debug
-INL release
 
 same ray params as MPACT?
 

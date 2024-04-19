@@ -41,11 +41,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #===============================================================================
 
 # Build options
-option(UM2_BUILD_BENCHMARKS "Build benchmarks"                  OFF)
-option(UM2_BUILD_MODELS     "Build models"                      OFF)
-option(UM2_BUILD_TESTS      "Build tests"                       ON)
-option(UM2_BUILD_TUTORIAL   "Build tutorial"                    OFF)
-option(UM2_BUILD_SHARED_LIB "Build UM2 as shared library"       ON)
+option(UM2_BUILD_BENCHMARKS   "Build benchmarks"                  OFF)
+option(UM2_BUILD_MODELS       "Build models"                      OFF)
+option(UM2_BUILD_POSTPROCESS  "Build post-processing tools"       ON)
+option(UM2_BUILD_TESTS        "Build tests"                       ON)
+option(UM2_BUILD_TUTORIAL     "Build tutorial"                    OFF)
+option(UM2_BUILD_SHARED_LIB   "Build UM2 as shared library"       ON)
 
 # Use external dependencies
 option(UM2_USE_CUDA         "Enable CUDA"                       OFF)
@@ -347,6 +348,10 @@ endif()
 if (UM2_BUILD_BENCHMARKS)
   find_package(benchmark REQUIRED)
   add_subdirectory(benchmarks)
+endif()
+
+if (UM2_BUILD_POSTPROCESS)
+  add_subdirectory(post-process)
 endif()
 
 if (UM2_BUILD_MODELS)
