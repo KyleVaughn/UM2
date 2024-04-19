@@ -7,8 +7,6 @@
 
 #include <numeric> // std::reduce
 
-#include <iostream>
-
 auto constexpr eps = um2::eps_distance;
 
 TEST_CASE(ASCII)
@@ -118,22 +116,38 @@ TEST_CASE(addCoarseCell)
   ASSERT(cell.material_ids.empty());
 
   // Add a cell with full properties
+  um2::XSLibrary const lib8(um2::settings::xs::library_path + "/" + um2::mpact::XSLIB_8G); 
   model.addRectangularPinMesh(dxdy, 2, 2);
-  um2::Material umetal;
-  umetal.setName("U-metal");
-  umetal.setColor(um2::forestgreen);
-  umetal.setTemperature(600);
-  umetal.setDensity(castIfNot<Float>(10.5));
-  umetal.addNuclide("U235", castIfNot<Float>(0.05));
-  umetal.addNuclide("U238", castIfNot<Float>(0.95));
-  um2::Material clad;
-  clad.setName("Clad");
-  clad.setColor(um2::lightgray);
-  clad.setTemperature(600);
-  clad.setDensity(castIfNot<Float>(6.5));
-  clad.addNuclide("Zr90", 1);
-  model.addMaterial(umetal);
-  model.addMaterial(clad);
+      
+  um2::XSLibrary const xslib(um2::settings::xs::library_path + "/" + um2::mpact::XSLIB_51G);    
+    
+  // Fuel    
+  um2::Material fuel;    
+  fuel.setName("Fuel");    
+  fuel.setDensity(10.42);
+  fuel.setTemperature(565.0);
+  fuel.setColor(um2::forestgreen);    
+  fuel.addNuclide("U234", 6.11864e-6); // Number density in atoms/b-cm    
+  fuel.addNuclide("U235", 7.18132e-4);    
+  fuel.addNuclide("U236", 3.29861e-6);    
+  fuel.addNuclide("U238", 2.21546e-2);    
+  fuel.addNuclide("O16", 4.57642e-2);    
+  fuel.populateXSec(xslib);
+
+    // Moderator
+  um2::Material moderator;
+  moderator.setName("Moderator");
+  moderator.setDensity(0.743);
+  moderator.setTemperature(565.0);
+  moderator.setColor(um2::blue);
+  moderator.addNuclide("O16", 2.48112e-02);
+  moderator.addNuclide("H1", 4.96224e-02);
+  moderator.addNuclide("B10", 1.07070e-05);
+  moderator.addNuclide("B11", 4.30971e-05);
+  moderator.populateXSec(xslib);
+
+  model.addMaterial(fuel);
+  model.addMaterial(moderator);
   um2::Vector<MatID> const material_ids = {0, 0, 0, 1};
   Int const id2 =
       model.addCoarseCell(dxdy, um2::MeshType::Quad, 0, material_ids);
@@ -647,13 +661,13 @@ TEST_CASE(io)
   moderator.xsec().isMacro() = true;
 
   // Safety checks
-  uo2.validate();
-  mox43.validate();
-  mox70.validate();
-  mox87.validate();
-  fiss_chamber.validate();
-  guide_tube.validate();
-  moderator.validate();
+  uo2.validateXSec();
+  mox43.validateXSec();
+  mox70.validateXSec();
+  mox87.validateXSec();
+  fiss_chamber.validateXSec();
+  guide_tube.validateXSec();
+  moderator.validateXSec();
 
   model_out.addMaterial(uo2);
   model_out.addMaterial(mox43);
@@ -846,10 +860,29 @@ TEST_CASE(io)
   // 9 * 17 * 17 * (4 * 48 + 5 * 25) + 1 * 17 * 17 * (9 * 25)
   ASSERT(model_out.numFineCellsTotal() == 889542);
 
-  model_out.write("c5g7_out.xdmf"); 
+//  model_out.write("c5g7_out.xdmf", /*write_knudsen_data=*/false, /*write_xsec_data=*/true);
 
   um2::mpact::Model model_in;
   model_in.read("c5g7_out.xdmf");
+
+  // Check the materials
+  auto const & materials_in = model_in.materials();
+  auto const & materials_out = model_out.materials();
+  ASSERT(materials_in.size() == 7);
+  ASSERT(materials_in[0].getName() == "UO2");
+  ASSERT(materials_in[1].getName() == "MOX_4.3");
+  ASSERT(materials_in[2].getName() == "MOX_7.0");
+  ASSERT(materials_in[3].getName() == "MOX_8.7");
+  ASSERT(materials_in[4].getName() == "Fission_Chamber");
+  ASSERT(materials_in[5].getName() == "Guide_Tube");
+  ASSERT(materials_in[6].getName() == "Moderator");
+
+  for (Int i = 0; i < 7; ++i) {
+    ASSERT(materials_in[i].getName() == materials_out[i].getName());
+    for (Int j = 0; j < 7; ++j) {
+      ASSERT_NEAR(materials_in[i].xsec().t(j), materials_out[i].xsec().t(j), eps);
+    }
+  }
 
   // Check the pin meshes. These are duplicated if there are repeated meshes.
 
@@ -868,6 +901,70 @@ TEST_CASE(io)
   ASSERT(model_in.core().getChild(2, 2) == 2);
 }
 
+TEST_CASE(getCoarseCellOpticalThickness)
+{
+  um2::mpact::Model model;
+
+  //===========================================================================
+  // Materials
+  //===========================================================================
+
+  um2::Material uo2;
+  uo2.setName("UO2");
+  uo2.setColor(um2::forestgreen);
+  uo2.xsec().t() = {2.12450e-01, 3.55470e-01, 4.85540e-01, 5.59400e-01,
+                    3.18030e-01, 4.01460e-01, 5.70610e-01};
+  uo2.xsec().isMacro() = true;
+
+  um2::Material moderator;
+  moderator.setName("Moderator");
+  moderator.setColor(um2::royalblue);
+  moderator.xsec().t() = {2.30070e-01, 7.76460e-01, 1.48420e+00,
+ 1.50520e+00, 1.55920e+00, 2.02540e+00,
+ 3.30570e+00};
+  moderator.xsec().isMacro() = true;
+
+  uo2.validateXSec();
+  moderator.validateXSec();
+
+  model.addMaterial(uo2);
+  model.addMaterial(moderator);
+
+  //===========================================================================
+  // Geometry
+  //===========================================================================
+  
+  auto const pin_pitch = castIfNot<Float>(1.26);
+  um2::Vec2F const xy_extents = {pin_pitch, pin_pitch};
+                                                                                          
+  // 5 by 5 mesh 
+  auto const rect_pin_mesh_type = um2::MeshType::Quad;
+  auto const rect_pin_id = model.addRectangularPinMesh(xy_extents, 5, 5);
+                                                                                          
+  // Coarse cells
+  //---------------------------------------------------------------------------
+ 
+  // Add a pure fuel pin cell
+  um2::Vector<MatID> mat_ids(25, 0);
+  model.addCoarseCell(xy_extents, rect_pin_mesh_type, rect_pin_id, mat_ids);
+
+  // Compute the optical thickness for each energy group
+  auto const opt_thick0 = model.getCoarseCellOpticalThickness(0);
+
+  // In a homogenous cell, the optical thickness is simply:
+  // tau_g = sigma_t,g * mcl
+  // where mcl is the mean chord length of the cell
+  // mcl = pi * area / perimeter
+
+  auto const area0 = pin_pitch * pin_pitch;
+  auto const perimeter0 = 4 * pin_pitch; 
+  auto const mcl0 = um2::pi<Float> * area0 / perimeter0;
+  
+  for (Int g = 0; g < 7; ++g) {
+    ASSERT_NEAR(opt_thick0[g], uo2.xsec().t(g) * mcl0, eps);
+  }
+}
+
 TEST_SUITE(mpact_Model)
 {
   TEST(ASCII);
@@ -883,6 +980,7 @@ TEST_SUITE(mpact_Model)
   TEST(importCoarseCellMeshes);
   TEST(operator_PolytopeSoup);
   TEST(io);
+  TEST(getCoarseCellOpticalThickness);
 }
 
 auto

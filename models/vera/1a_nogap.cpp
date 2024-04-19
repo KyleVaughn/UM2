@@ -101,7 +101,7 @@ main() -> int
   model.addAssembly({0});
   model.addCore({{0}});
 
-  model.write("1a_nogap.xdmf");
+  model.write("1a_nogap.xdmf", /*write_knudsen_data=*/true, /*write_xsec_data=*/true);
   um2::finalize();
   return 0;
 }

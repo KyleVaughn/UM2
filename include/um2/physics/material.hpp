@@ -159,7 +159,10 @@ public:
   //======================================================================
 
   void
-  validate() const noexcept;
+  validateProperties() const noexcept;
+
+  void
+  validateXSec() const noexcept;
 
   void
   addNuclide(Int zaid, Float num_density) noexcept;

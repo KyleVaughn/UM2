@@ -67,6 +67,7 @@ PolytopeSoup::getElset(String const & name, Vector<Int> & ids, Vector<Float> & d
       return;
     }
   }
+  LOG_WARN("Elset ", name, " not found.");
 }
 
 //==============================================================================

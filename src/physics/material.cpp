@@ -8,25 +8,31 @@ namespace um2
 //==============================================================================
 
 void
-Material::validate() const noexcept
+Material::validateProperties() const noexcept
 {
 #if UM2_ENABLE_ASSERTS
   ASSERT(!_name.empty());
-  // If the cross section is non-empty, disregard physical properties
-  if (!_xsec.t().empty()) {
-    _xsec.validate();
-    ASSERT(_xsec.isMacro());
-  } else {
-    ASSERT(_temperature > 0);
-    ASSERT(_density > 0);
-    ASSERT(!_num_density.empty());
-    ASSERT(_num_density.size() == _zaid.size());
-    for (auto const & num_density : _num_density) {
-      ASSERT(num_density >= 0);
-    }
-    for (auto const & zaid : _zaid) {
-      ASSERT(zaid > 0);
-    }
+  ASSERT(_temperature > 0);
+  ASSERT(_density > 0);
+  ASSERT(!_num_density.empty());
+  ASSERT(_num_density.size() == _zaid.size());
+  for (auto const & num_density : _num_density) {
+    ASSERT(num_density >= 0);
+  }
+  for (auto const & zaid : _zaid) {
+    ASSERT(zaid > 0);
+  }
+#endif
+}
+
+void
+Material::validateXSec() const noexcept
+{
+#if UM2_ENABLE_ASSERTS
+  ASSERT(!_xsec.t().empty());
+  ASSERT(_xsec.isMacro());
+  for (auto const & t_i : _xsec.t()) {
+    ASSERT(t_i >= 0);
   }
 #endif
 }
@@ -58,7 +64,7 @@ Material::populateXSec(XSLibrary const & xsec_lib) noexcept
 {
   _xsec.t().clear();
   // Ensure temperature, density, and number densities are set
-  validate();
+  validateProperties();
   _xsec.isMacro() = true;
   Int const num_groups = xsec_lib.numGroups();
   _xsec.t().resize(num_groups);

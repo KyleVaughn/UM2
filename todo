@@ -1,21 +1,42 @@
-write cross section to mpact file
-read cross section from mpact file
-add options for what is written to mpact file
+How should mean chord length be computed for azimuthally extruded mesh?
+  -> What are the assumptions on ray entrance and exit?
+  -> Should l / cos(theta) be limited to height? height /2? etc
+
+getCoarseCellOpticalThicknessGrid
+  -> Return rectilinear partition
+  -> Convert rectilinear grid to quad mesh
+  -> Add thickness as elset
+
+iterators vs ranges
+
+
+FIX MPACT MODEL TO POLYSOUP.
+  MATERIAL ELSETS
+  Omit the small stuff like "Coarse_Cell" and just do the global elsets
+  add flags for data.
+  Maybe just add them all at the end?
+
+add a check if meshes are the same when adding the fine mesh
+-> eliminate duplicates
+-> Use compare? Must be morton sorted
+
+compute tau on each grid cell and write as a member function?
+
+mpact polytope soup add all the elsets at the end?
+
+XSec to XS
+
+Use VERA 4 to check correct MG output
+-> vis xsecs
+
+MPACT polysoup conversion. Ensure material is added correctly
 
 write iterators for mesh and mpact to iterate over faces, coarse cells, etc without so much hassle
-Bmeet:
-  intersection alg/paper on quadratic mesh algs
-  MPACT dependency, just use regular cmake and 8.3 if don't compile with gmsh
-  grid refinement 
-  graphs
-  3D MCL
 
 do grid overlay hierarchically.
   overlay big grid, then
 
 same ray params as MPACT?
-
-assembly grid study with very fine grid
 
 measure overlay time?
 
@@ -30,7 +51,6 @@ compute optical thickness of coarse cell
   -> Accumulate per ray, not per intersectio nfor better rounding.
   -> Check to see if we ca do some arithmetic related to MCL 
 
-Mesh statistics
 grid optical thickness
 
 modify MPACT to accept the face ids of the intersection points
@@ -48,8 +68,6 @@ Finish Gmsh model functions for model creation
 enable OMP/TBB -> But where?
   compute
 
-build UM2 without gmsh for MPACT
-
 docs
 tutorial
 models
@@ -58,8 +76,6 @@ split by assembly, lattice, etc. allow each to be read as model
 MPACT model from polytopesoup
 
 Definitely need a more efficient read/write for mpact model
-
-VERA 1A
 
 write MPACT XDMF with mpact input file
 
@@ -247,11 +263,12 @@ Interactive visualization (openGL)
   Decompose to lines and triangles
 
 FVM
-  -> Implement edge to edge intersection
-  -> Implement faceContaining by finding the vertex closest to the point first
-  -> Warn about vertices that are within eps in "validate()"
+-> Implement edge to edge intersection
+-> Implement faceContaining by finding the vertex closest to the point first
+-> Warn about vertices that are within eps in "validate()"
 
 bump gmsh version
--> Only enable some of OCC
+-> Only enable some of OCC?
 
 Restore the Make scripts for build dependencies 
+-> Effectively the github CI

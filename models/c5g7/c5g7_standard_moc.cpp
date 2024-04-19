@@ -72,13 +72,13 @@ main() -> int
   moderator.xsec().isMacro() = true;
 
   // Safety checks
-  uo2.validate();
-  mox43.validate();
-  mox70.validate();
-  mox87.validate();
-  fiss_chamber.validate();
-  guide_tube.validate();
-  moderator.validate();
+  uo2.validateXSec();
+  mox43.validateXSec();
+  mox70.validateXSec();
+  mox87.validateXSec();
+  fiss_chamber.validateXSec();
+  guide_tube.validateXSec();
+  moderator.validateXSec();
 
   model.addMaterial(uo2);
   model.addMaterial(mox43);

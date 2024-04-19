@@ -317,7 +317,7 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
         ASSERT(end != nullptr);
         end = nullptr;
         if (absorption < 0) {
-          LOG_WARN("Nuclide with ZAID ", zaid,
+          logger::debug("Nuclide with ZAID ", zaid,
                     " has negative absorption cross section at group ", ig,
                     " and temperature ", itemp);
         }

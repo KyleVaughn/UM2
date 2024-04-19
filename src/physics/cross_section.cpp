@@ -17,9 +17,14 @@ XSec::validate() const noexcept
   if (_t.empty()) {
     LOG_ERROR("Cross section has an empty total XS vector");
   }
-  for (auto const & t_i : _t) {
-    if (t_i < 0) {
-      LOG_WARN("Cross section has a negative total XS in one or more groups");
+  // If the cross section is macroscopic, the total XS must be positive. 
+  // If the cross section is microscopic, the total XS can be negative due to
+  // correction factors.
+  if (isMacro()) {
+    for (auto const & t_i : _t) {
+      if (t_i < 0) {
+        LOG_ERROR("Cross section has a negative total XS in one or more groups");
+      }
     }
   }
 }

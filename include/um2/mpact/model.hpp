@@ -121,6 +121,9 @@ public:
   coarseCells() const noexcept -> Vector<CoarseCell> const &;
 
   PURE [[nodiscard]] constexpr auto
+  materials() noexcept -> Vector<Material> &;
+
+  PURE [[nodiscard]] constexpr auto
   materials() const noexcept -> Vector<Material> const &;
 
   PURE [[nodiscard]] constexpr auto
@@ -288,7 +291,13 @@ public:
   read(String const & filename);
 
   void
-  write(String const & filename) const;
+  write(String const & filename,
+      bool write_knudsen_data = false, 
+      bool write_xsec_data = false) const;
+
+  // Return a vector of group-wise optical thicknesses for the coarse cell.
+  auto
+  getCoarseCellOpticalThickness(Int cc_id) const -> Vector<Float>;
 
 }; // struct Model
 
@@ -364,6 +373,12 @@ PURE [[nodiscard]] constexpr auto
 Model::coarseCells() const noexcept -> Vector<CoarseCell> const &
 {
   return _coarse_cells;
+}
+
+PURE [[nodiscard]] constexpr auto
+Model::materials() noexcept -> Vector<Material> &
+{
+  return _materials;
 }
 
 PURE [[nodiscard]] constexpr auto

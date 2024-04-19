@@ -33,8 +33,8 @@ main() -> int
   moderator.xsec().isMacro() = true;
 
   // Safety checks
-  uo2.validate();
-  moderator.validate();
+  uo2.validateXSec();
+  moderator.validateXSec();
 
   model.addMaterial(uo2);
   model.addMaterial(moderator);

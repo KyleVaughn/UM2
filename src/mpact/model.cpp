@@ -73,7 +73,7 @@ auto
 Model::addMaterial(Material const & material, bool const validate) -> Int
 {
   if (validate) {
-    material.validate();
+    material.validateXSec();
   }
   _materials.emplace_back(material);
   return _materials.size() - 1;
@@ -1474,7 +1474,8 @@ Model::operator PolytopeSoup() const noexcept
 
 static void
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
-writeXDMFFile(String const & filepath, Model const & model)
+writeXDMFFile(String const & filepath, Model const & model,
+    bool const write_knudsen_data = false, bool const write_xsec_data = false)
 {
   LOG_INFO("Writing MPACT model to XDMF file: ", filepath);
 
@@ -1494,12 +1495,21 @@ writeXDMFFile(String const & filepath, Model const & model)
     return;
   }
 
-  // Store the one-group cross sections for each material
-  Vector<Float> one_group_xs(materials.size());
-  for (Int imat = 0; imat < materials.size(); ++imat) {
-    ASSERT(materials[imat].xsec().isMacro());
-    auto const xs = materials[imat].xsec().collapse();
-    one_group_xs[imat] = xs.t(0);
+  // Process 1-group cross sections if requested
+  Vector<Float> one_group_xs;
+  if (write_knudsen_data || write_xsec_data) {
+    // Store the one-group cross sections for each material
+    one_group_xs.resize(materials.size());
+    for (Int imat = 0; imat < materials.size(); ++imat) {
+      auto const & mat = materials[imat];
+      mat.validateXSec();
+      auto const xs = materials[imat].xsec().collapse();
+      one_group_xs[imat] = xs.t(0);
+      if (one_group_xs[imat] <= 0) {
+        logger::warn("One-group cross section for material \"", materials[imat].getName(),
+            "\" is non-positive"); 
+      }
+    }
   }
 
   // Store a PolytopeSoup for each CoarseCell
@@ -1517,35 +1527,45 @@ writeXDMFFile(String const & filepath, Model const & model)
       MeshType const mesh_type = coarse_cell.mesh_type;
       Int const mesh_id = coarse_cell.mesh_id;
 
-      mcls.resize(coarse_cell.numFaces());
+      if (write_knudsen_data) {
+        mcls.resize(coarse_cell.numFaces());
+      }
 
       switch (mesh_type) {
       case MeshType::Tri:
         LOG_DEBUG("Mesh type: Tri");
         cell_soup = tris[mesh_id];
-        for (Int i = 0; i < mcls.size(); ++i) {
-          mcls[i] = tris[mesh_id].getFace(i).meanChordLength();
+        if (write_knudsen_data) {
+          for (Int i = 0; i < mcls.size(); ++i) {
+            mcls[i] = tris[mesh_id].getFace(i).meanChordLength();
+          }
         }
         break;
       case MeshType::Quad:
         LOG_DEBUG("Mesh type: Quad");
         cell_soup = quads[mesh_id];
-        for (Int i = 0; i < mcls.size(); ++i) {
-          mcls[i] = quads[mesh_id].getFace(i).meanChordLength();
+        if (write_knudsen_data) {
+          for (Int i = 0; i < mcls.size(); ++i) {
+            mcls[i] = quads[mesh_id].getFace(i).meanChordLength();
+          }
         }
         break;
       case MeshType::QuadraticTri:
         LOG_DEBUG("Mesh type: QuadraticTri");
         cell_soup = tri6s[mesh_id];
-        for (Int i = 0; i < mcls.size(); ++i) {
-          mcls[i] = tri6s[mesh_id].getFace(i).meanChordLength();
+        if (write_knudsen_data) {
+          for (Int i = 0; i < mcls.size(); ++i) {
+            mcls[i] = tri6s[mesh_id].getFace(i).meanChordLength();
+          }
         }
         break;
       case MeshType::QuadraticQuad:
         LOG_DEBUG("Mesh type: QuadraticQuad");
         cell_soup = quad8s[mesh_id];
-        for (Int i = 0; i < mcls.size(); ++i) {
-          mcls[i] = quad8s[mesh_id].getFace(i).meanChordLength();
+        if (write_knudsen_data) {
+          for (Int i = 0; i < mcls.size(); ++i) {
+            mcls[i] = quad8s[mesh_id].getFace(i).meanChordLength();
+          }
         }
         break;
       default:
@@ -1563,23 +1583,44 @@ writeXDMFFile(String const & filepath, Model const & model)
       }
       cell_soup.addElset("Material_ID", cell_ids, mat_ids);
 
-      // Add the one-group cross sections
-      xsecs.resize(coarse_cell.numFaces());
-      for (Int i = 0; i < xsecs.size(); ++i) {
-        xsecs[i] = one_group_xs[static_cast<Int>(coarse_cell.material_ids[i])];
+      // Add the one-group total cross sections if requested
+      if (write_knudsen_data || write_xsec_data) {
+        xsecs.resize(coarse_cell.numFaces());
+        for (Int i = 0; i < xsecs.size(); ++i) {
+          xsecs[i] = one_group_xs[static_cast<Int>(coarse_cell.material_ids[i])];
+        }
+        cell_soup.addElset("One_Group_Total_XS", cell_ids, xsecs);
       }
-      cell_soup.addElset("One_Group_XS", cell_ids, xsecs);
 
-      // Add the mean chord lengths
-      cell_soup.addElset("Mean_Chord_Length", cell_ids, mcls);
-
-      // Add the Knudsen numbers
-      // Kn = mean free path / characteristic length
-      //    = 1 / (xs * mcl)
-      for (Int i = 0; i < xsecs.size(); ++i) {
-        mcls[i] = 1 / (xsecs[i] * mcls[i]);
+      // Add the multigroup total cross sections if requested
+      if (write_xsec_data) {
+        Vector<Float> mg_xsec_data(coarse_cell.numFaces());
+        Int const num_groups = materials[0].xsec().numGroups();
+        // For each energy group:
+        for (Int ig = 0; ig < num_groups; ++ig) {
+          for (Int icell = 0; icell < mat_ids.size(); ++icell) {
+            // NOLINTNEXTLINE(bugprone-signed-char-misuse,cert-str34-c)
+            auto const mat_id = static_cast<Int>(coarse_cell.material_ids[icell]);
+            auto const & xsec = materials[mat_id].xsec();
+            mg_xsec_data[icell] = xsec.t(ig);
+          }
+          cell_soup.addElset("Group_" + getASCIINumber(ig) + "_Total_XS", 
+              cell_ids, mg_xsec_data);
+        }
       }
-      cell_soup.addElset("Knudsen_Number", cell_ids, mcls);
+
+      if (write_knudsen_data) {
+        // Add the mean chord lengths
+        cell_soup.addElset("Mean_Chord_Length", cell_ids, mcls);
+
+        // Add the Knudsen numbers
+        // Kn = mean free path / characteristic length
+        //    = 1 / (xs * mcl)
+        for (Int i = 0; i < xsecs.size(); ++i) {
+          mcls[i] = 1 / (xsecs[i] * mcls[i]);
+        }
+        cell_soup.addElset("Knudsen_Number", cell_ids, mcls);
+      }
 
       cell_soup.sortElsets();
     } // for (icc)
@@ -1839,10 +1880,13 @@ writeXDMFFile(String const & filepath, Model const & model)
 //==============================================================================
 
 void
-Model::write(String const & filename) const
+Model::write(
+    String const & filename,
+    bool const write_knudsen_data, 
+    bool const write_xsec_data) const
 {
   if (filename.ends_with(".xdmf")) {
-    writeXDMFFile(filename, *this);
+    writeXDMFFile(filename, *this, write_knudsen_data, write_xsec_data);
   } else {
     logger::error("Unsupported file format.");
   }
@@ -2411,6 +2455,89 @@ readXDMFFile(String const & filename, Model & model)
           for (Int i = 0; i < data.size(); ++i) {
             coarse_cell_material_ids.back()[i] = static_cast<MatID>(data[i]);
           }
+
+          // If there is multigroup xsec data present, we can use it
+          // to populate the material cross sections. First, check if we
+          // have already populated the material cross sections.
+
+          bool have_all_xsec_data = true;
+          for (auto const & material : model.materials()) {
+            if (!material.hasXSec()) {
+              have_all_xsec_data = false;
+              break;
+            }
+          }
+
+          if (have_all_xsec_data) {
+            continue;
+          }
+
+          // Check if the multigroup xsec data is present
+          Int num_groups = 0;
+          for (auto const & elset_name : soup.elsetNames()) {
+            if (elset_name.starts_with("Group_") &&
+                elset_name.ends_with("_Total_XS")) {
+              ++num_groups;
+            }
+          }
+
+          if (num_groups == 0) {
+            continue;
+          }
+
+          // Get the material indices that don't have cross section data 
+          Int const num_global_mats = model.materials().size();
+          Vector<MatID> missing_mat_indices;
+          missing_mat_indices.reserve(num_global_mats);
+          for (MatID imat = 0; imat < static_cast<MatID>(num_global_mats); ++imat) { 
+            auto & material = model.materials()[static_cast<Int>(imat)];
+            if (!material.hasXSec()) {
+              missing_mat_indices.emplace_back(imat);
+              material.xsec().t().resize(num_groups);
+              // Set the values to -inf_distance to indicate that the data is missing
+              um2::fill(material.xsec().t().begin(), material.xsec().t().end(), -inf_distance);
+            }
+          }
+
+          // For each material that doesn't have cross section data, check to see if
+          // there is a cell with that material ID.
+          auto const & cc_material_ids = coarse_cell_material_ids.back();
+          for (auto const imat : missing_mat_indices) {
+            Int cell_idx = -1;
+            for (Int icell = 0; icell < cc_material_ids.size(); ++icell) {
+              auto const mat_id = cc_material_ids[icell];
+              if (imat == mat_id) {
+                cell_idx = icell; 
+                break;
+              }
+            }
+            // No cell with this material ID
+            if (cell_idx == -1) {
+              continue;
+            }
+            LOG_INFO("Found cross section data for material ID: ", static_cast<Int>(imat));
+
+            // We have found a cell with the material ID. Get the elset data for each
+            // energy group and emplace back into the corresponding material.
+            auto & material = model.materials()[static_cast<Int>(imat)];
+            
+            // Get the cross section data
+            Vector<Int> elset_ids;
+            Vector<Float> elset_data;
+            for (Int igroup = 0; igroup < num_groups; ++igroup) {
+              String const elset_name = "Group_" + getASCIINumber(igroup) + "_Total_XS";
+              soup.getElset(elset_name, elset_ids, elset_data);
+              ASSERT(elset_ids.size() == soup.numElements());
+              ASSERT(elset_data.size() == soup.numElements());
+              material.xsec().t(igroup) = elset_data[cell_idx];
+              elset_ids.clear();
+              elset_data.clear();
+            }
+            
+            material.xsec().isMacro() = true;
+            material.validateXSec();
+
+          } // Missing material indices loop
         } // Coarse cell loop
       } // RTM loop
     } // Lattice loop
@@ -2491,6 +2618,51 @@ Model::read(String const & filename)
   } else {
     logger::error("Unsupported file format.");
   }
+}
+
+//==============================================================================
+// getCoarseCellOpticalThickness
+//==============================================================================
+
+auto    
+Model::getCoarseCellOpticalThickness(Int const cc_id) const -> Vector<Float>
+{
+  // Algorithm:
+  // Shoot modular rays through the coarse cell and calculate the optical thickness.
+  // global_taus = 0
+  // For each azimuthal angle,
+  //  azimuthal_taus = 0
+  //  Compute the modular ray params
+  //  For each modular ray,
+  //    ray_taus = 0
+  //    Shoot the modular ray through the coarse cell mesh.
+  //    For each face which intersects the modular ray,
+  //      Get the face material
+  //      Sum the segment lengths
+  //      For each energy group,
+  //        ray_taus[ig] += segment_length * material_xsec[ig]
+  //      End
+  //    End
+  //    azimuthal_taus += ray_taus
+  //  End
+  //  global_taus += azimuthal_taus
+  // End
+  // 
+  // return global_taus
+
+
+  // Number of azimuthal angles in az in (0, pi)
+  Int constexpr num_azi = 16;
+
+
+  // Check that the coarse cell exists
+  ASSERT(cc_id >= 0);
+  ASSERT(cc_id < _coarse_cells.size()); 
+
+  // Get the coarse cell
+  auto const & cc = _coarse_cells[cc_id];
+
+
 }
 
 } // namespace um2::mpact

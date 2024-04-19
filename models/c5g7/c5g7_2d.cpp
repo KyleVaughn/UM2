@@ -93,13 +93,13 @@ main(int argc, char** argv) -> int
   moderator.xsec().isMacro() = true;
 
   // Safety checks
-  uo2.validate();
-  mox43.validate();
-  mox70.validate();
-  mox87.validate();
-  fiss_chamber.validate();
-  guide_tube.validate();
-  moderator.validate();
+  uo2.validateXSec();
+  mox43.validateXSec();
+  mox70.validateXSec();
+  mox87.validateXSec();
+  fiss_chamber.validateXSec();
+  guide_tube.validateXSec();
+  moderator.validateXSec();
 
   //===========================================================================
   // Geometry
@@ -229,7 +229,7 @@ main(int argc, char** argv) -> int
   // Generate the mesh
   //===========================================================================
 
-  um2::gmsh::model::mesh::setGlobalMeshSize(pin_pitch / 12);
+  um2::gmsh::model::mesh::setGlobalMeshSize(pin_pitch / 6);
   um2::gmsh::model::mesh::generateMesh(um2::MeshType::QuadraticTri);
   um2::gmsh::write("c5g7_2d.inp");
 
@@ -238,7 +238,8 @@ main(int argc, char** argv) -> int
   //===========================================================================
 
   model.importCoarseCellMeshes("c5g7_2d.inp");
-  model.write("c5g7_2d_" + um2::String(num_coarse_cells) + "_grid.xdmf");
+  model.write("c5g7_2d_" + um2::String(num_coarse_cells) + "_grid.xdmf",
+      /*write_knudsen_data=*/true, /*write_xsec_data=*/true);
   um2::finalize();
   return 0;
 }
