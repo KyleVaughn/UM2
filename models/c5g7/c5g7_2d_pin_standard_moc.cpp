@@ -68,7 +68,7 @@ main() -> int
   model.addAssembly({0});
   model.addCore({{0}});
 
-  model.write("c5g7_pin.xdmf");
+  model.write("c5g7_pin.xdmf", true, true);
 
   um2::finalize();
   return 0;

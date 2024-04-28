@@ -2,6 +2,7 @@
 
 #include <um2/common/logger.hpp>
 #include <um2/common/strto.hpp>
+#include <um2/geometry/modular_rays.hpp>
 #include <um2/stdlib/algorithm/is_sorted.hpp>
 #include <um2/stdlib/algorithm/fill.hpp>
 #include <um2/stdlib/numeric/iota.hpp>
@@ -9,6 +10,9 @@
 
 #include <algorithm> // std::any_of
 #include <numeric> // std::reduce
+
+// Delete me
+#include<iostream>
 
 namespace um2::mpact
 {
@@ -1507,7 +1511,7 @@ writeXDMFFile(String const & filepath, Model const & model,
       one_group_xs[imat] = xs.t(0);
       if (one_group_xs[imat] <= 0) {
         logger::warn("One-group cross section for material \"", materials[imat].getName(),
-            "\" is non-positive"); 
+            "\" is non-positive");
       }
     }
   }
@@ -1604,7 +1608,7 @@ writeXDMFFile(String const & filepath, Model const & model,
             auto const & xsec = materials[mat_id].xsec();
             mg_xsec_data[icell] = xsec.t(ig);
           }
-          cell_soup.addElset("Group_" + getASCIINumber(ig) + "_Total_XS", 
+          cell_soup.addElset("Group_" + getASCIINumber(ig) + "_Total_XS",
               cell_ids, mg_xsec_data);
         }
       }
@@ -1882,7 +1886,7 @@ writeXDMFFile(String const & filepath, Model const & model,
 void
 Model::write(
     String const & filename,
-    bool const write_knudsen_data, 
+    bool const write_knudsen_data,
     bool const write_xsec_data) const
 {
   if (filename.ends_with(".xdmf")) {
@@ -2485,11 +2489,11 @@ readXDMFFile(String const & filename, Model & model)
             continue;
           }
 
-          // Get the material indices that don't have cross section data 
+          // Get the material indices that don't have cross section data
           Int const num_global_mats = model.materials().size();
           Vector<MatID> missing_mat_indices;
           missing_mat_indices.reserve(num_global_mats);
-          for (MatID imat = 0; imat < static_cast<MatID>(num_global_mats); ++imat) { 
+          for (MatID imat = 0; imat < static_cast<MatID>(num_global_mats); ++imat) {
             auto & material = model.materials()[static_cast<Int>(imat)];
             if (!material.hasXSec()) {
               missing_mat_indices.emplace_back(imat);
@@ -2507,7 +2511,7 @@ readXDMFFile(String const & filename, Model & model)
             for (Int icell = 0; icell < cc_material_ids.size(); ++icell) {
               auto const mat_id = cc_material_ids[icell];
               if (imat == mat_id) {
-                cell_idx = icell; 
+                cell_idx = icell;
                 break;
               }
             }
@@ -2520,7 +2524,7 @@ readXDMFFile(String const & filename, Model & model)
             // We have found a cell with the material ID. Get the elset data for each
             // energy group and emplace back into the corresponding material.
             auto & material = model.materials()[static_cast<Int>(imat)];
-            
+
             // Get the cross section data
             Vector<Int> elset_ids;
             Vector<Float> elset_data;
@@ -2533,7 +2537,7 @@ readXDMFFile(String const & filename, Model & model)
               elset_ids.clear();
               elset_data.clear();
             }
-            
+
             material.xsec().isMacro() = true;
             material.validateXSec();
 
@@ -2624,11 +2628,18 @@ Model::read(String const & filename)
 // getCoarseCellOpticalThickness
 //==============================================================================
 
-auto    
-Model::getCoarseCellOpticalThickness(Int const cc_id) const -> Vector<Float>
+template <Int P, Int N>
+static void
+computeCellOpticalThickness(
+    FaceVertexMesh<P, N> const & fvm,
+    Vec2F const xy_extents,
+    Vector<MatID> const & material_ids,
+    Vector<Material> const & materials,
+    Vector<Float> & taus)
 {
   // Algorithm:
   // Shoot modular rays through the coarse cell and calculate the optical thickness.
+  //
   // global_taus = 0
   // For each azimuthal angle,
   //  azimuthal_taus = 0
@@ -2637,8 +2648,8 @@ Model::getCoarseCellOpticalThickness(Int const cc_id) const -> Vector<Float>
   //    ray_taus = 0
   //    Shoot the modular ray through the coarse cell mesh.
   //    For each face which intersects the modular ray,
-  //      Get the face material
   //      Sum the segment lengths
+  //      Get the face material
   //      For each energy group,
   //        ray_taus[ig] += segment_length * material_xsec[ig]
   //      End
@@ -2647,22 +2658,177 @@ Model::getCoarseCellOpticalThickness(Int const cc_id) const -> Vector<Float>
   //  End
   //  global_taus += azimuthal_taus
   // End
-  // 
+  //
   // return global_taus
 
+  Int constexpr num_azi = 32; // azimuthal angles in az in (0, pi)
+  Int constexpr num_rays_per_longest_side = 1000;
 
-  // Number of azimuthal angles in az in (0, pi)
-  Int constexpr num_azi = 16;
+  // Setup taus
+  Int const num_groups = materials[0].xsec().t().size();
+  Float constexpr zero = 0;
+  taus.resize(num_groups);
+  um2::fill(taus.begin(), taus.end(), zero);
+  Vector<Float> azimuthal_taus(num_groups);
+  Vector<Float> ray_taus(num_groups);
 
+  // Create the coarse cell bounding box
+  // We will back the box up by a small amount to avoid numerical issues
+  auto constexpr scaling_factor = castIfNot<Float>(1.015625);
+  AxisAlignedBox2 cc_bb(Point2(0, 0), xy_extents);
+  cc_bb.scale(scaling_factor);
 
+  // Compute ray spacing such that the number of rays per longest side is
+  // num_rays_per_longest_side
+  Float const max_side_length = um2::max(xy_extents[0], xy_extents[1]);
+  Float const ray_spacing = max_side_length / static_cast<Float>(num_rays_per_longest_side);
+
+  // Allocate buffers for ray tracing
+  Vector<Float> coords(4 * fvm.numFaces());
+  Vector<Int> offsets(fvm.numFaces() + 1);
+  Vector<Int> faces(fvm.numFaces());
+
+  Int total_num_rays = 0;
+
+  // For each azimuthal angle
+  // azi = (2 * iazi + 1) * pi / (2 * num_azi) --> azi in the range (0, pi)
+  // dazi = pi / (2 * num_azi)
+  Float const dazi = um2::pi_2<Float> / static_cast<Float>(num_azi);
+  for (Int iazi = 0; iazi < num_azi; ++iazi) {
+
+    // Zero out the azimuthal taus
+    um2::fill(azimuthal_taus.begin(), azimuthal_taus.end(), zero);
+
+    // Compute the azimuthal angle
+    Float const azi = static_cast<Float>(2 * iazi + 1) * dazi;
+
+    // Compute the modular ray params
+    ModularRayParams const ray_params(azi, ray_spacing, cc_bb);
+
+    // For each modular ray,
+    Int const num_rays = ray_params.getTotalNumRays();
+    total_num_rays += num_rays;
+    for (Int iray = 0; iray < num_rays; ++iray) {
+
+      // Zero out the ray taus
+      um2::fill(ray_taus.begin(), ray_taus.end(), zero);
+
+      // Shoot the modular ray through the coarse cell mesh.
+      auto const ray = ray_params.getRay(iray);
+      Vec2I const hits_faces = fvm.intersect(ray, coords.data(), offsets.data(), faces.data());
+
+      // For each face which intersects the modular ray,
+      for (Int iface = 0; iface < hits_faces[1]; ++iface) {
+        Int const face_id = faces[iface];
+
+        auto const face = fvm.getFace(face_id);
+
+        // Sum the segment lengths
+        //---------------------------------------------------------------------
+        Int const offset_begin = offsets[iface];
+        Int const offset_end = offsets[iface + 1];
+        // There should be at least 2 intersection points
+        if (offset_end - offset_begin < 2) {
+          std::cerr << "Face ID: " << face_id << std::endl;
+          std::cerr << "Offset Begin: " << offset_begin << std::endl;
+          std::cerr << "Offset End: " << offset_end << std::endl;
+          continue;
+        }
+        ASSERT(offset_end - offset_begin >= 2);
+
+        // sort the ray intersection coordinates
+        std::sort(coords.begin() + offset_begin, coords.begin() + offset_end);
+
+        // For N intersections, there are N - 1 segments
+        // If the midpoint of the segment is in the face, then we add its
+        // length. Otherwise, skip it
+        Float segment_length = 0;
+        for (Int idx = offset_begin; idx < offset_end - 1; ++idx) {
+          // Get this coord and the next one
+          Float const r0 = coords[idx];
+          Float const r1 = coords[idx + 1];
+          ASSERT(r1 >= r0);
+          Float const r_mid = (r0 + r1) / 2;
+          Point2 const p_mid = ray(r_mid);
+          if (face.contains(p_mid)) {
+            segment_length += r1 - r0;
+          }
+        }
+        ASSERT(segment_length > 0);
+
+        // Get the face material
+        // NOLINTNEXTLINE(bugprone-signed-char-misuse,cert-str34-c)
+        auto const mat_id = static_cast<Int>(material_ids[face_id]);
+
+        auto const & material = materials[mat_id];
+        auto const & material_xsec_t = material.xsec().t();
+
+        // For each energy group,
+        for (Int ig = 0; ig < num_groups; ++ig) {
+          ray_taus[ig] += segment_length * material_xsec_t[ig];
+        }
+      } // for (iface)
+
+      // Sum the ray taus into the azimuthal taus
+      for (Int ig = 0; ig < num_groups; ++ig) {
+        azimuthal_taus[ig] += ray_taus[ig];
+      }
+
+    } // for (iray)
+
+    // Sum the azimuthal taus into the global taus
+    for (Int ig = 0; ig < num_groups; ++ig) {
+      taus[ig] += azimuthal_taus[ig];
+    }
+  } // for (iazi)
+
+  // Normalize by the number of rays
+  Float const inv_total_num_rays = static_cast<Float>(1) / static_cast<Float>(total_num_rays); 
+  for (Int ig = 0; ig < num_groups; ++ig) {
+    taus[ig] *= inv_total_num_rays;
+  }
+
+} // getCoarseCellOpticalThickness
+
+void
+Model::getCoarseCellOpticalThickness(Int const cc_id, Vector<Float> & taus) const
+{
   // Check that the coarse cell exists
   ASSERT(cc_id >= 0);
-  ASSERT(cc_id < _coarse_cells.size()); 
+  ASSERT(cc_id < _coarse_cells.size());
 
   // Get the coarse cell
   auto const & cc = _coarse_cells[cc_id];
 
-
+  // Call the appropriate function based on the mesh type
+  switch (cc.mesh_type) {
+    case MeshType::Tri:
+      {
+      auto const & tri_mesh = getTriMesh(cc.mesh_id);
+      computeCellOpticalThickness(tri_mesh, cc.xy_extents, cc.material_ids, _materials, taus);
+      }
+      break;
+    case MeshType::Quad:
+      {
+      auto const & quad_mesh = getQuadMesh(cc.mesh_id);
+      computeCellOpticalThickness(quad_mesh, cc.xy_extents, cc.material_ids, _materials, taus);
+      }
+      break;
+    case MeshType::QuadraticTri:
+      {
+      auto const & tri6_mesh = getTri6Mesh(cc.mesh_id);
+      computeCellOpticalThickness(tri6_mesh, cc.xy_extents, cc.material_ids, _materials, taus);
+      }
+      break;
+    case MeshType::QuadraticQuad:
+      {
+      auto const & quad8_mesh = getQuad8Mesh(cc.mesh_id);
+      computeCellOpticalThickness(quad8_mesh, cc.xy_extents, cc.material_ids, _materials, taus);
+      }
+      break;
+    default:
+      logger::error("Unsupported mesh type");
+  }
 }
 
 } // namespace um2::mpact

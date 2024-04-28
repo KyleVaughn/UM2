@@ -1,3 +1,17 @@
+toBuffer -> toLogBuffer
+
+isConvex for faces
+getTotalChordLength(Point * begin, Point * end)
+  Given a bunch of points that are intersection with the face, handle floating point error
+  and return the total chord length
+  if convex, there should only be 2 and we can disregard
+  if concave, we might have miultiple segments. Determing if the midpoint of the segment is
+  within the cell to ensure validity
+
+change start/end/stop to begin/end
+
+add likely/unlikely to emplace/push_back
+
 How should mean chord length be computed for azimuthally extruded mesh?
   -> What are the assumptions on ray entrance and exit?
   -> Should l / cos(theta) be limited to height? height /2? etc
@@ -6,9 +20,6 @@ getCoarseCellOpticalThicknessGrid
   -> Return rectilinear partition
   -> Convert rectilinear grid to quad mesh
   -> Add thickness as elset
-
-iterators vs ranges
-
 
 FIX MPACT MODEL TO POLYSOUP.
   MATERIAL ELSETS

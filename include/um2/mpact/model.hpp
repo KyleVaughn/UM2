@@ -296,8 +296,8 @@ public:
       bool write_xsec_data = false) const;
 
   // Return a vector of group-wise optical thicknesses for the coarse cell.
-  auto
-  getCoarseCellOpticalThickness(Int cc_id) const -> Vector<Float>;
+  void 
+  getCoarseCellOpticalThickness(Int cc_id, Vector<Float> & taus) const;
 
 }; // struct Model
 
