@@ -1,7 +1,3 @@
-#===============================================================================
-# CMake settings
-#===============================================================================
-
 cmake_minimum_required(VERSION 3.25 FATAL_ERROR)
 
 project(
@@ -10,8 +6,44 @@ project(
   HOMEPAGE_URL "https://github.com/KyleVaughn/UM2"
   LANGUAGES CXX)
 
+#===============================================================================
+# Options
+#===============================================================================
+
+# Build
+option(UM2_BUILD_BENCHMARKS   "Build benchmarks"                  OFF)
+option(UM2_BUILD_MODELS       "Build models"                      OFF)
+option(UM2_BUILD_SHARED_LIB   "Build UM2 as a shared library"     ON)
+option(UM2_BUILD_TESTS        "Build tests"                       ON)
+option(UM2_BUILD_TUTORIAL     "Build tutorial"                    OFF)
+
+# Enable/disable features
+option(UM2_ENABLE_ASSERTS   "Enable assertions"                              OFF)
+option(UM2_ENABLE_BMI2      "Enable BMI2 instruction set"                    ON)  # Morton sorting, etc.
+option(UM2_ENABLE_FASTMATH  "Enable fast math optimizations on CPU and GPU"  ON)  # e.g. -ffast-math
+option(UM2_ENABLE_FLOAT64   "Enable 64-bit Float"                            ON)  # x,y,z = double
+option(UM2_ENABLE_INT64     "Enable 64-bit Int"                              OFF) # index type
+option(UM2_ENABLE_NATIVE    "Enable -march=native"                           ON)
+option(UM2_ENABLE_SIMD_VEC  "Enable GCC vector extensions for the Vec class" ON)
+
+# External tools/dependencies
+option(UM2_USE_CLANG_FORMAT  "Use clang-format" OFF) # Code formatting
+option(UM2_USE_CLANG_TIDY    "Use clang-tidy"   OFF) # Static analysis
+option(UM2_USE_COVERAGE      "Use coverage"     OFF) # Code coverage
+option(UM2_USE_CUDA          "Use CUDA"         OFF) # GPU acceleration
+option(UM2_USE_GMSH          "Use Gmsh"         ON)  # CAD geometry and meshing
+option(UM2_USE_HDF5          "Use HDF5"         ON)  # Binary data I/O (Mesh I/O)
+option(UM2_USE_OPENMP        "Use OpenMP"       OFF) # Multi-threading
+option(UM2_USE_PUGIXML       "Use pugixml"      ON)  # XML parsing (Mesh I/O)
+option(UM2_USE_TBB           "Use TBB"          OFF) # Parallel STL (std::execution::par, etc.)
+option(UM2_USE_VALGRIND      "Use valgrind"     OFF) # Memory checking
+
+#===============================================================================
+# Basic CMake configuration
+#===============================================================================
+
 # Disable in-source builds
-if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
+if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
   message(FATAL_ERROR
     "In-source builds are not allowed."
     " Create a separate directory for build files and delete CMakeCache.txt.")
@@ -20,88 +52,37 @@ endif()
 # If no build type is specified, default to Release
 if (NOT CMAKE_BUILD_TYPE)
   message(STATUS "No build type selected, defaulting to Release")
-  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build" FORCE)
+  set(CMAKE_BUILD_TYPE "Release")
 endif()
 
-# Allow user to specify <project>_ROOT variables to find dependencies
-if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.27)
-  cmake_policy(SET CMP0144 NEW)
-else()
-  cmake_policy(SET CMP0074 NEW)
+# Set the C++ standard
+if (PROJECT_IS_TOP_LEVEL)
+  set(CMAKE_CXX_STANDARD 20 CACHE STRING "Default C++ standard")
+  set(CMAKE_CXX_STANDARD_REQUIRED ON CACHE BOOL "Require C++ standard")
+  set(CMAKE_CXX_EXTENSIONS ON CACHE BOOL "Allow C++ extensions")
 endif()
 
-# Set module path
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
+## Allow user to specify <project>_ROOT variables to find dependencies
+#if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.27)
+#  cmake_policy(SET CMP0144 NEW)
+#else()
+#  cmake_policy(SET CMP0074 NEW)
+#endif()
 
-# For IDE users
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+include(GNUInstallDirs)
+include(CheckCXXCompilerFlag)
 
-#===============================================================================
-# User options
-#===============================================================================
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-# Build options
-option(UM2_BUILD_BENCHMARKS   "Build benchmarks"                  OFF)
-option(UM2_BUILD_MODELS       "Build models"                      OFF)
-option(UM2_BUILD_POSTPROCESS  "Build post-processing tools"       ON)
-option(UM2_BUILD_TESTS        "Build tests"                       ON)
-option(UM2_BUILD_TUTORIAL     "Build tutorial"                    OFF)
-option(UM2_BUILD_SHARED_LIB   "Build UM2 as shared library"       ON)
-
-# Use external dependencies
-option(UM2_USE_CUDA         "Enable CUDA"                       OFF)
-option(UM2_USE_GMSH         "Enable Gmsh"                       ON)
-option(UM2_USE_OPENMP       "Enable OpenMP"                     OFF)
-option(UM2_USE_TBB          "Enable Intel TBB"                  OFF)
-
-# Enable/disable features
-option(UM2_ENABLE_FASTMATH  "Enable fast math optimizations"       ON) # CPU and GPU
-option(UM2_ENABLE_FLOAT64   "Enable 64-bit floating point"         ON)
-option(UM2_ENABLE_INT64     "Enable 64-bit integers"               OFF) # For large meshes
-option(UM2_ENABLE_BMI2      "Enable BMI2 instructions"             ON) # For morton sorting
-option(UM2_ENABLE_SIMD_VEC  "Enable GCC vector extensions for Vec" OFF)
-
-# Minimum log level for compile-time filtering of log messages
-# Off = 0,        // no messages
-# Error = 1,      // only errors
-# Warn = 2,       // errors and warnings
-# Info = 3,       // errors, warnings and info
-# Debug = 4,      // errors, warnings, info and debug
-if (CMAKE_BUILD_TYPE STREQUAL "Release")
-  set(UM2_MIN_LOG_LEVEL 3)
-else()
-  set(UM2_MIN_LOG_LEVEL 4)
+# RPATH handling
+# https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_FULL_LIBDIR}" isSystemDir)
+if("${isSystemDir}" STREQUAL "-1")
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}")
 endif()
-
-# Default path to look for MPACT cross section libraries
-if (NOT MPACT_DATA)
-  set(MPACT_DATA "${CMAKE_CURRENT_SOURCE_DIR}/MPACT_Extras/xslibs")
-endif()
-
-#===============================================================================
-# Developer options
-#===============================================================================
-
-# If CMAKE_BUILD_TYPE is Release, then turn off assertions by default
-if (CMAKE_BUILD_TYPE STREQUAL "Release")
-  set(DEFAULT_ASSERTS OFF)
-else()
-  set(DEFAULT_ASSERTS ON)
-endif()
-
-# Enable/disable developer features
-option(UM2_ENABLE_ASSERTS    "Enable assertions"               ${DEFAULT_ASSERTS})
-option(UM2_DEV_MODE          "Enable development mode"         OFF)
-
-# Use external tools
-option(UM2_USE_CLANG_FORMAT  "Enable clang-format targets"     ${UM2_DEV_MODE})
-option(UM2_USE_CLANG_TIDY    "Enable clang-tidy"               ${UM2_DEV_MODE})
-option(UM2_USE_COVERAGE      "Enable coverage"                 OFF)
-option(UM2_USE_VALGRIND      "Enable valgrind"                 ${UM2_DEV_MODE})
-
-#===============================================================================
-# Check compiler version
-#===============================================================================
 
 # Minimum version for GCC or Clang
 # This is to ensure that the compiler supports the parts of C++20 that we use
@@ -124,7 +105,7 @@ endif()
 # Check for BMI2 support now that we know the compiler is supported
 if (UM2_ENABLE_BMI2)
   # Check to see if the CPU is one of the AMD architectures that have issues with BMI2
-  execute_process(COMMAND bash "${CMAKE_CURRENT_SOURCE_DIR}/cmake/check_bmi2.sh" 
+  execute_process(COMMAND bash "${CMAKE_CURRENT_SOURCE_DIR}/cmake/check_bmi2_support.sh"
                   "${CMAKE_CXX_COMPILER}"
                   OUTPUT_VARIABLE BMI2_WARNING)
   if (BMI2_WARNING)
@@ -132,175 +113,75 @@ if (UM2_ENABLE_BMI2)
   endif()
 endif()
 
-#===============================================================================
-# RPATH information
-#===============================================================================
-
-# Provide install directory variables as defined by GNU coding standards
-include(GNUInstallDirs)
-
-# This block of code ensures that dynamic libraries can be found via the RPATH
-# whether the executable is the original one from the build directory or the
-# installed one in CMAKE_INSTALL_PREFIX. Ref:
-# https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
-set(CMAKE_SKIP_BUILD_RPATH FALSE)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_FULL_LIBDIR}" isSystemDir)
-if("${isSystemDir}" STREQUAL "-1")
-  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}")
-endif()
-
-#===============================================================================
-# Create libum2 target
-#===============================================================================
-
-# Sources
-set(UM2_SOURCES
-    "src/common/settings.cpp"
-    "src/common/logger.cpp"
-    "src/mesh/polytope_soup.cpp"
-    "src/mesh/face_vertex_mesh.cpp"
-    "src/physics/cross_section.cpp"
-    "src/physics/nuclide.cpp"
-    "src/physics/cross_section_library.cpp"
-    "src/physics/material.cpp"
-    "src/mpact/model.cpp"
-    "src/gmsh/base_gmsh_api.cpp"
-    "src/gmsh/io.cpp"
-    "src/gmsh/model.cpp"
-    "src/gmsh/mesh.cpp"
-    "src/um2.cpp"
-    "src/um2c.cpp"
-  )
-
-
-if (UM2_BUILD_SHARED_LIB)
-  if (UM2_USE_CUDA)
-    message(WARNING "Shared library is not supported with CUDA." 
-      " Building static library instead.")
-    add_library(um2 STATIC ${UM2_SOURCES})
-  else()
-    add_library(um2 SHARED ${UM2_SOURCES})
-  endif()
-else()
-  add_library(um2 STATIC ${UM2_SOURCES})
-endif()
-
-target_include_directories(um2
-  PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
-
-# Set C++ standard
-set(UM2_CXX_STANDARD 20)
-set_target_properties(um2 PROPERTIES CXX_STANDARD ${UM2_CXX_STANDARD})
-
-# config.hpp
-configure_file(
-  "${PROJECT_SOURCE_DIR}/cmake/config.hpp.in"
-  "${PROJECT_SOURCE_DIR}/include/um2/config.hpp")
-
-#===============================================================================
-# Mandatory dependencies
-#===============================================================================
-
-# HDF5
-find_package(HDF5 REQUIRED COMPONENTS CXX)
-target_link_libraries(um2 PUBLIC "${HDF5_CXX_LIBRARIES}")
-target_include_directories(um2 SYSTEM PUBLIC "${HDF5_INCLUDE_DIRS}")
-
-# pugixml
-find_package(PugiXML REQUIRED)
-target_link_libraries(um2 PUBLIC "${PUGIXML_LIB}")
-target_include_directories(um2 SYSTEM PUBLIC "${PUGIXML_INC}")
-
-#===============================================================================
-# Optional dependencies
-#===============================================================================
-
-# Gmsh
-if (UM2_USE_GMSH)
-  find_package(Gmsh REQUIRED)
-  target_link_libraries(um2 PUBLIC "${GMSH_LIB}")
-  target_include_directories(um2 SYSTEM PUBLIC "${GMSH_INC}")
-endif()
-
-# OpenMP
-if (UM2_USE_OPENMP)
-  find_package(OpenMP)
-  target_link_libraries(um2 PUBLIC OpenMP::OpenMP_CXX)
-  target_include_directories(um2 SYSTEM PUBLIC "${OpenMP_CXX_INCLUDE_DIRS}")
-endif()
-
-# TBB
-if (UM2_USE_TBB)
-  find_package(TBB REQUIRED)
-  target_link_libraries(um2 PUBLIC TBB::tbb)
-endif()
-
-# CUDA
-if (UM2_USE_CUDA)
-  include(CheckLanguage)
-  check_language(CUDA)
-
-  # nvcc will default to gcc and g++ if the host compiler is not set using CUDAHOSTCXX.
-  # To prevent unintentional version/compiler mismatches, we set the host compiler to the
-  # same compiler used to build the project.
-  if (NOT DEFINED ENV{CUDAHOSTCXX})
-    message(STATUS "Setting CMAKE_CUDA_HOST_COMPILER to ${CMAKE_CXX_COMPILER}."
-            " Consider setting the CUDAHOSTCXX environment variable if this is not desired.")
-    set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
-  endif()
-
-  find_package(CUDAToolkit REQUIRED)
-  enable_language(CUDA)
-
-  # Set CUDA standard to the same as the C++ standard
-  set(UM2_CUDA_STANDARD ${UM2_CXX_STANDARD})
-
-  # Macro for treating the given target as CUDA code
-  macro(set_cuda_properties CUDA_TARGET)
-    set_target_properties(${CUDA_TARGET} PROPERTIES CUDA_STANDARD ${UM2_CUDA_STANDARD})
-    set_target_properties(${CUDA_TARGET} PROPERTIES CUDA_STANDARD_REQUIRED ON)
-    set_target_properties(${CUDA_TARGET} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-    set_target_properties(${CUDA_TARGET} PROPERTIES CUDA_ARCHITECTURES native)
-    set_source_files_properties(${ARGN} PROPERTIES LANGUAGE CUDA)
-  endmacro()
-
-  set_cuda_properties(um2 ${UM2_SOURCES})
-
-  target_include_directories(um2 SYSTEM PUBLIC "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}")
-endif()
 
 #===============================================================================
 # Flags
 #===============================================================================
 
-# Set fast math flags if enabled
+macro(um2_add_cxx_compiler_flag FLAG)
+  string(REGEX REPLACE "-" "" SFLAG ${FLAG})
+  check_cxx_compiler_flag(${FLAG} COMPILER_SUPPORT_${SFLAG})
+  if(COMPILER_SUPPORT_${SFLAG})
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAG}")
+  endif()
+endmacro()
+
+# Fast math optimizations
 if (UM2_ENABLE_FASTMATH)
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -ffast-math")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math")
   if (UM2_USE_CUDA)
-    set(CMAKE_CUDA_FLAGS_RELEASE "${CMAKE_CUDA_FLAGS_RELEASE} --use_fast_math")
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --use_fast_math")
   endif()
 endif()
 
-# Set release flags
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
+# Native architecture
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 
-# Set debug flags
+# Sanitizers (debug only)
 if (!UM2_USE_CUDA)
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,undefined")
 endif()
 
-# Set compiler-specific warning flags
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  include(cmake/clang-cxx-flags.cmake)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${UM2_CLANG_FLAGS}")
-elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-  include(cmake/gnu-cxx-flags.cmake)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${UM2_GNU_FLAGS}")
-endif()
+# Disable math-errno
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-math-errno")
+
+# Set general warning flags
+um2_add_cxx_compiler_flag("-Wall")
+um2_add_cxx_compiler_flag("-Wextra")
+um2_add_cxx_compiler_flag("-Werror")
+um2_add_cxx_compiler_flag("-Wcast-align")
+um2_add_cxx_compiler_flag("-Wcast-qual")
+um2_add_cxx_compiler_flag("-Wconversion")
+um2_add_cxx_compiler_flag("-Wdouble-promotion")
+um2_add_cxx_compiler_flag("-Wfloat-equal")
+um2_add_cxx_compiler_flag("-Wimplicit-fallthrough")
+um2_add_cxx_compiler_flag("-Wmissing-noreturn")
+um2_add_cxx_compiler_flag("-Wnon-virtual-dtor")
+um2_add_cxx_compiler_flag("-Wold-style-cast")
+um2_add_cxx_compiler_flag("-Wshadow")
+um2_add_cxx_compiler_flag("-Wunused")
+um2_add_cxx_compiler_flag("-Wvla")
+um2_add_cxx_compiler_flag("-Wzero-as-null-pointer-constant")
+
+# Set potentially compiler-specific warning flags
+um2_add_cxx_compiler_flag("-Wsuggest-attribute=const")
+um2_add_cxx_compiler_flag("-Wsuggest-attribute=noreturn")
+um2_add_cxx_compiler_flag("-Wsuggest-attribute=pure")
+am2_add_cxx_compiler_flag("-Wunreachable-code")
+am2_add_cxx_compiler_flag("-Wconditional-uninitialized")
+am2_add_cxx_compiler_flag("-Wheader-hygiene")
+am2_add_cxx_compiler_flag("-Wmissing-noreturn")
+am2_add_cxx_compiler_flag("-Woverriding-method-mismatch")
+am2_add_cxx_compiler_flag("-Wrange-loop-analysis")
+am2_add_cxx_compiler_flag("-Wreserved-identifier")
+um2_add_cxx_compiler_flag("-Wshadow-all")
+um2_add_cxx_compiler_flag("-Wshift-sign-overflow")
+um2_add_cxx_compiler_flag("-Wtautological-compare")
+um2_add_cxx_compiler_flag("-Wunaligned-access")
+um2_add_cxx_compiler_flag("-Wunneeded-member-function")
+um2_add_cxx_compiler_flag("-Wundef")
+um2_add_cxx_compiler_flag("-Wvector-conversion")
+um2_add_cxx_compiler_flag("-pedantic")
 
 # If CUDA is enabled, pass the CXX flags via -Xcompiler
 if (UM2_USE_CUDA)
@@ -315,32 +196,173 @@ if (UM2_USE_CUDA)
   endif()
 endif()
 
-#===============================================================================
-# Developer options
-#===============================================================================
+### Minimum log level for compile-time filtering of log messages
+### Off = 0,        // no messages
+### Error = 1,      // only errors
+### Warn = 2,       // errors and warnings
+### Info = 3,       // errors, warnings and info
+### Debug = 4,      // errors, warnings, info and debug
+##if (CMAKE_BUILD_TYPE STREQUAL "Release")
+##  set(UM2_MIN_LOG_LEVEL 3)
+##else()
+##  set(UM2_MIN_LOG_LEVEL 4)
+##endif()
+##
+### Default path to look for MPACT cross section libraries
+##if (NOT MPACT_DATA)
+##  set(MPACT_DATA "${CMAKE_CURRENT_SOURCE_DIR}/MPACT_Extras/xslibs")
+##endif()
+##
 
-# clang-format
-if (UM2_USE_CLANG_FORMAT)
-  include(cmake/clang-format.cmake)
-endif()
+###===============================================================================
+### Create libum2 target
+###===============================================================================
+##
+### Sources
+##set(UM2_SOURCES
+##    "src/common/settings.cpp"
+##    "src/common/logger.cpp"
+##    "src/mesh/polytope_soup.cpp"
+##    "src/mesh/face_vertex_mesh.cpp"
+##    "src/physics/cross_section.cpp"
+##    "src/physics/nuclide.cpp"
+##    "src/physics/cross_section_library.cpp"
+##    "src/physics/material.cpp"
+##    "src/mpact/model.cpp"
+##    "src/gmsh/base_gmsh_api.cpp"
+##    "src/gmsh/io.cpp"
+##    "src/gmsh/model.cpp"
+##    "src/gmsh/mesh.cpp"
+##    "src/um2.cpp"
+##    "src/um2c.cpp"
+##  )
+##
+##
+##if (UM2_BUILD_SHARED_LIB)
+##  if (UM2_USE_CUDA)
+##    message(WARNING "Shared library is not supported with CUDA."
+##      " Building static library instead.")
+##    add_library(um2 STATIC ${UM2_SOURCES})
+##  else()
+##    add_library(um2 SHARED ${UM2_SOURCES})
+##  endif()
+##else()
+##  add_library(um2 STATIC ${UM2_SOURCES})
+##endif()
+##
+##target_include_directories(um2
+##  PUBLIC
+##  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+##  $<INSTALL_INTERFACE:include>)
+##
+### Set C++ standard
+##set(UM2_CXX_STANDARD 20)
+##set_target_properties(um2 PROPERTIES CXX_STANDARD ${UM2_CXX_STANDARD})
+##
+### config.hpp
+##configure_file(
+##  "${PROJECT_SOURCE_DIR}/cmake/config.hpp.in"
+##  "${PROJECT_SOURCE_DIR}/include/um2/config.hpp")
+##
+###===============================================================================
+### Mandatory dependencies
+###===============================================================================
+##
+### HDF5
+##find_package(HDF5 REQUIRED COMPONENTS CXX)
+##target_link_libraries(um2 PUBLIC "${HDF5_CXX_LIBRARIES}")
+##target_include_directories(um2 SYSTEM PUBLIC "${HDF5_INCLUDE_DIRS}")
+##
+### pugixml
+##find_package(PugiXML REQUIRED)
+##target_link_libraries(um2 PUBLIC "${PUGIXML_LIB}")
+##target_include_directories(um2 SYSTEM PUBLIC "${PUGIXML_INC}")
+##
+###===============================================================================
+### Optional dependencies
+###===============================================================================
+##
+### Gmsh
+##if (UM2_USE_GMSH)
+##  find_package(Gmsh REQUIRED)
+##  target_link_libraries(um2 PUBLIC "${GMSH_LIB}")
+##  target_include_directories(um2 SYSTEM PUBLIC "${GMSH_INC}")
+##endif()
+##
+### OpenMP
+##if (UM2_USE_OPENMP)
+##  find_package(OpenMP)
+##  target_link_libraries(um2 PUBLIC OpenMP::OpenMP_CXX)
+##  target_include_directories(um2 SYSTEM PUBLIC "${OpenMP_CXX_INCLUDE_DIRS}")
+##endif()
+##
+### TBB
+##if (UM2_USE_TBB)
+##  find_package(TBB REQUIRED)
+##  target_link_libraries(um2 PUBLIC TBB::tbb)
+##endif()
+##
+### CUDA
+##if (UM2_USE_CUDA)
+##  include(CheckLanguage)
+##  check_language(CUDA)
+##
+##  # nvcc will default to gcc and g++ if the host compiler is not set using CUDAHOSTCXX.
+##  # To prevent unintentional version/compiler mismatches, we set the host compiler to the
+##  # same compiler used to build the project.
+##  if (NOT DEFINED ENV{CUDAHOSTCXX})
+##    message(STATUS "Setting CMAKE_CUDA_HOST_COMPILER to ${CMAKE_CXX_COMPILER}."
+##            " Consider setting the CUDAHOSTCXX environment variable if this is not desired.")
+##    set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
+##  endif()
+##
+##  find_package(CUDAToolkit REQUIRED)
+##  enable_language(CUDA)
+##
+##  # Set CUDA standard to the same as the C++ standard
+##  set(UM2_CUDA_STANDARD ${UM2_CXX_STANDARD})
+##
+##  # Macro for treating the given target as CUDA code
+##  macro(set_cuda_properties CUDA_TARGET)
+##    set_target_properties(${CUDA_TARGET} PROPERTIES CUDA_STANDARD ${UM2_CUDA_STANDARD})
+##    set_target_properties(${CUDA_TARGET} PROPERTIES CUDA_STANDARD_REQUIRED ON)
+##    set_target_properties(${CUDA_TARGET} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+##    set_target_properties(${CUDA_TARGET} PROPERTIES CUDA_ARCHITECTURES native)
+##    set_source_files_properties(${ARGN} PROPERTIES LANGUAGE CUDA)
+##  endmacro()
+##
+##  set_cuda_properties(um2 ${UM2_SOURCES})
+##
+##  target_include_directories(um2 SYSTEM PUBLIC "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}")
+##endif()
+##
 
-# clang-tidy
-if (UM2_USE_CLANG_TIDY)
-  # Macro for running clang-tidy on the given target
-  macro(set_clang_tidy_properties TIDY_TARGET)
-    set_target_properties(${TIDY_TARGET} PROPERTIES
-            CXX_CLANG_TIDY
-            "clang-tidy;--extra-arg=-Wno-unknown-warning-option")
-  endmacro()
-  set_clang_tidy_properties(um2)
-endif()
-
-# coverage
-if (UM2_USE_COVERAGE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
-  target_link_libraries(um2 PRIVATE gcov)
-endif()
-
+##===============================================================================
+## Developer options
+##===============================================================================
+#
+## clang-format
+#if (UM2_USE_CLANG_FORMAT)
+#  include(cmake/clang-format.cmake)
+#endif()
+#
+## clang-tidy
+#if (UM2_USE_CLANG_TIDY)
+#  # Macro for running clang-tidy on the given target
+#  macro(set_clang_tidy_properties TIDY_TARGET)
+#    set_target_properties(${TIDY_TARGET} PROPERTIES
+#            CXX_CLANG_TIDY
+#            "clang-tidy;--extra-arg=-Wno-unknown-warning-option")
+#  endmacro()
+#  set_clang_tidy_properties(um2)
+#endif()
+#
+## coverage
+#if (UM2_USE_COVERAGE)
+#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
+#  target_link_libraries(um2 PRIVATE gcov)
+#endif()
+#
 #===============================================================================
 # Optional subdirectories
 #===============================================================================
@@ -348,10 +370,6 @@ endif()
 if (UM2_BUILD_BENCHMARKS)
   find_package(benchmark REQUIRED)
   add_subdirectory(benchmarks)
-endif()
-
-if (UM2_BUILD_POSTPROCESS)
-  add_subdirectory(post-process)
 endif()
 
 if (UM2_BUILD_MODELS)
@@ -371,7 +389,6 @@ endif()
 # Install
 #===============================================================================
 
-# Install the library
 install(TARGETS um2
         EXPORT um2-targets
         RUNTIME DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/bin
