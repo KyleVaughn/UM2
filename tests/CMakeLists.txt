@@ -1,6 +1,6 @@
-#include(${PROJECT_SOURCE_DIR}/cmake/add_um2_test.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/um2_add_test.cmake)
 
-#add_subdirectory(./stdlib)
+add_subdirectory(./stdlib)
 #add_subdirectory(./common)
 #add_subdirectory(./math)
 #add_subdirectory(./geometry)

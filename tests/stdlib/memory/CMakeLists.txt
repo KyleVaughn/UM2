@@ -1,2 +1,2 @@
-add_um2_test(./addressof.cpp)
-add_um2_test(./construct_at.cpp)
+um2_add_test(./addressof.cpp)
+um2_add_test(./construct_at.cpp)

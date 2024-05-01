@@ -13,7 +13,6 @@ TEST_CASE(is_sorted_int)
 }
 MAKE_CUDA_KERNEL(is_sorted_int);
 
-
 TEST_SUITE(is_sorted) { TEST_HOSTDEV(is_sorted_int); }
 
 auto

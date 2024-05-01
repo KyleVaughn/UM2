@@ -19,22 +19,24 @@ struct A {
   int a;
   int * b{nullptr};
 
-  HOSTDEV A() = default;
+  HOSTDEV
+  A() = default;
 
   HOSTDEV
-  A(A const & other) 
-    : a(other.a)
+  A(A const & other)
+      : a(other.a)
   {
   }
 
   HOSTDEV
-  auto operator=(A const & other) -> A & 
+  auto
+  operator=(A const & other) -> A &
   {
     if (this != &other) {
       a = other.a;
     }
     return *this;
-  } 
+  }
 };
 
 HOSTDEV
@@ -55,9 +57,9 @@ TEST_CASE(copy_nontrivial)
 }
 MAKE_CUDA_KERNEL(copy_nontrivial)
 
-TEST_SUITE(copy) 
-{ 
-  TEST_HOSTDEV(copy_trivial); 
+TEST_SUITE(copy)
+{
+  TEST_HOSTDEV(copy_trivial);
   TEST_HOSTDEV(copy_nontrivial);
 }
 

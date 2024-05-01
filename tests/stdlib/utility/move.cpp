@@ -3,30 +3,26 @@
 
 #include "../../test_macros.hpp"
 
-struct A
-{
+struct A {
   int l;
   int r;
 };
 
-HOSTDEV PURE
-auto
-value(A& a) -> int
+HOSTDEV PURE auto
+value(A & a) -> int
 {
   return a.l;
 }
 
-HOSTDEV PURE
-auto
-value(A&& a) -> int
+HOSTDEV PURE auto
+value(A && a) -> int
 {
   return a.r;
 }
 
 template <typename T>
-HOSTDEV
-auto
-pass(T&& a) -> int
+HOSTDEV auto
+pass(T && a) -> int
 {
   return value(um2::forward<T>(a));
 }

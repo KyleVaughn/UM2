@@ -1,3 +1,5 @@
+add clang-tidy, cuda, and valgrind to unit test macto
+
 create placeholder basics:
   tests
   benchmarks
@@ -14,6 +16,6 @@ for tests, check against max error and output error into some file
 
 use build scripts to bundle options
 
-check how eigen does clang format (line 607)
+simply CUDA unit test macros now that we default to 1 thread
 
-warn about f64 with cuda
+add OK to nolints and pragmas

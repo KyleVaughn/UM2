@@ -17,10 +17,7 @@ TEST_CASE(fill_test)
 }
 MAKE_CUDA_KERNEL(fill_test);
 
-TEST_SUITE(fill)
-{
-  TEST_HOSTDEV(fill_test);
-}
+TEST_SUITE(fill) { TEST_HOSTDEV(fill_test); }
 auto
 main() -> int
 {

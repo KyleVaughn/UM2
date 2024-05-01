@@ -132,7 +132,6 @@ TEST_CASE(assign_move)
 }
 MAKE_CUDA_KERNEL(assign_move);
 
-
 ////TEST_CASE(int_float_constructors)
 ////{
 ////  {
@@ -179,20 +178,20 @@ MAKE_CUDA_KERNEL(assign_move);
 // Operations
 //==============================================================================
 
-HOSTDEV    
-TEST_CASE(compare)    
-{    
-  char const * const data1 = "Hello, World!";    
-  char const * const data2 = "Hello, Worl!";     
-  char const * const data3 = "Hekko, World!";    
-  um2::String const s1(data1);    
-  um2::String const s2(data2);    
-  um2::String const s3(data3);    
-  ASSERT(s1.compare(s1) == 0);    
-  ASSERT(s1.compare(s2) > 0);    
-  ASSERT(s2.compare(s1) < 0);    
-  ASSERT(s1.compare(s3) > 0);    
-}    
+HOSTDEV
+TEST_CASE(compare)
+{
+  char const * const data1 = "Hello, World!";
+  char const * const data2 = "Hello, Worl!";
+  char const * const data3 = "Hekko, World!";
+  um2::String const s1(data1);
+  um2::String const s2(data2);
+  um2::String const s3(data3);
+  ASSERT(s1.compare(s1) == 0);
+  ASSERT(s1.compare(s2) > 0);
+  ASSERT(s2.compare(s1) < 0);
+  ASSERT(s1.compare(s3) > 0);
+}
 MAKE_CUDA_KERNEL(compare)
 
 HOSTDEV
@@ -238,16 +237,11 @@ MAKE_CUDA_KERNEL(end_with)
 ////TEST_CASE(std_string_assign_operator)
 ////{
 ////  std::string s0("hello");
-////  um2::String s("This string will be too long to fit in the small string optimization");
-////  s = s0;
-////  ASSERT(s.size() == 5);
-////  ASSERT(s.capacity() == 22);
-////  ASSERT(!s.isLong());
-////  ASSERT(s.data()[0] == 'h');
-////  ASSERT(s.data()[1] == 'e');
-////  ASSERT(s.data()[2] == 'l');
-////  ASSERT(s.data()[3] == 'l');
-////  ASSERT(s.data()[4] == 'o');
+////  um2::String s("This string will be too long to fit in the small string
+/// optimization"); /  s = s0; /  ASSERT(s.size() == 5); /  ASSERT(s.capacity() == 22); /
+/// ASSERT(!s.isLong()); /  ASSERT(s.data()[0] == 'h'); /  ASSERT(s.data()[1] == 'e'); /
+/// ASSERT(s.data()[2] == 'l'); /  ASSERT(s.data()[3] == 'l'); /  ASSERT(s.data()[4] ==
+///'o');
 ////
 ////  std::string const s1(
 ////      "This string will be too long to fit in the small string optimization");
@@ -329,19 +323,19 @@ TEST_CASE(substr)
 }
 MAKE_CUDA_KERNEL(substr);
 
-HOSTDEV    
-TEST_CASE(find_last_of)    
-{    
-  char const * const data = "Hello, World!";    
-  um2::String const s(data);    
-  ASSERT(s.find_last_of('H') == 0);    
-  ASSERT(s.find_last_of('W') == 7);    
-  ASSERT(s.find_last_of('!') == 12);    
-  ASSERT(s.find_last_of('z') == um2::String::npos);    
-  ASSERT(s.find_last_of('l') == 10);    
-  ASSERT(s.find_last_of('o', 4) == 4);    
-  ASSERT(s.find_last_of('o', 3) == um2::String::npos);    
-} 
+HOSTDEV
+TEST_CASE(find_last_of)
+{
+  char const * const data = "Hello, World!";
+  um2::String const s(data);
+  ASSERT(s.find_last_of('H') == 0);
+  ASSERT(s.find_last_of('W') == 7);
+  ASSERT(s.find_last_of('!') == 12);
+  ASSERT(s.find_last_of('z') == um2::String::npos);
+  ASSERT(s.find_last_of('l') == 10);
+  ASSERT(s.find_last_of('o', 4) == 4);
+  ASSERT(s.find_last_of('o', 3) == um2::String::npos);
+}
 
 HOSTDEV
 TEST_CASE(compound_addition)
@@ -374,19 +368,19 @@ TEST_SUITE(String)
   TEST_HOSTDEV(constructor_move)
   TEST_HOSTDEV(assign_copy)
   TEST_HOSTDEV(assign_move)
-//  TEST(int_float_constructors)
-//
+  //  TEST(int_float_constructors)
+  //
   // Operations
   TEST_HOSTDEV(compare)
   TEST_HOSTDEV(starts_with)
   TEST_HOSTDEV(end_with)
-//  TEST(std_string_assign_operator)
+  //  TEST(std_string_assign_operator)
   TEST_HOSTDEV(relational_operators)
-//  TEST_HOSTDEV(index_operator)
-//  TEST_HOSTDEV(addition_operator)
-//
+  //  TEST_HOSTDEV(index_operator)
+  //  TEST_HOSTDEV(addition_operator)
+  //
   // Methods
-//  TEST(starts_ends_with)
+  //  TEST(starts_ends_with)
   TEST_HOSTDEV(substr)
   TEST_HOSTDEV(find_last_of)
   TEST_HOSTDEV(compound_addition)

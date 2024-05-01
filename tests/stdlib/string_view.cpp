@@ -130,7 +130,7 @@ TEST_CASE(find_first_of)
 
   um2::StringView const s2(data + 4, 9);
   ASSERT(s.find_first_of(s2) == 4);
-  ASSERT(s.find_first_of(s2, 5) == um2::StringView::npos); 
+  ASSERT(s.find_first_of(s2, 5) == um2::StringView::npos);
   ASSERT(s.find_first_of("ello") == 1);
   ASSERT(s.find_first_of("ello", 6) == um2::StringView::npos);
 }
@@ -142,7 +142,7 @@ TEST_CASE(find_first_not_of)
   um2::StringView const s(data, 13);
   ASSERT(s.find_first_not_of('H') == 1);
   ASSERT(s.find_first_not_of('l', 2) == 4);
-  ASSERT(s.find_first_not_of('l', 20) == um2::StringView::npos); 
+  ASSERT(s.find_first_not_of('l', 20) == um2::StringView::npos);
 }
 
 HOSTDEV
@@ -197,10 +197,10 @@ HOSTDEV
 TEST_CASE(getTokenAndShrink)
 {
   char const * const data = "A BB  C";
-  um2::StringView s(data, 7); 
+  um2::StringView s(data, 7);
   um2::StringView token = s.getTokenAndShrink();
   ASSERT(token.size() == 1);
-  ASSERT(*token.data() == 'A'); 
+  ASSERT(*token.data() == 'A');
   ASSERT(s.size() == 5);
   ASSERT(*s.data() == 'B');
   token = s.getTokenAndShrink();

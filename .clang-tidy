@@ -1,4 +1,4 @@
-Checks: 'bugprone-*,\
+Checks: 'bugprone-*,
 cert-*,
 clang-analyzer-*,
 cppcoreguidelines-*,
@@ -26,8 +26,8 @@ portability-*,
 -cppcoreguidelines-pro-bounds-constant-array-index,
 -cppcoreguidelines-pro-type-union-access,
 -readability-identifier-length,
--misc-non-private-member-variables-in-classes,
--misc-confusable-identifiers
+-misc-confusable-identifiers,
+-misc-non-private-member-variables-in-classes
 '
 HeaderFilterRegex: '.*'
 WarningsAsErrors: '*'

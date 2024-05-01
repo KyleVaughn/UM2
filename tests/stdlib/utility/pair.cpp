@@ -19,7 +19,7 @@ TEST_CASE(test_pair)
   ASSERT(p3.second == 2);
 
   // Explicit constructor
-  um2::Pair<int, int> p4(1, 2); 
+  um2::Pair<int, int> p4(1, 2);
   ASSERT(p4.first == 1);
   ASSERT(p4.second == 2);
 

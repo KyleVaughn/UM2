@@ -1,16 +1,16 @@
 #include <um2/stdlib/vector.hpp>
 
 #include <concepts> // std::floating_point
-#include <vector> 
+#include <vector>
 
 #include <type_traits>
 
 #include "../test_macros.hpp"
 
 #if UM2_USE_CUDA
-#define CHECK_STD_VECTOR 0
+#  define CHECK_STD_VECTOR 0
 #else
-#define CHECK_STD_VECTOR 1
+#  define CHECK_STD_VECTOR 1
 #endif
 
 //==============================================================================
@@ -610,47 +610,47 @@ TEST_CASE(emplace_back)
 //// CUDA
 ////==============================================================================
 //
-//#if UM2_USE_CUDA
-//template <class T>
-//MAKE_CUDA_KERNEL(constructor_Size, T)
+// #if UM2_USE_CUDA
+// template <class T>
+// MAKE_CUDA_KERNEL(constructor_Size, T)
 //
-//template <class T>
-//MAKE_CUDA_KERNEL(constructor_Size_value, T)
+// template <class T>
+// MAKE_CUDA_KERNEL(constructor_Size_value, T)
 //
-//template <class T>
-//MAKE_CUDA_KERNEL(copy_constructor, T)
+// template <class T>
+// MAKE_CUDA_KERNEL(copy_constructor, T)
 //
-//template <class T>
-//MAKE_CUDA_KERNEL(move_constructor, T)
+// template <class T>
+// MAKE_CUDA_KERNEL(move_constructor, T)
 //
-//template <class T>
-//MAKE_CUDA_KERNEL(constructor_initializer_list, T)
+// template <class T>
+// MAKE_CUDA_KERNEL(constructor_initializer_list, T)
 //
-//template <class T>
-//MAKE_CUDA_KERNEL(operator_copy, T)
+// template <class T>
+// MAKE_CUDA_KERNEL(operator_copy, T)
 //
-//template <class T>
-//MAKE_CUDA_KERNEL(operator_move, T)
+// template <class T>
+// MAKE_CUDA_KERNEL(operator_move, T)
 //
-//template <class T>
-//MAKE_CUDA_KERNEL(resize, T)
+// template <class T>
+// MAKE_CUDA_KERNEL(resize, T)
 //
-//template <class T>
-//MAKE_CUDA_KERNEL(reserve, T)
+// template <class T>
+// MAKE_CUDA_KERNEL(reserve, T)
 //
-//template <class T>
-//MAKE_CUDA_KERNEL(push_back, T)
+// template <class T>
+// MAKE_CUDA_KERNEL(push_back, T)
 //
-//template <class T>
-//MAKE_CUDA_KERNEL(push_back_rval_ref, T)
+// template <class T>
+// MAKE_CUDA_KERNEL(push_back_rval_ref, T)
 //
-//template <class T>
-//MAKE_CUDA_KERNEL(push_back_n, T)
+// template <class T>
+// MAKE_CUDA_KERNEL(push_back_n, T)
 //
-//MAKE_CUDA_KERNEL(clear)
+// MAKE_CUDA_KERNEL(clear)
 //
 //    MAKE_CUDA_KERNEL(emplace_back)
-//#endif // UM2_USE_CUDA
+// #endif // UM2_USE_CUDA
 //
 template <class T>
 TEST_SUITE(Vector)
@@ -668,7 +668,7 @@ TEST_SUITE(Vector)
   // Operators
   TEST_HOSTDEV(relational_operators)
 
-  // Modifiers 
+  // Modifiers
   TEST_HOSTDEV(clear)
   TEST_HOSTDEV(resize, T)
   TEST_HOSTDEV(reserve, T)

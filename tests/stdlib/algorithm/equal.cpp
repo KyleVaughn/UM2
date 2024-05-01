@@ -11,15 +11,12 @@ TEST_CASE(test_equal)
 
   ASSERT(um2::equal(a, a + 3, b));
   ASSERT(!um2::equal(a, a + 3, c));
-  static_assert(um2::equal(a,a,c));
+  static_assert(um2::equal(a, a, c));
 }
 
 MAKE_CUDA_KERNEL(test_equal);
 
-TEST_SUITE(equal)
-{
-  TEST_HOSTDEV(test_equal);
-}
+TEST_SUITE(equal) { TEST_HOSTDEV(test_equal); }
 
 auto
 main() -> int
