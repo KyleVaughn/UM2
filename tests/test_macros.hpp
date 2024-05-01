@@ -46,6 +46,15 @@
     ASSERT(a_eval < b_eval ? b_eval - a_eval <= eps_eval : a_eval - b_eval <= eps_eval); \
   }
 
+#define STATIC_ASSERT_NEAR(a, b, eps)                                                    \
+  {                                                                                      \
+    auto constexpr a_eval = (a);                                                         \
+    auto constexpr b_eval = (b);                                                         \
+    auto constexpr eps_eval = (eps);                                                     \
+    static_assert(a_eval < b_eval ? b_eval - a_eval <= eps_eval                          \
+                                  : a_eval - b_eval <= eps_eval);                        \
+  }
+
 #define TEST_CASE(name) void name()
 
 #define TEST_SUITE(name) void name()

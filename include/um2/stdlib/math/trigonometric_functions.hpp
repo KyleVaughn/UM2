@@ -14,7 +14,7 @@ namespace um2
 #ifndef __CUDA_ARCH__
 
 template <class T>
-CONST HOST [[nodiscard]] constexpr auto
+CONST HOST [[nodiscard]] inline auto
 cos(T x) noexcept -> T
 {
   return std::cos(x);
@@ -23,7 +23,7 @@ cos(T x) noexcept -> T
 #else
 
 template <class T>
-CONST DEVICE [[nodiscard]] constexpr auto
+CONST DEVICE [[nodiscard]] inline auto
 cos(T x) noexcept -> T
 {
   static_assert(always_false<T>, "cos is not implemented for this type");
@@ -31,14 +31,14 @@ cos(T x) noexcept -> T
 }
 
 template <>
-CONST DEVICE [[nodiscard]] constexpr auto
+CONST DEVICE [[nodiscard]] inline auto
 cos(float x) noexcept -> float
 {
   return ::cosf(x);
 }
 
 template <>
-CONST DEVICE [[nodiscard]] constexpr auto
+CONST DEVICE [[nodiscard]] inline auto
 cos(double x) noexcept -> double
 {
   return ::cos(x);
@@ -53,7 +53,7 @@ cos(double x) noexcept -> double
 #ifndef __CUDA_ARCH__
 
 template <class T>
-CONST HOST [[nodiscard]] constexpr auto
+CONST HOST [[nodiscard]] inline auto
 sin(T x) noexcept -> T
 {
   return std::sin(x);
@@ -62,7 +62,7 @@ sin(T x) noexcept -> T
 #else
 
 template <class T>
-CONST DEVICE [[nodiscard]] constexpr auto
+CONST DEVICE [[nodiscard]] inline auto
 sin(T x) noexcept -> T
 {
   static_assert(always_false<T>, "sin is not implemented for this type");
@@ -70,14 +70,14 @@ sin(T x) noexcept -> T
 }
 
 template <>
-CONST DEVICE [[nodiscard]] constexpr auto
+CONST DEVICE [[nodiscard]] inline auto
 sin(float x) noexcept -> float
 {
   return ::sinf(x);
 }
 
 template <>
-CONST DEVICE [[nodiscard]] constexpr auto
+CONST DEVICE [[nodiscard]] inline auto
 sin(double x) noexcept -> double
 {
   return ::sin(x);

@@ -15,7 +15,7 @@ macro(um2_add_test FILENAME)
   target_link_libraries(${TESTNAME} PRIVATE um2)
 
   add_test(${TESTNAME} ${TESTNAME})
-  set_target_properties(${TESTNAME} PROPERTIES CXX_STANDARD 20) 
+  set_target_properties(${TESTNAME} PROPERTIES CXX_STANDARD ${UM2_CXX_STANDARD}) 
 
   if (UM2_USE_CLANG_TIDY)    
     set_clang_tidy_properties(${TESTNAME})    

@@ -56,8 +56,9 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 
 # Set the C++ standard
+set(UM2_CXX_STANDARD 20)
 if (PROJECT_IS_TOP_LEVEL)
-  set(CMAKE_CXX_STANDARD 20 CACHE STRING "Default C++ standard")
+  set(CMAKE_CXX_STANDARD ${UM2_CXX_STANDARD} CACHE STRING "Default C++ standard")
   set(CMAKE_CXX_STANDARD_REQUIRED ON CACHE BOOL "Require C++ standard")
   set(CMAKE_CXX_EXTENSIONS ON CACHE BOOL "Allow C++ extensions")
 endif()
@@ -134,7 +135,6 @@ if (NOT MPACT_DATA)
   set(MPACT_DATA "${CMAKE_CURRENT_SOURCE_DIR}/MPACT_Extras/xslibs")
 endif()
 message(STATUS "MPACT_DATA: ${MPACT_DATA}")
-
 
 #===============================================================================
 # Flags

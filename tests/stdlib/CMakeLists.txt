@@ -1,6 +1,6 @@
 add_subdirectory(./memory)
-#add_subdirectory(./utility)
-#add_subdirectory(./math)
+add_subdirectory(./utility)
+add_subdirectory(./math)
 #add_subdirectory(./algorithm)
 #add_subdirectory(./numeric)
 #add_subdirectory(./cstring)

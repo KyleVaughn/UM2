@@ -17,7 +17,7 @@ HOSTDEV
 TEST_CASE(abs_float)
 {
   // Exact equality is important here
-#pragma GCC diagnostic push
+#pragma GCC diagnostic push // OK
 #pragma GCC diagnostic ignored "-Wfloat-equal"
   static_assert(um2::abs(-1.0F) == 1.0F);
   static_assert(um2::abs(0.0F) == 0.0F);

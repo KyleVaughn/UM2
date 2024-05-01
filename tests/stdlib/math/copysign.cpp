@@ -2,24 +2,29 @@
 
 #include "../../test_macros.hpp"
 
-// NOLINTBEGIN(cert-dcl03-c,misc-static-assert)
+// We want true floating point equality here
+// NOLINTBEGIN(clang-diagnostic-float-equal)
+#pragma GCC diagnostic push // OK
+#pragma GCC diagnostic ignored "-Wfloat-equal"
 
 HOSTDEV
 TEST_CASE(copysign_float)
 {
-  ASSERT_NEAR(um2::copysign(1.0F, 2.0F), 1.0F, 1e-6F);
-  ASSERT_NEAR(um2::copysign(1.0F, -2.0F), -1.0F, 1e-6F);
+  static_assert(um2::copysign(1.0F, 2.0F) == 1.0F);
+  static_assert(um2::copysign(1.0F, -2.0F) == -1.0F);
 }
 MAKE_CUDA_KERNEL(copysign_float);
 
 HOSTDEV
 TEST_CASE(copysign_double)
 {
-  ASSERT_NEAR(um2::copysign(1.0, 2.0), 1.0, 1e-6);
-  ASSERT_NEAR(um2::copysign(1.0, -2.0), -1.0, 1e-6);
+  static_assert(um2::copysign(1.0, 2.0) == 1.0);
+  static_assert(um2::copysign(1.0, -2.0) == -1.0);
 }
+MAKE_CUDA_KERNEL(copysign_double);
 
-// NOLINTEND(cert-dcl03-c,misc-static-assert)
+#pragma GCC diagnostic pop
+// NOLINTEND(clang-diagnostic-float-equal)
 
 TEST_SUITE(copysign)
 {

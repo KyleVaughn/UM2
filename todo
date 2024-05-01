@@ -5,7 +5,6 @@ create placeholder basics:
   benchmarks
 
 python API
-look at eigen for inspo
 
 add a check on mesh import/export for maximum int size? Or do it in int64
 
@@ -19,3 +18,9 @@ use build scripts to bundle options
 simply CUDA unit test macros now that we default to 1 thread
 
 add OK to nolints and pragmas
+
+Dirs done with NOLINT/pragma:
+
+constexpr tests up to:
+  stdlib
+    math 

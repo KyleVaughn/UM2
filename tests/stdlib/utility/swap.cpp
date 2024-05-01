@@ -26,10 +26,22 @@ TEST_CASE(swap_array)
 }
 MAKE_CUDA_KERNEL(swap_array);
 
+auto constexpr foo()
+{
+  int a = 1;
+  int b = 2;
+  um2::swap(a, b);
+  return b;
+}
+
+HOSTDEV
+TEST_CASE(swap_constexpr) { static_assert(foo() == 1); }
+
 TEST_SUITE(swap)
 {
   TEST(swap_int);
   TEST(swap_array);
+  TEST(swap_constexpr);
 }
 
 auto

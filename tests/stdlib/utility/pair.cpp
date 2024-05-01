@@ -50,7 +50,41 @@ TEST_CASE(test_pair)
 }
 MAKE_CUDA_KERNEL(test_pair);
 
-TEST_SUITE(pair) { TEST_HOSTDEV(test_pair); }
+HOSTDEV
+TEST_CASE(test_pair_constexpr)
+{
+  um2::Pair<int, int> constexpr p{1, 2};
+
+  // Copy constructor
+  um2::Pair<int, int> constexpr p2{p};
+  static_assert(p2.first == 1);
+  static_assert(p2.second == 2);
+
+  // Explicit constructor
+  um2::Pair<int, int> constexpr p3(1, 3);
+  static_assert(p3.first == 1);
+  static_assert(p3.second == 3);
+
+  // Copy assignment
+  um2::Pair<int, int> constexpr p4 = p3;
+  static_assert(p4.first == 1);
+  static_assert(p4.second == 3);
+
+  // Relational operators
+  static_assert(p == p2);
+  static_assert(p2 <= p3);
+  static_assert(p3 >= p2);
+  static_assert(p2 != p4);
+  static_assert(p2 < p4);
+  static_assert(p4 > p2);
+}
+MAKE_CUDA_KERNEL(test_pair_constexpr)
+
+TEST_SUITE(pair)
+{
+  TEST_HOSTDEV(test_pair);
+  TEST_HOSTDEV(test_pair_constexpr);
+}
 
 auto
 main() -> int

@@ -14,7 +14,7 @@ namespace um2
 #ifndef __CUDA_ARCH__
 
 template <class T>
-CONST HOST [[nodiscard]] constexpr auto
+CONST HOST [[nodiscard]] inline auto
 log(T x) noexcept -> T
 {
   return std::log(x);
@@ -23,7 +23,7 @@ log(T x) noexcept -> T
 #else
 
 template <class T>
-CONST DEVICE [[nodiscard]] constexpr auto
+CONST DEVICE [[nodiscard]] inline auto
 log(T x) noexcept -> T
 {
   static_assert(always_false<T>, "log is not implemented for this type");
@@ -31,14 +31,14 @@ log(T x) noexcept -> T
 }
 
 template <>
-CONST DEVICE [[nodiscard]] constexpr auto
+CONST DEVICE [[nodiscard]] inline auto
 log(float x) noexcept -> float
 {
   return ::logf(x);
 }
 
 template <>
-CONST DEVICE [[nodiscard]] constexpr auto
+CONST DEVICE [[nodiscard]] inline auto
 log(double x) noexcept -> double
 {
   return ::log(x);
