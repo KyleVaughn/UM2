@@ -1,26 +1,22 @@
-add clang-tidy, cuda, and valgrind to unit test macto
-
-create placeholder basics:
-  tests
-  benchmarks
+add cuda and valgrind to unit test macto
 
 python API
 
-add a check on mesh import/export for maximum int size? Or do it in int64
-
-measure effect of SIMD_VEC
-measure effect of FAST_MATH -> error
+Benchmarks:
+  measure effect of SIMD_VEC
+  measure effect of FAST_MATH -> error
 
 for tests, check against max error and output error into some file
 
-use build scripts to bundle options
-
-simply CUDA unit test macros now that we default to 1 thread
-
-add OK to nolints and pragmas
+use build scripts to bundle CMAKE options
 
 Dirs done with NOLINT/pragma:
 
 constexpr tests up to:
   stdlib
-    math 
+
+CUDA:
+  simplify CUDA unit test macros now that we default to 1 thread. Includes TEST_HOSTDEV(f<T>)
+
+Once I'm done with refactor:
+  static_assert to STATIC_ASSERT in tests

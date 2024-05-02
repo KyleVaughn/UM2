@@ -5,12 +5,12 @@
 HOSTDEV
 TEST_CASE(test_lexicographical_compare)
 {
-  int a[] = {1, 2, 3};
-  int b[] = {1, 2, 3};
-  int c[] = {3, 2, 1};
+  int constexpr a[] = {1, 2, 3};
+  int constexpr b[] = {1, 2, 3};
+  int constexpr c[] = {3, 2, 1};
 
-  ASSERT(!um2::lexicographical_compare(a, a + 3, b, b + 3));
-  ASSERT(um2::lexicographical_compare(a, a + 3, c, c + 3));
+  STATIC_ASSERT(!um2::lexicographical_compare(a, a + 3, b, b + 3));
+  STATIC_ASSERT(um2::lexicographical_compare(a, a + 3, c, c + 3));
 }
 
 MAKE_CUDA_KERNEL(test_lexicographical_compare);

@@ -37,48 +37,48 @@ private:
   //==============================================================================
 
   // Allocate memory for n elements
-  HOSTDEV constexpr void
+  HOSTDEV inline void
   allocate(Int n) noexcept;
 
   // Append n default-initialized elements to the end of the vector
   // Grows the capacity of the vector if necessary
   // Retains the values of the elements already in the vector
-  HOSTDEV constexpr void
+  HOSTDEV inline void
   append(Int n) noexcept;
 
   // Construct n default-initialized elements at the end of the vector
   // Assumes that there is enough capacity to hold the new elements
-  HOSTDEV constexpr void
+  HOSTDEV inline void
   constructAtEnd(Int n) noexcept;
 
   // Construct n elements at the end of the vector, each with value
   // Assumes that there is enough capacity to hold the new elements
-  HOSTDEV inline constexpr void
+  HOSTDEV inline void
   constructAtEnd(Int n, T const & value) noexcept;
 
   // Construct n elements at the end of the vector, copying from [first, last)
   // n disambiguates the function from the previous one
   // Assumes that there is enough capacity to hold the new elements
   template <class InputIt>
-  HOSTDEV constexpr void
+  HOSTDEV void
   constructAtEnd(InputIt first, InputIt last, Int n) noexcept;
 
   // Destroy the elements and deallocate the buffer
-  HOSTDEV constexpr void
+  HOSTDEV void
   deallocate() noexcept;
 
   // Destroy elements at the end of the vector until new_last.
   // Does not change capacity.
   // _begin <= new_last <= _end
-  HOSTDEV constexpr void
+  HOSTDEV inline void
   destructAtEnd(Ptr new_last) noexcept;
 
   template <class... Args>
-  HOSTDEV inline constexpr auto
+  HOSTDEV inline auto
   emplaceBackSlowPath(Args &&... args) noexcept -> Ptr;
 
   template <class U>
-  HOSTDEV inline constexpr auto
+  HOSTDEV inline auto
   pushBackSlowPath(U && value) noexcept -> Ptr;
 
   // Return the recommended capacity for a vector of size new_size.
@@ -89,7 +89,7 @@ private:
   // Relocate the objects in the range [begin, end) into the front of v and
   // swap *this with v. It is assumed that v provides enough capacity to hold
   // the elements in the range [begin, end).
-  HOSTDEV constexpr void
+  HOSTDEV inline void
   swapBuffers(Vector & v) noexcept;
 
 public:
@@ -99,36 +99,39 @@ public:
 
   constexpr Vector() noexcept = default;
 
-  HOSTDEV explicit constexpr Vector(Int n) noexcept;
+  HOSTDEV explicit Vector(Int n) noexcept;
 
-  HOSTDEV constexpr Vector(Int n, T const & value) noexcept;
+  HOSTDEV
+  Vector(Int n, T const & value) noexcept;
 
-  HOSTDEV constexpr Vector(Vector const & v) noexcept;
+  HOSTDEV
+  Vector(Vector const & v) noexcept;
 
-  HOSTDEV inline constexpr Vector(Vector && v) noexcept;
+  HOSTDEV inline Vector(Vector && v) noexcept;
 
-  HOSTDEV constexpr Vector(T const * first, T const * last) noexcept;
+  HOSTDEV
+  Vector(T const * first, T const * last) noexcept;
 
-  inline constexpr Vector(std::initializer_list<T> const & list) noexcept;
+  inline Vector(std::initializer_list<T> const & list) noexcept;
 
-  HOSTDEV inline constexpr auto
+  HOSTDEV inline auto
   operator=(Vector const & v) noexcept -> Vector &;
 
-  HOSTDEV inline constexpr auto
+  HOSTDEV inline auto
   operator=(Vector && v) noexcept -> Vector &;
 
-  constexpr auto
+  auto
   operator=(std::initializer_list<T> const & list) noexcept -> Vector &;
 
   template <class InputIt>
-  HOSTDEV constexpr void
+  HOSTDEV void
   assign(InputIt first, InputIt last) noexcept;
 
   //==============================================================================
   // Destructor
   //==============================================================================
 
-  HOSTDEV constexpr ~Vector() noexcept;
+  HOSTDEV ~Vector() noexcept;
 
   //==============================================================================
   // Element access
@@ -194,7 +197,7 @@ public:
   // NOLINTNEXTLINE(readability-identifier-naming) match std::vector
   max_size() noexcept -> Int;
 
-  HOSTDEV constexpr void
+  HOSTDEV void
   reserve(Int n) noexcept;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -205,23 +208,23 @@ public:
   //==============================================================================
 
   // Doesn't change capacity
-  HOSTDEV constexpr void
+  HOSTDEV void
   clear() noexcept;
 
-  HOSTDEV inline constexpr void
+  HOSTDEV inline void
   // NOLINTNEXTLINE(readability-identifier-naming) match std::vector
   push_back(T const & value) noexcept;
 
-  HOSTDEV inline constexpr void
+  HOSTDEV inline void
   // NOLINTNEXTLINE(readability-identifier-naming) match std::vector
   push_back(T && value) noexcept;
 
   template <typename... Args>
-  HOSTDEV constexpr void
+  HOSTDEV inline void
   // NOLINTNEXTLINE(readability-identifier-naming) match std::vector
   emplace_back(Args &&... args) noexcept;
 
-  HOSTDEV constexpr void
+  HOSTDEV void
   resize(Int n) noexcept;
 
 }; // class Vector
@@ -266,7 +269,7 @@ operator>=(Vector<T> const & l, Vector<T> const & r) noexcept -> bool;
 
 // Allocate memory for n elements
 template <class T>
-HOSTDEV constexpr void
+HOSTDEV inline void
 Vector<T>::allocate(Int n) noexcept
 {
   ASSERT(0 < n);
@@ -279,7 +282,7 @@ Vector<T>::allocate(Int n) noexcept
 
 // Construct n default-initialized elements at the end of the vector
 template <class T>
-HOSTDEV constexpr void
+HOSTDEV inline void
 Vector<T>::constructAtEnd(Int n) noexcept
 {
   Ptr new_end = _end + n;
@@ -290,7 +293,7 @@ Vector<T>::constructAtEnd(Int n) noexcept
 
 // Construct n elements with value at the end of the vector
 template <class T>
-HOSTDEV constexpr void
+HOSTDEV inline void
 Vector<T>::constructAtEnd(Int n, T const & value) noexcept
 {
   Ptr new_end = _end + n;
@@ -306,7 +309,7 @@ Vector<T>::constructAtEnd(Int n, T const & value) noexcept
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 template <class T>
 template <class InputIt>
-HOSTDEV constexpr void
+HOSTDEV inline void
 // NOLINTNEXTLINE(clang-diagnostic-unused-parameter,misc-unused-parameters)
 Vector<T>::constructAtEnd(InputIt first, InputIt last, Int n) noexcept
 {
@@ -320,7 +323,7 @@ Vector<T>::constructAtEnd(InputIt first, InputIt last, Int n) noexcept
 
 // Destroy the elements and deallocate the buffer
 template <class T>
-HOSTDEV constexpr void
+HOSTDEV inline void
 Vector<T>::deallocate() noexcept
 {
   if (_begin != nullptr) {
@@ -334,7 +337,7 @@ Vector<T>::deallocate() noexcept
 
 // Destroy elements at the end of the vector until new_last
 template <class T>
-HOSTDEV constexpr void
+HOSTDEV inline void
 Vector<T>::destructAtEnd(Ptr new_last) noexcept
 {
   Ptr soon_to_be_end = _end;
@@ -346,7 +349,7 @@ Vector<T>::destructAtEnd(Ptr new_last) noexcept
 
 template <class T>
 template <class... Args>
-HOSTDEV constexpr auto
+HOSTDEV inline auto
 Vector<T>::emplaceBackSlowPath(Args &&... args) noexcept -> Ptr
 {
   Vector<T> temp;
@@ -359,7 +362,7 @@ Vector<T>::emplaceBackSlowPath(Args &&... args) noexcept -> Ptr
 
 template <class T>
 template <class U>
-HOSTDEV constexpr auto
+HOSTDEV inline auto
 Vector<T>::pushBackSlowPath(U && value) noexcept -> Ptr
 {
   Vector<T> temp;
@@ -380,7 +383,7 @@ Vector<T>::recommend(Int new_size) const noexcept -> Int
 }
 
 template <class T>
-HOSTDEV constexpr void
+HOSTDEV inline void
 Vector<T>::swapBuffers(Vector & v) noexcept
 {
   // ASSUMES v IS UNINITIALIZED IN [begin, end)
@@ -417,7 +420,7 @@ Vector<T>::swapBuffers(Vector & v) noexcept
 
 // Append n default-initialized elements to the end of the vector
 template <class T>
-HOSTDEV constexpr void
+HOSTDEV inline void
 Vector<T>::append(Int n) noexcept
 {
   if (static_cast<Int>(_end_cap - _end) < n) {
@@ -434,7 +437,8 @@ Vector<T>::append(Int n) noexcept
 
 // Default construct n elements
 template <class T>
-HOSTDEV constexpr Vector<T>::Vector(Int const n) noexcept
+HOSTDEV
+Vector<T>::Vector(Int const n) noexcept
 {
   ASSERT(n > 0);
   this->allocate(n);
@@ -443,7 +447,8 @@ HOSTDEV constexpr Vector<T>::Vector(Int const n) noexcept
 
 // Construct n elements with value
 template <class T>
-HOSTDEV constexpr Vector<T>::Vector(Int const n, T const & value) noexcept
+HOSTDEV
+Vector<T>::Vector(Int const n, T const & value) noexcept
 {
   ASSERT(n > 0);
   this->allocate(n);
@@ -452,7 +457,8 @@ HOSTDEV constexpr Vector<T>::Vector(Int const n, T const & value) noexcept
 
 // Copy construct from a vector
 template <class T>
-HOSTDEV constexpr Vector<T>::Vector(Vector<T> const & v) noexcept
+HOSTDEV
+Vector<T>::Vector(Vector<T> const & v) noexcept
 {
   Int const n = v.size();
   if (n == 0) {
@@ -465,7 +471,8 @@ HOSTDEV constexpr Vector<T>::Vector(Vector<T> const & v) noexcept
 
 // Move construct from a vector
 template <class T>
-HOSTDEV constexpr Vector<T>::Vector(Vector<T> && v) noexcept
+HOSTDEV
+Vector<T>::Vector(Vector<T> && v) noexcept
     : _begin{v._begin},
       _end{v._end},
       _end_cap{v._end_cap}
@@ -476,7 +483,8 @@ HOSTDEV constexpr Vector<T>::Vector(Vector<T> && v) noexcept
 }
 
 template <class T>
-HOSTDEV constexpr Vector<T>::Vector(T const * first, T const * last) noexcept
+HOSTDEV
+Vector<T>::Vector(T const * first, T const * last) noexcept
 {
   Int const n = static_cast<Int>(last - first);
   if (n == 0) {
@@ -491,7 +499,7 @@ HOSTDEV constexpr Vector<T>::Vector(T const * first, T const * last) noexcept
 
 // Construct from an initializer list
 template <class T>
-constexpr Vector<T>::Vector(std::initializer_list<T> const & list) noexcept
+Vector<T>::Vector(std::initializer_list<T> const & list) noexcept
 {
   Int const n = static_cast<Int>(list.size());
   ASSERT(n > 0);
@@ -501,7 +509,7 @@ constexpr Vector<T>::Vector(std::initializer_list<T> const & list) noexcept
 }
 
 template <class T>
-HOSTDEV inline constexpr auto
+HOSTDEV inline auto
 Vector<T>::operator=(Vector<T> const & v) noexcept -> Vector<T> &
 {
   if (this != addressof(v)) {
@@ -511,7 +519,7 @@ Vector<T>::operator=(Vector<T> const & v) noexcept -> Vector<T> &
 }
 
 template <class T>
-HOSTDEV inline constexpr auto
+HOSTDEV inline auto
 Vector<T>::operator=(Vector<T> && v) noexcept -> Vector<T> &
 {
   if (this != addressof(v)) {
@@ -528,7 +536,7 @@ Vector<T>::operator=(Vector<T> && v) noexcept -> Vector<T> &
 }
 
 template <class T>
-constexpr auto
+auto
 Vector<T>::operator=(std::initializer_list<T> const & list) noexcept -> Vector &
 {
   assign(list.begin(), list.end());
@@ -538,7 +546,7 @@ Vector<T>::operator=(std::initializer_list<T> const & list) noexcept -> Vector &
 // Assign from a range [first, last), adjusting the size and capacity as needed
 template <class T>
 template <class InputIt>
-HOSTDEV constexpr void
+HOSTDEV void
 Vector<T>::assign(InputIt first, InputIt last) noexcept
 {
   // If [first, last) overlaps with the vector, we may have incorrect behavior.
@@ -568,7 +576,7 @@ Vector<T>::assign(InputIt first, InputIt last) noexcept
 //===============================================================================
 
 template <class T>
-HOSTDEV constexpr Vector<T>::~Vector() noexcept
+HOSTDEV Vector<T>::~Vector() noexcept
 {
   // If the vector is not empty, destroy the elements and deallocate the buffer
   if (_begin != nullptr) {
@@ -716,7 +724,7 @@ Vector<T>::max_size() noexcept -> Int
 }
 
 template <class T>
-HOSTDEV constexpr void
+HOSTDEV void
 Vector<T>::reserve(Int const n) noexcept
 {
   if (n > capacity()) {
@@ -739,51 +747,51 @@ Vector<T>::capacity() const noexcept -> Int
 
 // Does not change capacity
 template <class T>
-HOSTDEV constexpr void
+HOSTDEV void
 Vector<T>::clear() noexcept
 {
   destructAtEnd(_begin);
 }
 
 template <class T>
-HOSTDEV inline constexpr void
+HOSTDEV inline void
 Vector<T>::push_back(T const & value) noexcept
 {
   if (_end < _end_cap) {
     um2::construct_at(_end, value);
     ++_end;
-  } else {
+  } else [[unlikely]] {
     _end = pushBackSlowPath(value);
   }
 }
 
 template <class T>
-HOSTDEV inline constexpr void
+HOSTDEV inline void
 Vector<T>::push_back(T && value) noexcept
 {
   if (_end < _end_cap) {
     um2::construct_at(_end, um2::move(value));
     ++_end;
-  } else {
+  } else [[unlikely]] {
     _end = pushBackSlowPath(um2::move(value));
   }
 }
 
 template <class T>
 template <class... Args>
-HOSTDEV inline constexpr void
+HOSTDEV inline void
 Vector<T>::emplace_back(Args &&... args) noexcept
 {
   if (_end < _end_cap) {
     um2::construct_at(_end, um2::forward<Args>(args)...);
     ++_end;
-  } else {
+  } else [[unlikely]] {
     _end = emplaceBackSlowPath(um2::forward<Args>(args)...);
   }
 }
 
 template <class T>
-HOSTDEV constexpr void
+HOSTDEV void
 Vector<T>::resize(Int const n) noexcept
 {
   Int const cs = size();

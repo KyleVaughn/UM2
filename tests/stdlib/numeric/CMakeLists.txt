@@ -1,1 +1,1 @@
-add_um2_test(./iota.cpp)
+um2_add_test(./iota.cpp)

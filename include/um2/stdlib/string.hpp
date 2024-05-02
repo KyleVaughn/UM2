@@ -16,11 +16,6 @@
 // STRING
 //==============================================================================
 
-// For developers: clang-tidy is a bit overzealous with its warnings in this file.
-// We check for memory leaks with Valgrind, so we are safe to ignore these warnings.
-// NOLINTBEGIN(clang-analyzer-cplusplus.NewDelete,
-// clang-analyzer-cplusplus.NewDeleteLeaks)
-
 namespace um2
 {
 
@@ -440,7 +435,7 @@ String::getLongCap() const noexcept -> uint64_t
 }
 
 PURE HOSTDEV constexpr auto
-// NOLINTNEXTLINE(readability-make-member-function-const) we offer const next
+// NOLINTNEXTLINE(readability-make-member-function-const) OK, we offer const next
 String::getLongPointer() noexcept -> Ptr
 {
   return _r.l.data;
@@ -486,6 +481,9 @@ String::fitsInShort(uint64_t n) noexcept -> bool
 HOSTDEV constexpr void
 String::init(ConstPtr s, uint64_t size) noexcept
 {
+  if (std::is_constant_evaluated()) {
+    _r = Rep();
+  }
   ASSERT(s != nullptr);
   Ptr p = nullptr;
   // GCC warns about wraparound here, but it should not be possible
@@ -645,7 +643,7 @@ HOSTDEV constexpr String::String(String const & s, Int pos, Int count) noexcept
 // written is only read in debug mode
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-variable"
-// NOLINTBEGIN(clang-analyzer-deadcode.DeadStores, clang-diagnostic-unused-variable)
+// NOLINTBEGIN(clang-analyzer-deadcode.DeadStores, clang-diagnostic-unused-variable) OK
 template <>
 inline String::String(int32_t t) noexcept
 {
@@ -956,5 +954,3 @@ String::substr(Int pos, Int count) const noexcept -> String
 }
 
 } // namespace um2
-
-// NOLINTEND(clang-analyzer-cplusplus.NewDelete, clang-analyzer-cplusplus.NewDeleteLeaks)

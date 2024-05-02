@@ -5,11 +5,11 @@
 HOSTDEV
 TEST_CASE(max_element_int)
 {
-  int a[10] = {0, 1, 2, 3, 4, 5, 6, 7, 9, 8};
-  ASSERT(um2::max_element(&a[0], &a[0] + 10) == &a[8]);
+  int constexpr a[10] = {0, 1, 2, 3, 4, 5, 6, 7, 9, 8};
+  STATIC_ASSERT(um2::max_element(&a[0], &a[0] + 10) == &a[8]);
 
-  int b[10] = {0, 2, 4, 3, 4, 5, 9, 9, 7, 8};
-  ASSERT(um2::max_element(&b[0], &b[0] + 10) == &b[6]);
+  int constexpr b[10] = {0, 2, 4, 3, 4, 5, 9, 9, 7, 8};
+  STATIC_ASSERT(um2::max_element(&b[0], &b[0] + 10) == &b[6]);
 }
 MAKE_CUDA_KERNEL(max_element_int);
 

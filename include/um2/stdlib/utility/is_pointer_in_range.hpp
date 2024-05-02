@@ -10,7 +10,7 @@ namespace um2
 
 template <class T>
 HOSTDEV [[nodiscard]] constexpr auto
-// NOLINTNEXTLINE(readability-identifier-naming)
+// NOLINTNEXTLINE(readability-identifier-naming) match std
 is_pointer_in_range(T const * begin, T const * end, T const * ptr) noexcept -> bool
 {
   return begin <= ptr && ptr < end;

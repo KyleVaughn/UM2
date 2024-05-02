@@ -38,6 +38,8 @@
 
 #define ASSERT(cond) assert(cond)
 
+#define STATIC_ASSERT(cond) static_assert(cond)
+
 #define ASSERT_NEAR(a, b, eps)                                                           \
   {                                                                                      \
     auto const a_eval = (a);                                                             \
@@ -66,7 +68,7 @@
 
 #if UM2_USE_CUDA
 
-// NOLINTBEGIN(bugprone-macro-parentheses) justification: using the name of the test
+// NOLINTBEGIN(bugprone-macro-parentheses) OK, using the name of the test
 #  define MAKE_CUDA_KERNEL_1_ARGS(host_test)                                             \
     __global__ void host_test##_cuda_kernel()                                            \
     {                                                                                    \

@@ -17,7 +17,27 @@ TEST_CASE(fill_test)
 }
 MAKE_CUDA_KERNEL(fill_test);
 
-TEST_SUITE(fill) { TEST_HOSTDEV(fill_test); }
+constexpr auto
+foo() -> int
+{
+  int a[10] = {0};
+  um2::fill(&a[0], &a[0] + 10, 1);
+  int sum = 0;
+  for (auto const & i : a) {
+    sum += i;
+  }
+  return sum;
+}
+
+HOSTDEV
+TEST_CASE(fill_constexpr_test) { static_assert(foo() == 10); }
+
+TEST_SUITE(fill)
+{
+  TEST_HOSTDEV(fill_test);
+  TEST_HOSTDEV(fill_constexpr_test);
+}
+
 auto
 main() -> int
 {

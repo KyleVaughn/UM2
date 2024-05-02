@@ -7,17 +7,15 @@
 HOSTDEV
 TEST_CASE(test_memcmp)
 {
-  char const * const s1 = "abc";
-  char const * const s2 = "abc";
-  char const * const s3 = "bcd";
+  constexpr const char * s1 = "abc";
+  constexpr const char * s2 = "abc";
+  constexpr const char * s3 = "bcd";
 
-  // NOLINTBEGIN(cert-dcl03-c,misc-static-assert)
-  ASSERT(um2::memcmp(s1, s2, 0) == 0);
-  ASSERT(um2::memcmp(s1, s2, 1) == 0);
-  ASSERT(um2::memcmp(s1, s2, 3) == 0);
-  ASSERT(um2::memcmp(s1, s3, 2) < 0);
-  ASSERT(um2::memcmp(s3, s1, 2) > 0);
-  // NOLINTEND(cert-dcl03-c,misc-static-assert)
+  STATIC_ASSERT(um2::memcmp(s1, s2, 0) == 0);
+  STATIC_ASSERT(um2::memcmp(s1, s2, 1) == 0);
+  STATIC_ASSERT(um2::memcmp(s1, s2, 3) == 0);
+  STATIC_ASSERT(um2::memcmp(s1, s3, 2) < 0);
+  STATIC_ASSERT(um2::memcmp(s3, s1, 2) > 0);
 }
 
 MAKE_CUDA_KERNEL(test_memcmp);

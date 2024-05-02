@@ -2,183 +2,171 @@
 
 #include "../test_macros.hpp"
 
-#include <iostream>
-
 //==============================================================================
 // Constructors and assignment
 //==============================================================================
 
-// Compiler complains if it's static or not static...
-// NOLINTBEGIN(cert-dcl03-c,misc-static-assert)
+constexpr const char * data = "Hello, World!";
 
 HOSTDEV
 TEST_CASE(constructor_default)
 {
-  um2::StringView const s;
-  ASSERT(s.empty());
-  ASSERT(s.data() == nullptr);
+  um2::StringView constexpr s;
+  STATIC_ASSERT(s.empty());
+  STATIC_ASSERT(s.data() == nullptr);
 }
 MAKE_CUDA_KERNEL(constructor_default)
 
 HOSTDEV
 TEST_CASE(constructor_ptr_size)
 {
-  char const * const data = "Hello, World!";
-  um2::StringView const s(data, 13);
-  ASSERT(s.size() == 13);
-  ASSERT(s.data() == data);
+  um2::StringView constexpr s(data, 13);
+  STATIC_ASSERT(s.size() == 13);
+  STATIC_ASSERT(s.data() == data);
 }
 MAKE_CUDA_KERNEL(constructor_ptr_size)
 
 HOSTDEV
 TEST_CASE(constructor_ptr)
 {
-  char const * const data = "Hello, World!";
-  um2::StringView const s(data);
-  ASSERT(s.size() == 13);
-  ASSERT(s.data() == data);
+  um2::StringView constexpr s(data);
+  STATIC_ASSERT(s.size() == 13);
+  STATIC_ASSERT(s.data() == data);
 }
 MAKE_CUDA_KERNEL(constructor_ptr)
 
 HOSTDEV
 TEST_CASE(constructor_copy)
 {
-  char const * const data = "Hello, World!";
-  um2::StringView const s1(data);
-  um2::StringView const s2(s1);
-  ASSERT(s1.size() == s2.size());
-  ASSERT(s1.data() == s2.data());
+  um2::StringView constexpr s1(data);
+  um2::StringView constexpr s2(s1);
+  STATIC_ASSERT(s1.size() == s2.size());
+  STATIC_ASSERT(s1.data() == s2.data());
 }
 MAKE_CUDA_KERNEL(constructor_copy)
 
 HOSTDEV
 TEST_CASE(constructor_ptr_ptr)
 {
-  char const * const data = "Hello, World!";
-  um2::StringView const s(data, data + 13);
-  ASSERT(s.size() == 13);
-  ASSERT(s.data() == data);
+  um2::StringView constexpr s(data, data + 13);
+  STATIC_ASSERT(s.size() == 13);
+  STATIC_ASSERT(s.data() == data);
 }
 MAKE_CUDA_KERNEL(constructor_ptr_ptr)
 
 HOSTDEV
 TEST_CASE(element_access)
 {
-  char const * const data = "Hello, World!";
-  um2::StringView const s(data, 13);
-  ASSERT(s[0] == 'H');
-  ASSERT(s[1] == 'e');
-  ASSERT(s.front() == 'H');
-  ASSERT(s.back() == '!');
-  ASSERT(s.data() == data);
+  um2::StringView constexpr s(data, 13);
+  STATIC_ASSERT(s[0] == 'H');
+  STATIC_ASSERT(s[1] == 'e');
+  STATIC_ASSERT(s.front() == 'H');
+  STATIC_ASSERT(s.back() == '!');
+  STATIC_ASSERT(s.data() == data);
 }
 MAKE_CUDA_KERNEL(element_access)
 
 HOSTDEV
 TEST_CASE(compare)
 {
-  char const * const data1 = "Hello, World!";
-  char const * const data2 = "Hello, Worl!";
-  char const * const data3 = "Hekko, World!";
-  um2::StringView const s1(data1, 13);
-  um2::StringView const s2(data2, 12);
-  um2::StringView const s3(data3, 13);
-  ASSERT(s1.compare(s1) == 0);
-  ASSERT(s1.compare(s2) > 0);
-  ASSERT(s2.compare(s1) < 0);
-  ASSERT(s1.compare(s3) > 0);
+  constexpr const char * data1 = "Hello, World!";
+  constexpr const char * data2 = "Hello, Worl!";
+  constexpr const char * data3 = "Hekko, World!";
+  um2::StringView constexpr s1(data1, 13);
+  um2::StringView constexpr s2(data2, 12);
+  um2::StringView constexpr s3(data3, 13);
+  STATIC_ASSERT(s1.compare(s1) == 0);
+  STATIC_ASSERT(s1.compare(s2) > 0);
+  STATIC_ASSERT(s2.compare(s1) < 0);
+  STATIC_ASSERT(s1.compare(s3) > 0);
 }
 MAKE_CUDA_KERNEL(compare)
 
 HOSTDEV
 TEST_CASE(substr)
 {
-  char const * const data = "Hello, World!";
-  um2::StringView const s(data, 13);
-  um2::StringView const s1 = s.substr(0, 5);
-  um2::StringView const s2 = s.substr(7, 5);
-  ASSERT(s1.size() == 5);
-  ASSERT(s1.data() == data);
-  ASSERT(s2.size() == 5);
-  ASSERT(s2.data() == data + 7);
+  um2::StringView constexpr s(data, 13);
+  um2::StringView constexpr s1 = s.substr(0, 5);
+  um2::StringView constexpr s2 = s.substr(7, 5);
+  STATIC_ASSERT(s1.size() == 5);
+  STATIC_ASSERT(s1.data() == data);
+  STATIC_ASSERT(s2.size() == 5);
+  STATIC_ASSERT(s2.data() == data + 7);
 }
 MAKE_CUDA_KERNEL(substr)
 
 HOSTDEV
 TEST_CASE(starts_with)
 {
-  char const * const data = "Hello, World!";
-  um2::StringView const s(data, 13);
-  ASSERT(s.starts_with("Hello"));
-  ASSERT(s.starts_with("Hello, World!"));
-  ASSERT(!s.starts_with("World"));
-  ASSERT(!s.starts_with("Hello, World! "));
+  um2::StringView constexpr s(data, 13);
+  STATIC_ASSERT(s.starts_with("Hello"));
+  STATIC_ASSERT(s.starts_with("Hello, World!"));
+  STATIC_ASSERT(!s.starts_with("World"));
+  STATIC_ASSERT(!s.starts_with("Hello, World! "));
 }
 MAKE_CUDA_KERNEL(starts_with)
 
 HOSTDEV
 TEST_CASE(find_first_of)
 {
-  char const * const data = "Hello, World!";
-  um2::StringView const s(data, 13);
-  ASSERT(s.find_first_of('H') == 0);
-  ASSERT(s.find_first_of('W') == 7);
-  ASSERT(s.find_first_of('!') == 12);
-  ASSERT(s.find_first_of('z') == um2::StringView::npos);
-  ASSERT(s.find_first_of('l', 4) == 10);
-  ASSERT(s.find_first_of('l', 20) == um2::StringView::npos);
+  um2::StringView constexpr s(data, 13);
+  STATIC_ASSERT(s.find_first_of('H') == 0);
+  STATIC_ASSERT(s.find_first_of('W') == 7);
+  STATIC_ASSERT(s.find_first_of('!') == 12);
+  STATIC_ASSERT(s.find_first_of('z') == um2::StringView::npos);
+  STATIC_ASSERT(s.find_first_of('l', 4) == 10);
+  STATIC_ASSERT(s.find_first_of('l', 20) == um2::StringView::npos);
 
-  um2::StringView const s2(data + 4, 9);
-  ASSERT(s.find_first_of(s2) == 4);
-  ASSERT(s.find_first_of(s2, 5) == um2::StringView::npos);
-  ASSERT(s.find_first_of("ello") == 1);
-  ASSERT(s.find_first_of("ello", 6) == um2::StringView::npos);
+  um2::StringView constexpr s2(data + 4, 9);
+  STATIC_ASSERT(s.find_first_of(s2) == 4);
+  STATIC_ASSERT(s.find_first_of(s2, 5) == um2::StringView::npos);
+  STATIC_ASSERT(s.find_first_of("ello") == 1);
+  STATIC_ASSERT(s.find_first_of("ello", 6) == um2::StringView::npos);
 }
+MAKE_CUDA_KERNEL(find_first_of)
 
 HOSTDEV
 TEST_CASE(find_first_not_of)
 {
-  char const * const data = "Hello, World!";
-  um2::StringView const s(data, 13);
-  ASSERT(s.find_first_not_of('H') == 1);
-  ASSERT(s.find_first_not_of('l', 2) == 4);
-  ASSERT(s.find_first_not_of('l', 20) == um2::StringView::npos);
+  um2::StringView constexpr s(data, 13);
+  STATIC_ASSERT(s.find_first_not_of('H') == 1);
+  STATIC_ASSERT(s.find_first_not_of('l', 2) == 4);
+  STATIC_ASSERT(s.find_first_not_of('l', 20) == um2::StringView::npos);
 }
 
 HOSTDEV
 TEST_CASE(find_last_of)
 {
-  char const * const data = "Hello, World!";
-  um2::StringView const s(data, 13);
-  ASSERT(s.find_last_of('H') == 0);
-  ASSERT(s.find_last_of('W') == 7);
-  ASSERT(s.find_last_of('!') == 12);
-  ASSERT(s.find_last_of('z') == um2::StringView::npos);
-  ASSERT(s.find_last_of('l') == 10);
-  ASSERT(s.find_last_of('o', 4) == 4);
-  ASSERT(s.find_last_of('o', 3) == um2::StringView::npos);
+  um2::StringView constexpr s(data, 13);
+  STATIC_ASSERT(s.find_last_of('H') == 0);
+  STATIC_ASSERT(s.find_last_of('W') == 7);
+  STATIC_ASSERT(s.find_last_of('!') == 12);
+  STATIC_ASSERT(s.find_last_of('z') == um2::StringView::npos);
+  STATIC_ASSERT(s.find_last_of('l') == 10);
+  STATIC_ASSERT(s.find_last_of('o', 4) == 4);
+  STATIC_ASSERT(s.find_last_of('o', 3) == um2::StringView::npos);
 }
 
 HOSTDEV
-TEST_CASE(end_with)
+TEST_CASE(ends_with)
 {
-  char const * const data = "StringView";
-  um2::StringView const s(data, 10);
-  ASSERT(s.ends_with("View"));
-  ASSERT(s.ends_with("StringView"));
-  ASSERT(!s.ends_with("String"));
-  ASSERT(!s.ends_with("StringView "));
+  constexpr const char * data2 = "StringView";
+  um2::StringView constexpr s(data2, 10);
+  STATIC_ASSERT(s.ends_with("View"));
+  STATIC_ASSERT(s.ends_with("StringView"));
+  STATIC_ASSERT(!s.ends_with("String"));
+  STATIC_ASSERT(!s.ends_with("StringView "));
 }
-MAKE_CUDA_KERNEL(end_with)
+MAKE_CUDA_KERNEL(ends_with)
 
 HOSTDEV
 TEST_CASE(removeLeadingSpaces)
 {
-  char const * const data = "   Hello, World!";
-  um2::StringView s1(data, 16);
+  char const * const data1 = "   Hello, World!";
+  um2::StringView s1(data1, 16);
   s1.removeLeadingSpaces();
   ASSERT(s1.size() == 13);
-  ASSERT(s1.data() == data + 3);
+  ASSERT(s1.data() == data1 + 3);
 
   char const * const data2 = "Hello, World!";
   um2::StringView s2(data2, 13);
@@ -196,8 +184,8 @@ MAKE_CUDA_KERNEL(removeLeadingSpaces)
 HOSTDEV
 TEST_CASE(getTokenAndShrink)
 {
-  char const * const data = "A BB  C";
-  um2::StringView s(data, 7);
+  char const * const data1 = "A BB  C";
+  um2::StringView s(data1, 7);
   um2::StringView token = s.getTokenAndShrink();
   ASSERT(token.size() == 1);
   ASSERT(*token.data() == 'A');
@@ -230,8 +218,6 @@ TEST_CASE(getTokenAndShrink)
 }
 MAKE_CUDA_KERNEL(getTokenAndShrink)
 
-// NOLINTEND(cert-dcl03-c,misc-static-assert)
-
 TEST_SUITE(StringView)
 {
   // Constructors and assignment
@@ -248,10 +234,10 @@ TEST_SUITE(StringView)
   TEST_HOSTDEV(compare)
   TEST_HOSTDEV(substr)
   TEST_HOSTDEV(starts_with)
-  TEST_HOSTDEV(end_with)
   TEST_HOSTDEV(find_first_of)
   TEST_HOSTDEV(find_first_not_of)
   TEST_HOSTDEV(find_last_of)
+  TEST_HOSTDEV(ends_with)
 
   // Non-standard modifiers
   TEST_HOSTDEV(removeLeadingSpaces)

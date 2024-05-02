@@ -55,6 +55,9 @@ copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
     auto const n = static_cast<size_t>(last - first);
     ASSERT(!is_pointer_in_range(first, last, d_first));
     ASSERT(!is_pointer_in_range(first, last, d_first + n));
+    if (std::is_constant_evaluated()) {
+      return copyLoop(first, last, d_first);
+    }
     return static_cast<OutputIt>(memcpy(d_first, first, n * sizeof(InT))) + n;
   } else {
     return copyLoop(first, last, d_first);

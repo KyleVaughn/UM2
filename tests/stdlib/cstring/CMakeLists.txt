@@ -1,2 +1,2 @@
-add_um2_test(./strlen.cpp)
-add_um2_test(./memcmp.cpp)
+um2_add_test(./strlen.cpp)
+um2_add_test(./memcmp.cpp)

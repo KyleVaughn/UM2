@@ -18,7 +18,27 @@ TEST_CASE(iota_int)
 }
 MAKE_CUDA_KERNEL(iota_int);
 
-TEST_SUITE(iota) { TEST_HOSTDEV(iota_int); }
+constexpr auto
+foo() -> int
+{
+  int a[10] = {0};
+  um2::iota(a, a + 10, 1);
+  int sum = 0;
+  for (auto const i : a) {
+    sum += i;
+  }
+  return sum;
+}
+
+HOSTDEV
+TEST_CASE(iota_int_constexpr) { STATIC_ASSERT(foo() == 55); }
+MAKE_CUDA_KERNEL(iota_int_constexpr);
+
+TEST_SUITE(iota)
+{
+  TEST_HOSTDEV(iota_int);
+  TEST_HOSTDEV(iota_int_constexpr);
+}
 
 auto
 main() -> int

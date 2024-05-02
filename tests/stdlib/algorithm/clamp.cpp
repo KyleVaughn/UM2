@@ -16,11 +16,11 @@ TEST_CASE(clamp_int)
 HOSTDEV
 TEST_CASE(clamp_float)
 {
-  static_assert(um2::abs(um2::clamp(0.0F, 1.0F, 3.0F) - 1.0F) < 1e-6F);
-  static_assert(um2::abs(um2::clamp(1.0F, 1.0F, 3.0F) - 1.0F) < 1e-6F);
-  static_assert(um2::abs(um2::clamp(2.0F, 1.0F, 3.0F) - 2.0F) < 1e-6F);
-  static_assert(um2::abs(um2::clamp(3.0F, 1.0F, 3.0F) - 3.0F) < 1e-6F);
-  static_assert(um2::abs(um2::clamp(4.0F, 1.0F, 3.0F) - 3.0F) < 1e-6F);
+  STATIC_ASSERT_NEAR(um2::clamp(0.0F, 1.0F, 3.0F), 1.0F, 1e-6F);
+  STATIC_ASSERT_NEAR(um2::clamp(1.0F, 1.0F, 3.0F), 1.0F, 1e-6F);
+  STATIC_ASSERT_NEAR(um2::clamp(2.0F, 1.0F, 3.0F), 2.0F, 1e-6F);
+  STATIC_ASSERT_NEAR(um2::clamp(3.0F, 1.0F, 3.0F), 3.0F, 1e-6F);
+  STATIC_ASSERT_NEAR(um2::clamp(4.0F, 1.0F, 3.0F), 3.0F, 1e-6F);
 }
 
 MAKE_CUDA_KERNEL(clamp_int);

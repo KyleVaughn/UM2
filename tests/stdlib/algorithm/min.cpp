@@ -1,5 +1,4 @@
 #include <um2/stdlib/algorithm/min.hpp>
-#include <um2/stdlib/math/abs.hpp>
 
 #include "../../test_macros.hpp"
 
@@ -15,9 +14,9 @@ MAKE_CUDA_KERNEL(min_int);
 HOSTDEV
 TEST_CASE(min_float)
 {
-  static_assert(um2::abs(um2::min(0.0F, 1.0F) - 0.0F) < 1e-6F);
-  static_assert(um2::abs(um2::min(1.0F, 0.0F) - 0.0F) < 1e-6F);
-  static_assert(um2::abs(um2::min(0.0F, 0.0F) - 0.0F) < 1e-6F);
+  STATIC_ASSERT_NEAR(um2::min(0.0F, 1.0F), 0.0F, 1e-6F);
+  STATIC_ASSERT_NEAR(um2::min(1.0F, 0.0F), 0.0F, 1e-6F);
+  STATIC_ASSERT_NEAR(um2::min(0.0F, 0.0F), 0.0F, 1e-6F);
 }
 MAKE_CUDA_KERNEL(min_float);
 
