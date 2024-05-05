@@ -28,7 +28,7 @@ main(int argc, char** argv) -> int
   //===========================================================================
   // Model parameters
   //===========================================================================
-   
+
   Float const radius = 0.54;          // Pin radius = 0.54 cm (pg. 3)
   Float const pin_pitch = 1.26;       // Pin pitch = 1.26 cm (pg. 3)
   Float const assembly_pitch = 21.42; // Assembly pitch = 21.42 cm (pg. 3)
@@ -37,7 +37,7 @@ main(int argc, char** argv) -> int
   // Materials
   //===========================================================================
   // See tables for cross sections
-  
+
   um2::Material uo2;
   uo2.setName("UO2");
   uo2.setColor(um2::forestgreen);
@@ -48,10 +48,10 @@ main(int argc, char** argv) -> int
   um2::Material mox43;
   mox43.setName("MOX_4.3");
   mox43.setColor(um2::yellow);
-  mox43.xsec().t() = {2.11920e-01, 3.55810e-01, 4.88900e-01, 5.71940e-01, 
+  mox43.xsec().t() = {2.11920e-01, 3.55810e-01, 4.88900e-01, 5.71940e-01,
     4.32390e-01, 6.84950e-01, 6.88910e-01};
   mox43.xsec().isMacro() = true;
-  
+
   um2::Material mox70;
   mox70.setName("MOX_7.0");
   mox70.setColor(um2::orange);
@@ -59,7 +59,7 @@ main(int argc, char** argv) -> int
                       5.96220e-01, 4.80350e-01, 8.39360e-01,
                       8.59480e-01};
   mox70.xsec().isMacro() = true;
-  
+
   um2::Material mox87;
   mox87.setName("MOX_8.7");
   mox87.setColor(um2::red);
@@ -67,7 +67,7 @@ main(int argc, char** argv) -> int
  6.11170e-01, 5.08900e-01, 9.26670e-01,
  9.60990e-01};
   mox87.xsec().isMacro() = true;
-  
+
   um2::Material fiss_chamber;
   fiss_chamber.setName("Fission_Chamber");
   fiss_chamber.setColor(um2::black);
@@ -75,7 +75,7 @@ main(int argc, char** argv) -> int
  6.49840e-01, 6.70630e-01, 8.75060e-01,
  1.43450e+00};
   fiss_chamber.xsec().isMacro() = true;
-  
+
   um2::Material guide_tube;
   guide_tube.setName("Guide_Tube");
   guide_tube.setColor(um2::darkgrey);
@@ -83,7 +83,7 @@ main(int argc, char** argv) -> int
  6.49670e-01, 6.70580e-01, 8.75050e-01,
  1.43450e+00};
   guide_tube.xsec().isMacro() = true;
-  
+
   um2::Material moderator;
   moderator.setName("Moderator");
   moderator.setColor(um2::royalblue);
@@ -209,7 +209,7 @@ main(int argc, char** argv) -> int
   // Overlay CMFD mesh
   //===========================================================================
 
-  // Construct the MPACT model 
+  // Construct the MPACT model
   um2::mpact::Model model;
   model.addMaterial(uo2);
   model.addMaterial(mox43);
@@ -229,7 +229,7 @@ main(int argc, char** argv) -> int
   // Generate the mesh
   //===========================================================================
 
-  um2::gmsh::model::mesh::setGlobalMeshSize(pin_pitch / 6);
+  um2::gmsh::model::mesh::setGlobalMeshSize(pin_pitch / 12);
   um2::gmsh::model::mesh::generateMesh(um2::MeshType::QuadraticTri);
   um2::gmsh::write("c5g7_2d.inp");
 
@@ -238,8 +238,8 @@ main(int argc, char** argv) -> int
   //===========================================================================
 
   model.importCoarseCellMeshes("c5g7_2d.inp");
-  model.write("c5g7_2d_" + um2::String(num_coarse_cells) + "_grid.xdmf",
-      /*write_knudsen_data=*/true, /*write_xsec_data=*/true);
+  model.writeOpticalThickness("c5g7_2d_optical_thickness.xdmf");
+  model.write("c5g7_2d.xdmf", /*write_knudsen_data=*/true, /*write_xsec_data=*/true);
   um2::finalize();
   return 0;
 }

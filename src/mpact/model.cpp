@@ -11,9 +11,6 @@
 #include <algorithm> // std::any_of
 #include <numeric> // std::reduce
 
-// Delete me
-#include<iostream>
-
 namespace um2::mpact
 {
 
@@ -46,6 +43,15 @@ flattenLattice(Vector<Vector<T>> const & ids, Vector<U> & flat_ids)
       flat_ids[i * num_cols + j] = static_cast<T>(ids[num_rows - 1 - i][j]);
     }
   }
+}
+
+//=============================================================================
+// Constructors
+//=============================================================================
+
+Model::Model(String const & name)
+{
+  read(name);
 }
 
 //=============================================================================
@@ -2637,158 +2643,38 @@ computeCellOpticalThickness(
     Vector<Material> const & materials,
     Vector<Float> & taus)
 {
-  // Algorithm:
-  // Shoot modular rays through the coarse cell and calculate the optical thickness.
+  // In a domain \Omega, with boundary \partial\Omega, the mean optical thickness
+  // in energy group g over the domain is defined as:
+  //    \tau_g = \frac{\pi}{P_{\partial\Omega}} * \sum_{i=1}^N A_i * \Sigma_{i,g}
   //
-  // global_taus = 0
-  // For each azimuthal angle,
-  //  azimuthal_taus = 0
-  //  Compute the modular ray params
-  //  For each modular ray,
-  //    ray_taus = 0
-  //    Shoot the modular ray through the coarse cell mesh.
-  //    For each face which intersects the modular ray,
-  //      Sum the segment lengths
-  //      Get the face material
-  //      For each energy group,
-  //        ray_taus[ig] += segment_length * material_xsec[ig]
-  //      End
-  //    End
-  //    azimuthal_taus += ray_taus
-  //  End
-  //  global_taus += azimuthal_taus
-  // End
-  //
-  // return global_taus
+  // where:
+  //  P_{\partial\Omega} is the perimeter of the boundary of the domain
+  //  N is the number of faces of the mesh which fills \Omega
+  //  A_i is the area of the i-th face
+  //  \Sigma_{i,g} is the macroscopic cross section of the i-th face at energy group g
 
-  Int constexpr num_azi = 32; // azimuthal angles in az in (0, pi)
-  Int constexpr num_rays_per_longest_side = 1000;
 
   // Setup taus
   Int const num_groups = materials[0].xsec().t().size();
   Float constexpr zero = 0;
   taus.resize(num_groups);
   um2::fill(taus.begin(), taus.end(), zero);
-  Vector<Float> azimuthal_taus(num_groups);
-  Vector<Float> ray_taus(num_groups);
 
-  // Create the coarse cell bounding box
-  // We will back the box up by a small amount to avoid numerical issues
-  auto constexpr scaling_factor = castIfNot<Float>(1.015625);
-  AxisAlignedBox2 cc_bb(Point2(0, 0), xy_extents);
-  cc_bb.scale(scaling_factor);
-
-  // Compute ray spacing such that the number of rays per longest side is
-  // num_rays_per_longest_side
-  Float const max_side_length = um2::max(xy_extents[0], xy_extents[1]);
-  Float const ray_spacing = max_side_length / static_cast<Float>(num_rays_per_longest_side);
-
-  // Allocate buffers for ray tracing
-  Vector<Float> coords(4 * fvm.numFaces());
-  Vector<Int> offsets(fvm.numFaces() + 1);
-  Vector<Int> faces(fvm.numFaces());
-
-  Int total_num_rays = 0;
-
-  // For each azimuthal angle
-  // azi = (2 * iazi + 1) * pi / (2 * num_azi) --> azi in the range (0, pi)
-  // dazi = pi / (2 * num_azi)
-  Float const dazi = um2::pi_2<Float> / static_cast<Float>(num_azi);
-  for (Int iazi = 0; iazi < num_azi; ++iazi) {
-
-    // Zero out the azimuthal taus
-    um2::fill(azimuthal_taus.begin(), azimuthal_taus.end(), zero);
-
-    // Compute the azimuthal angle
-    Float const azi = static_cast<Float>(2 * iazi + 1) * dazi;
-
-    // Compute the modular ray params
-    ModularRayParams const ray_params(azi, ray_spacing, cc_bb);
-
-    // For each modular ray,
-    Int const num_rays = ray_params.getTotalNumRays();
-    total_num_rays += num_rays;
-    for (Int iray = 0; iray < num_rays; ++iray) {
-
-      // Zero out the ray taus
-      um2::fill(ray_taus.begin(), ray_taus.end(), zero);
-
-      // Shoot the modular ray through the coarse cell mesh.
-      auto const ray = ray_params.getRay(iray);
-      Vec2I const hits_faces = fvm.intersect(ray, coords.data(), offsets.data(), faces.data());
-
-      // For each face which intersects the modular ray,
-      for (Int iface = 0; iface < hits_faces[1]; ++iface) {
-        Int const face_id = faces[iface];
-
-        auto const face = fvm.getFace(face_id);
-
-        // Sum the segment lengths
-        //---------------------------------------------------------------------
-        Int const offset_begin = offsets[iface];
-        Int const offset_end = offsets[iface + 1];
-        // There should be at least 2 intersection points
-        if (offset_end - offset_begin < 2) {
-          std::cerr << "Face ID: " << face_id << std::endl;
-          std::cerr << "Offset Begin: " << offset_begin << std::endl;
-          std::cerr << "Offset End: " << offset_end << std::endl;
-          continue;
-        }
-        ASSERT(offset_end - offset_begin >= 2);
-
-        // sort the ray intersection coordinates
-        std::sort(coords.begin() + offset_begin, coords.begin() + offset_end);
-
-        // For N intersections, there are N - 1 segments
-        // If the midpoint of the segment is in the face, then we add its
-        // length. Otherwise, skip it
-        Float segment_length = 0;
-        for (Int idx = offset_begin; idx < offset_end - 1; ++idx) {
-          // Get this coord and the next one
-          Float const r0 = coords[idx];
-          Float const r1 = coords[idx + 1];
-          ASSERT(r1 >= r0);
-          Float const r_mid = (r0 + r1) / 2;
-          Point2 const p_mid = ray(r_mid);
-          if (face.contains(p_mid)) {
-            segment_length += r1 - r0;
-          }
-        }
-        ASSERT(segment_length > 0);
-
-        // Get the face material
-        // NOLINTNEXTLINE(bugprone-signed-char-misuse,cert-str34-c)
-        auto const mat_id = static_cast<Int>(material_ids[face_id]);
-
-        auto const & material = materials[mat_id];
-        auto const & material_xsec_t = material.xsec().t();
-
-        // For each energy group,
-        for (Int ig = 0; ig < num_groups; ++ig) {
-          ray_taus[ig] += segment_length * material_xsec_t[ig];
-        }
-      } // for (iface)
-
-      // Sum the ray taus into the azimuthal taus
-      for (Int ig = 0; ig < num_groups; ++ig) {
-        azimuthal_taus[ig] += ray_taus[ig];
-      }
-
-    } // for (iray)
-
-    // Sum the azimuthal taus into the global taus
+  Int const num_faces = fvm.numFaces();
+  for (Int iface = 0; iface < num_faces; ++iface) {
+    auto const a_i = fvm.getFace(iface).area();
+    auto const mat_id = material_ids[iface];
+    auto const & xsec = materials[static_cast<Int>(mat_id)].xsec();
     for (Int ig = 0; ig < num_groups; ++ig) {
-      taus[ig] += azimuthal_taus[ig];
+      taus[ig] += a_i * xsec.t(ig);
     }
-  } // for (iazi)
-
-  // Normalize by the number of rays
-  Float const inv_total_num_rays = static_cast<Float>(1) / static_cast<Float>(total_num_rays); 
-  for (Int ig = 0; ig < num_groups; ++ig) {
-    taus[ig] *= inv_total_num_rays;
   }
 
-} // getCoarseCellOpticalThickness
+  Float const pi_over_p = um2::pi_2<Float> / (xy_extents[0] + xy_extents[1]);
+  for (Int ig = 0; ig < num_groups; ++ig) {
+    taus[ig] *= pi_over_p;
+  }
+}
 
 void
 Model::getCoarseCellOpticalThickness(Int const cc_id, Vector<Float> & taus) const
@@ -2830,5 +2716,223 @@ Model::getCoarseCellOpticalThickness(Int const cc_id, Vector<Float> & taus) cons
       logger::error("Unsupported mesh type");
   }
 }
+
+//==============================================================================
+// writeOpticalThickness
+//==============================================================================
+
+void
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+Model::writeOpticalThickness(String const & filename) const
+{
+  LOG_INFO("Writing MPACT model optical thickness data to ", filename);
+
+  PolytopeSoup soup;
+
+  auto const & core = _core;
+  auto const & assemblies = _assemblies;
+  auto const & lattices = _lattices;
+  auto const & rtms = _rtms;
+  auto const & coarse_cells = _coarse_cells;
+  auto const & materials = _materials;
+
+  // Validate the XSecs of each material and ensure they have the same number of groups
+  Int const num_groups = materials[0].xsec().numGroups();
+  for (auto const & mat : materials) {
+    mat.validateXSec();
+    ASSERT(mat.xsec().numGroups() == num_groups);
+  }
+
+  if (core.children().empty()) {
+    logger::error("Core has no children");
+    return;
+  }
+
+  // Store:
+  //  group-wise optical thicknesses for each coarse cell
+  //  collapsed optical thickness for each coarse cell
+  //  vector of face IDs for each coarse cell
+  Int const num_coarse_cells = coarse_cells.size();
+  Vector<Vector<Float>> coarse_cell_taus(num_coarse_cells);
+  Vector<Float> collapsed_taus(num_coarse_cells, 0);
+  Vector<Vector<Int>> coarse_cell_face_ids(num_coarse_cells);
+  for (Int icc = 0; icc < num_coarse_cells; ++icc) {
+    auto & taus = coarse_cell_taus[icc];
+    // getCoarseCellOpticalThickness will resize taus
+    getCoarseCellOpticalThickness(icc, taus);
+    for (Int ig = 0; ig < num_groups; ++ig) {
+      collapsed_taus[icc] += taus[ig];
+    }
+    collapsed_taus[icc] /= static_cast<Float>(num_groups);
+  }
+
+  // Store the IDs of the vertices of each face
+  Vector<Int> conn(4);
+
+  // For each assembly
+  Int const nyasy = core.grid().numCells(1);
+  Int const nxasy = core.grid().numCells(0);
+  for (Int iyasy = 0; iyasy < nyasy; ++iyasy) {
+    for (Int ixasy = 0; ixasy < nxasy; ++ixasy) {
+
+      // Get the assembly ID
+      auto const asy_id = core.getChild(ixasy, iyasy);
+      ASSERT(asy_id >= 0);
+      ASSERT(asy_id < assemblies.size());
+
+      // Get the assembly offset (lower left corner)
+      Point2 const asy_ll = core.grid().getBox(ixasy, iyasy).minima();
+
+      // Get the assembly
+      auto const & assembly = assemblies[asy_id];
+      if (assembly.children().empty()) {
+        logger::error("Assembly has no children");
+        return;
+      }
+
+      // For each lattice
+      Int const nzlat = assembly.grid().numCells(0);
+      for (Int izlat = 0; izlat < nzlat; ++izlat) {
+
+        // Get the lattice ID
+        auto const lat_id = assembly.getChild(izlat);
+        ASSERT(lat_id >= 0);
+        ASSERT(lat_id < lattices.size());
+
+        // Get the lattice offset (z direction)
+        // The midplane is the location that the geometry was sampled at.
+        Float const low_z = assembly.grid().divs(0)[izlat];
+        Float const high_z = assembly.grid().divs(0)[izlat + 1];
+        Float const lat_z = (low_z + high_z) / 2;
+
+        // Get the lattice
+        auto const & lattice = lattices[lat_id];
+        if (lattice.children().empty()) {
+          logger::error("Lattice has no children");
+          return;
+        }
+
+        // For each RTM
+        Int const nyrtm = lattice.grid().numCells(1);
+        Int const nxrtm = lattice.grid().numCells(0);
+        for (Int iyrtm = 0; iyrtm < nyrtm; ++iyrtm) {
+          for (Int ixrtm = 0; ixrtm < nxrtm; ++ixrtm) {
+
+            // Get the RTM ID
+            auto const rtm_id = lattice.getChild(ixrtm, iyrtm);
+            ASSERT(rtm_id >= 0);
+            ASSERT(rtm_id < rtms.size());
+
+            // Get the RTM offset (lower left corner)
+            Point2 const rtm_ll = lattice.grid().getBox(ixrtm, iyrtm).minima();
+
+            // Get the rtm
+            auto const & rtm = rtms[rtm_id];
+            if (rtm.children().empty()) {
+              logger::error("RTM has no children");
+              return;
+            }
+
+            // For each coarse cell
+            Int const nycells = rtm.grid().numCells(1);
+            Int const nxcells = rtm.grid().numCells(0);
+            for (Int iycell = 0; iycell < nycells; ++iycell) {
+              for (Int ixcell = 0; ixcell < nxcells; ++ixcell) {
+
+                // Get the coarse cell ID
+                auto const & cell_id = rtm.getChild(ixcell, iycell);
+                ASSERT(cell_id >= 0);
+                ASSERT(cell_id < coarse_cells.size());
+
+                // Get the cell box
+                auto const cell_bb = rtm.grid().getBox(ixcell, iycell);
+                // Get the cell offset (lower left corner)
+                Point2 const cell_ll = cell_bb.minima();
+                // Get the cell extents
+                Vec2F const cell_extents = cell_bb.extents();
+
+                // Compute the global xyz offset
+                Point2 const xy_offset = cell_ll + rtm_ll + asy_ll;
+
+                // Add the quad to the soup
+                Point3 const v0(xy_offset[0], xy_offset[1], lat_z);
+                Point3 const v1(xy_offset[0] + cell_extents[0], xy_offset[1], lat_z);
+                Point3 const v2(xy_offset[0] + cell_extents[0], xy_offset[1] + cell_extents[1], lat_z);
+                Point3 const v3(xy_offset[0], xy_offset[1] + cell_extents[1], lat_z);
+
+                conn[0] = soup.addVertex(v0);
+                conn[1] = soup.addVertex(v1);
+                conn[2] = soup.addVertex(v2);
+                conn[3] = soup.addVertex(v3);
+
+                auto const face_id = soup.addElement(VTKElemType::Quad, conn);
+
+                // add the face ID to coarse_cell_face_ids
+                auto & cc_face_ids = coarse_cell_face_ids[cell_id];
+                cc_face_ids.emplace_back(face_id);
+
+              } // for (ixcell)
+            }   // for (iycell)
+          }   // for (ixrtm)
+        }     // for (iyrtm)
+      } // for (izlat)
+    } // for (ixasy)
+  }   // for (iyasy)
+
+  // add elsets for each coarse cell
+  for (Int icc = 0; icc < num_coarse_cells; ++icc) {
+    String const elset_name = "Coarse_Cell_" + getASCIINumber(icc);
+    auto const & cc_face_ids = coarse_cell_face_ids[icc];
+    soup.addElset(elset_name, cc_face_ids);
+  } // for (icc)
+
+  // add the group-wise optical thicknesses for each coarse cell
+  auto const num_faces = soup.numElements();
+  Vector<Int> ids(num_faces);
+  um2::iota(ids.begin(), ids.end(), 0);
+  Vector<Float> data(num_faces);
+
+  // Construct the group g optical thickness elsets
+  for (Int ig = 0; ig < num_groups; ++ig) {
+    um2::fill(data.begin(), data.end(), -inf_distance);
+    String const elset_name = "Group_" + getASCIINumber(ig) + "_Optical_Thickness";
+    for (Int icc = 0; icc < num_coarse_cells; ++icc) {
+      auto const tau_g = coarse_cell_taus[icc][ig];
+      auto const & face_ids = coarse_cell_face_ids[icc];
+      // Fill the data vector with tau_g at the face IDs
+      for (auto const & face_id : face_ids) {
+        data[face_id] = tau_g;
+      }
+    }
+    soup.addElset(elset_name, ids, data);
+  }
+#if UM2_ENABLE_ASSERTS
+  // check that all data has been filled
+  for (auto const & d : data) {
+    ASSERT(d > -inf_distance);
+  }
+#endif
+
+  // add the collapsed optical thickness
+  um2::fill(data.begin(), data.end(), -inf_distance);
+  String const elset_name = "Mean_Optical_Thickness";
+  for (Int icc = 0; icc < num_coarse_cells; ++icc) {
+    auto const & face_ids = coarse_cell_face_ids[icc];
+    auto const tau = collapsed_taus[icc];
+    // Fill the data vector with tau at the face IDs
+    for (auto const & face_id : face_ids) {
+      data[face_id] = tau;
+    }
+  }
+  soup.addElset(elset_name, ids, data);
+#if UM2_ENABLE_ASSERTS
+  for (auto const & d : data) {
+    ASSERT(d > -inf_distance);
+  }
+#endif
+
+  soup.write(filename);
+
+} // writeOpticalThickness
 
 } // namespace um2::mpact

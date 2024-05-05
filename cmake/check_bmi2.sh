@@ -15,6 +15,16 @@ fi
 
 $1 -### -E - -march=native &> arch.txt
 
+if [ ! -s arch.txt ]; then
+    echo "Error: Unable to determine CPU architecture."
+    exit 1
+fi
+
+# Check for BMI2 support
+if ! grep -q bmi2 arch.txt; then
+    echo "BMI2 instructions are not supported."
+fi
+
 # Excavator
 if grep -q bdver4 arch.txt; then
     echo "AMD Excavator architecture detected. BMI2 instructions may not be performant."

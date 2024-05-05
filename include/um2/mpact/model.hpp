@@ -101,6 +101,8 @@ public:
 
   constexpr Model() noexcept = default;
 
+  Model(String const & filename);
+
   //============================================================================
   // Member access
   //============================================================================
@@ -298,6 +300,9 @@ public:
   // Return a vector of group-wise optical thicknesses for the coarse cell.
   void 
   getCoarseCellOpticalThickness(Int cc_id, Vector<Float> & taus) const;
+
+  void
+  writeOpticalThickness(String const & filename) const;
 
 }; // struct Model
 

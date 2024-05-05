@@ -1,6 +1,38 @@
+tau vs approx spectral radius
+
+err norm starts around 1e-2, hence rho = np.exp(np.log(err/1e-2)/Niter)
+
+jarrett paper shows faster convergence than predicted by 1D based upon te group 7 xsec
+
+where are they getting the plot in figure 1?
+
+want to review jarrett paper with Brendan
+  -> Seems we have all variables to determine spectral radius 
+  -> estimate spectral radius
+    -> error reduction between iterations
+      -> can bound using linear
+
+Check computed tau with 
+Analysis of Stabilization Techniques for CMFD Acceleration of Neutron Transport Problems
+Jarrett
+
+method for deleting redundant verts in polysoup
+2D height truncate azimuthal quadrature?
+  Optical thickness consider height?
+  Does CMFD do this?
+
+reduce test i/o?
+
+constexpr tests
+
+py
+
+glfw/vulkan
+
+make repo lowercase
+
 toBuffer -> toLogBuffer
 
-isConvex for faces
 getTotalChordLength(Point * begin, Point * end)
   Given a bunch of points that are intersection with the face, handle floating point error
   and return the total chord length
@@ -52,15 +84,6 @@ same ray params as MPACT?
 measure overlay time?
 
 Add debug statements to overlay grid. Why 20 mins for 153 by 153 but 46 sec for 102
-
-compute optical thickness of coarse cell
-  -> Modular ray params
-  -> Shoot rays and weight by one group cross section
-  -> Can multithread here easily
-    -> Ensure no interference between threads
-
-  -> Accumulate per ray, not per intersectio nfor better rounding.
-  -> Check to see if we ca do some arithmetic related to MCL 
 
 grid optical thickness
 
