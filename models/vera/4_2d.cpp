@@ -6,9 +6,24 @@
 #include <um2.hpp>
 
 auto
-main() -> int
+main(int argc, char** argv) -> int
 {
   um2::initialize();
+
+  // Check the number of arguments
+  if (argc != 2) {
+    um2::logger::error("Usage: ./4_2d num_coarse_cells");
+    return 1;
+  }
+
+  //===========================================================================
+  // Parametric study parameters
+  //===========================================================================
+
+  char * end = nullptr;
+  Int const num_coarse_cells = um2::strto<Int>(argv[1], &end);
+  ASSERT(end != nullptr);
+  ASSERT(num_coarse_cells > 0);
 
   //============================================================================
   // Materials
@@ -188,20 +203,20 @@ main() -> int
 
   // Parameters for the pin-cell geometry
   Float const r_fuel = 0.4096; // Pellet radius = 0.4096 cm (pg. 4)
-  Float const r_gap = 0.418;   // Inner clad radius = 0.418 cm (pg. 4)
+//  Float const r_gap = 0.418;   // Inner clad radius = 0.418 cm (pg. 4)
   Float const r_clad = 0.475;  // Outer clad radius = 0.475 cm (pg. 4)
   Float const r_gt_inner = 0.561; // Inner guide tube radius = 0.561 cm (pg. 5)
   Float const r_gt_outer = 0.602; // Outer guide tube radius = 0.602 cm (pg. 5)
   Float const r_it_inner = 0.559; // Inner instrument tube radius = 0.559 cm (pg. 5)
   Float const r_it_outer = 0.605; // Outer instrument tube radius = 0.605 cm (pg. 5)
   Float const r_pyrex_it_inner = 0.214; // Inner tube inner radius = 0.214 cm (pg. 8)
-  Float const r_pyrex_it_outer = 0.238; // Inner tube outer radius = 0.238 cm (pg. 8)
+//  Float const r_pyrex_it_outer = 0.238; // Inner tube outer radius = 0.238 cm (pg. 8)
   Float const r_pyrex_inner = 0.241; // Pyrex inner radius = 0.241 cm (pg. 8)
   Float const r_pyrex_outer = 0.427; // Pyrex outer radius = 0.427 cm (pg. 8)
-  Float const r_pyrex_clad_inner = 0.437; // Clad inner radius = 0.437 cm (pg. 8)
+//  Float const r_pyrex_clad_inner = 0.437; // Clad inner radius = 0.437 cm (pg. 8)
   Float const r_pyrex_clad_outer = 0.484; // Clad outer radius = 0.484 cm (pg. 8)
   Float const r_aic = 0.382;    // Poison radius = 0.382 cm (pg. 10)
-  Float const r_aic_inner = 0.386; // Cladding inner radius = 0.386 cm (pg. 10)
+//  Float const r_aic_inner = 0.386; // Cladding inner radius = 0.386 cm (pg. 10)
   Float const r_aic_outer = 0.484; // Cladding outer radius = 0.484 cm (pg. 10)
   Float const pitch = 1.26;    // Pitch = 1.26 cm (pg. 4)
   Float const assembly_pitch = 21.50; // Assembly pitch = 21.50 cm (pg. 5)
@@ -210,9 +225,12 @@ main() -> int
 
   // Fuel
   //---------------------------------------------------------------------------
-  um2::Vector<Float> const fuel_radii = {r_fuel, r_gap, r_clad};
-  um2::Vector<um2::Material> const fuel_2110_materials = {fuel_2110, gap, clad};
-  um2::Vector<um2::Material> const fuel_2619_materials = {fuel_2619, gap, clad};
+  //um2::Vector<Float> const fuel_radii = {r_fuel, r_gap, r_clad};
+  //um2::Vector<um2::Material> const fuel_2110_materials = {fuel_2110, gap, clad};
+  //um2::Vector<um2::Material> const fuel_2619_materials = {fuel_2619, gap, clad};
+  um2::Vector<Float> const fuel_radii = {r_fuel, r_clad};
+  um2::Vector<um2::Material> const fuel_2110_materials = {fuel_2110, clad};
+  um2::Vector<um2::Material> const fuel_2619_materials = {fuel_2619, clad};
 
   // Empty guide tube
   //---------------------------------------------------------------------------
@@ -226,18 +244,29 @@ main() -> int
 
   // Pyrex
   //---------------------------------------------------------------------------
+  // um2::Vector<Float> const pyrex_radii = {
+  //   r_pyrex_it_inner, r_pyrex_it_outer, r_pyrex_inner, r_pyrex_outer, r_pyrex_clad_inner,
+  //   r_pyrex_clad_outer, r_it_inner, r_it_outer
+  // };
+  // um2::Vector<um2::Material> const pyrex_materials = {
+  //   gap, ss304, gap, pyrex, gap, ss304, moderator, clad
+  // };
+  // Extend the ss304 to touch the pyrex (eliminate the gap)
   um2::Vector<Float> const pyrex_radii = {
-    r_pyrex_it_inner, r_pyrex_it_outer, r_pyrex_inner, r_pyrex_outer, r_pyrex_clad_inner,
+    r_pyrex_it_inner, r_pyrex_inner, r_pyrex_outer,
     r_pyrex_clad_outer, r_it_inner, r_it_outer
   };
   um2::Vector<um2::Material> const pyrex_materials = {
-    gap, ss304, gap, pyrex, gap, ss304, moderator, clad
+    gap, ss304, pyrex, ss304, moderator, clad
   };
 
   // AIC
   //---------------------------------------------------------------------------
-  um2::Vector<Float> const aic_radii = {r_aic, r_aic_inner, r_aic_outer};
-  um2::Vector<um2::Material> const aic_materials = {aic, gap, ss304};
+  //um2::Vector<Float> const aic_radii = {r_aic, r_aic_inner, r_aic_outer};
+  //um2::Vector<um2::Material> const aic_materials = {aic, gap, ss304};
+
+  um2::Vector<Float> const aic_radii = {r_aic, r_aic_outer};
+  um2::Vector<um2::Material> const aic_materials = {aic, ss304};
 
   // Materials, radii, and xy_extents for each pin
   //---------------------------------------------------------------------------
@@ -291,25 +320,25 @@ main() -> int
       3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
     )");
 
-  um2::Vector<um2::Vector<Int>> const fuel_2110_aic_lattice = um2::stringToLattice<Int>(R"(
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 0 0 0 5 0 0 5 0 0 5 0 0 0 0 0
-      0 0 0 5 0 0 0 0 0 0 0 0 0 5 0 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 5 0 0 5 0 0 5 0 0 5 0 0 5 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 5 0 0 5 0 0 2 0 0 5 0 0 5 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 5 0 0 5 0 0 5 0 0 5 0 0 5 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 0 5 0 0 0 0 0 0 0 0 0 5 0 0 0
-      0 0 0 0 0 5 0 0 5 0 0 5 0 0 0 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-    )");
+//  um2::Vector<um2::Vector<Int>> const fuel_2110_aic_lattice = um2::stringToLattice<Int>(R"(
+//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+//      0 0 0 0 0 5 0 0 5 0 0 5 0 0 0 0 0
+//      0 0 0 5 0 0 0 0 0 0 0 0 0 5 0 0 0
+//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+//      0 0 5 0 0 5 0 0 5 0 0 5 0 0 5 0 0
+//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+//      0 0 5 0 0 5 0 0 2 0 0 5 0 0 5 0 0
+//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+//      0 0 5 0 0 5 0 0 5 0 0 5 0 0 5 0 0
+//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+//      0 0 0 5 0 0 0 0 0 0 0 0 0 5 0 0 0
+//      0 0 0 0 0 5 0 0 5 0 0 5 0 0 0 0 0
+//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+//    )");
 
   ASSERT(fuel_2110_lattice.size() == 17);
   ASSERT(fuel_2110_lattice[0].size() == 17);
@@ -342,13 +371,12 @@ main() -> int
       /*offset=*/{assembly_pitch / 2 + inter_assembly_gap, assembly_pitch + inter_assembly_gap});
 
   factory::addCylindricalPinLattice2D(
-      fuel_2110_aic_lattice,
+      fuel_2110_lattice,
+//      fuel_2110_aic_lattice,
       xy_extents,
       radii,
       materials,
       /*offset=*/{-assembly_pitch / 2 + inter_assembly_gap, assembly_pitch + inter_assembly_gap});
-
-  um2::gmsh::fltk::run();
 
   //===========================================================================
   // Overlay CMFD mesh
@@ -362,6 +390,7 @@ main() -> int
   model.addMaterial(clad);
   model.addMaterial(moderator);
   model.addMaterial(pyrex);
+  model.addMaterial(ss304);
   model.addMaterial(aic);
 
    // Add a coarse grid that evenly subdivides the domain (quarter core)
@@ -370,20 +399,21 @@ main() -> int
   model.addCoarseGrid(domain_extents, num_cells);
   um2::gmsh::model::occ::overlayCoarseGrid(model, moderator);
 
-//
-//  um2::Vector<um2::Material> const materials = {fuel, clad, moderator, moderator};
-//
-//  um2::mpact::Model model;
-//  model.addMaterial(fuel);
-//  model.addMaterial(clad);
-//  model.addMaterial(moderator);
-//  model.addCylindricalPinCell(pitch, radii, materials, {3, 1, 1}, 8, 2);
-//  model.addRTM({{0}});
-//  model.addLattice({{0}});
-//  model.addAssembly({0});
-//  model.addCore({{0}});
-//
-//  model.write("1a_nogap.xdmf", /*write_knudsen_data=*/true, /*write_xsec_data=*/true);
+  //===========================================================================
+  // Generate the mesh
+  //===========================================================================
+
+  um2::gmsh::model::mesh::setGlobalMeshSize(pitch / 12);
+  um2::gmsh::model::mesh::generateMesh(um2::MeshType::Tri);
+  um2::gmsh::write("4_2d.inp");
+
+  //===========================================================================
+  // Complete the MPACT model and write the mesh
+  //===========================================================================
+
+  model.importCoarseCellMeshes("4_2d.inp");
+  model.writeOpticalThickness("4_2d_optical_thickness.xdmf");
+  model.write("4_2d.xdmf", /*write_knudsen_data=*/true, /*write_xsec_data=*/true);
   um2::finalize();
   return 0;
 }

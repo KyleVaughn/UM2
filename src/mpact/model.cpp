@@ -792,7 +792,7 @@ Model::addCoarseCell(Vec2F const xy_extents,
   if (mesh_id != -1) {
     switch (mesh_type) {
     case MeshType::Tri:
-      if (0 < mesh_id || mesh_id >= _tris.size()) {
+      if (0 > mesh_id || mesh_id >= _tris.size()) {
         logger::error("Tri mesh ", mesh_id, " does not exist");
         return -1;
       }
