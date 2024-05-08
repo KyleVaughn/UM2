@@ -18,7 +18,6 @@ main(int argc, char **argv) -> int
   um2::mpact::Model const model(argv[1]);
   model.writeOpticalThickness("coarse_grid.xdmf");
 
-
   // Read the Polytope soup file
   um2::PolytopeSoup const soup("coarse_grid.xdmf");
 

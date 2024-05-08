@@ -218,6 +218,7 @@ main(int argc, char** argv) -> int
   model.addMaterial(fiss_chamber);
   model.addMaterial(guide_tube);
   model.addMaterial(moderator);
+  std::vector<int> const is_fuel = {1, 1, 1, 1, 0, 0, 0};
 
   // Add a coarse grid that evenly subdivides the domain
   um2::Vec2F const domain_extents(3 * assembly_pitch, 3 * assembly_pitch);
@@ -229,7 +230,12 @@ main(int argc, char** argv) -> int
   // Generate the mesh
   //===========================================================================
 
-  um2::gmsh::model::mesh::setGlobalMeshSize(pin_pitch / 12);
+//  um2::gmsh::model::mesh::setGlobalMeshSize(pin_pitch / 12);
+  Float const kn_target = 5.0;
+  Float const mfp_threshold = 4.0;
+  Float const mfp_scale = 1.2;
+  um2::gmsh::model::mesh::setMeshFieldFromKnudsenNumber(
+      2, model.materials(), kn_target, mfp_threshold, mfp_scale, is_fuel);
   um2::gmsh::model::mesh::generateMesh(um2::MeshType::QuadraticTri);
   um2::gmsh::write("c5g7_2d.inp");
 

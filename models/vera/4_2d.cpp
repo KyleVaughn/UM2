@@ -10,6 +10,8 @@ main(int argc, char** argv) -> int
 {
   um2::initialize();
 
+  bool constexpr rodded = false;
+
   // Check the number of arguments
   if (argc != 2) {
     um2::logger::error("Usage: ./4_2d num_coarse_cells");
@@ -391,7 +393,9 @@ main(int argc, char** argv) -> int
   model.addMaterial(moderator);
   model.addMaterial(pyrex);
   model.addMaterial(ss304);
-  model.addMaterial(aic);
+  if constexpr (rodded) {
+    model.addMaterial(aic);
+  }
 
    // Add a coarse grid that evenly subdivides the domain (quarter core)
   um2::Vec2F const domain_extents(1.5 * assembly_pitch, 1.5 * assembly_pitch);

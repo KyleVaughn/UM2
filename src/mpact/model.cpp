@@ -49,9 +49,9 @@ flattenLattice(Vector<Vector<T>> const & ids, Vector<U> & flat_ids)
 // Constructors
 //=============================================================================
 
-Model::Model(String const & name)
+Model::Model(String const & filename)
 {
-  read(name);
+  read(filename);
 }
 
 //=============================================================================
@@ -1219,6 +1219,7 @@ Model::importCoarseCellMeshes(String const & filename)
       break;
     default:
       logger::error("Mesh type not supported");
+      return;
     }
 
     // Shift the points so that the min point is at the origin.
@@ -1913,6 +1914,8 @@ getNXbyNY(pugi::xml_node const & xgrid, Int & nx, Int & ny)
   pugi::xml_attribute const xname = xinfo.attribute("Name");
   if (strcmp("NX_by_NY", xname.value()) != 0) {
     logger::error("XDMF XML information name is not NX_by_NY");
+    nx = -1;
+    ny = -1;
     return;
   }
   // String of the form "nx x ny"
@@ -2552,6 +2555,16 @@ readXDMFFile(String const & filename, Model & model)
       } // RTM loop
     } // Lattice loop
   } // Assembly loop
+
+  // If we have materials without cross section data, warn the user
+  for (auto const & material : model.materials()) {
+    if (!material.hasXSec()) {
+      LOG_WARN("Material ", material.getName(), " does not have cross section data");
+    } else {
+      LOG_INFO("Material ", material.getName(), " has cross section data");
+      material.validateXSec();
+    }
+  }
 
   // Create the pin meshes and coarse cells
   for (Int i = 0; i < mesh_types_ids.size(); ++i) {

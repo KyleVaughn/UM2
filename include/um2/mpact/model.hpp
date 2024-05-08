@@ -101,6 +101,7 @@ public:
 
   constexpr Model() noexcept = default;
 
+  // NOLINTNEXTLINE(google-explicit-constructor) We want to allow implicit conversion
   Model(String const & filename);
 
   //============================================================================

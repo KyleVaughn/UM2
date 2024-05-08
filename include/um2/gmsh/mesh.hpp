@@ -21,14 +21,12 @@ generateMesh(MeshType mesh_type, int smooth_iters = 100);
 //setMeshFieldFromGroups(int dim, std::vector<std::string> const & groups,
 //                       std::vector<double> const & sizes) -> int;
 //
-//auto
-//setMeshFieldFromKnudsenNumber(
-//    int dim, std::vector<Material> const & materials, double kn_target,
-//    double mfp_threshold = -1.0, double mfp_scale = -1.0,
-//    std::vector<int> const & is_fuel = {}, // 1 for fuel, 0 for moderator
-//    XSecReduction strategy = XSecReduction::Mean) -> int;
-//
-
+auto
+setMeshFieldFromKnudsenNumber(
+    int dim, um2::Vector<Material> const & materials, double kn_target,
+    double mfp_threshold = -1.0, double mfp_scale = -1.0,
+    std::vector<int> const & is_fuel = {}, // 1 for fuel, 0 for moderator
+    XSecReduction strategy = XSecReduction::Mean) -> int;
 
 
 } // namespace um2::gmsh::model::mesh

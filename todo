@@ -1,3 +1,8 @@
+change isFuel to be automatically computed.
+  store isFissile on xsec?
+
+add ASSUME(result >= 0) on all size, capacity, etc. functions
+
 tau vs approx spectral radius
 
 err norm starts around 1e-2, hence rho = np.exp(np.log(err/1e-2)/Niter)
