@@ -240,38 +240,25 @@ const num_α = 1000
 
 # Figure 3
 # Scattering ratio vs spectral radius for varying Δ (Σ_t)
-c = collect(LinRange(0.001, 0.999, 15))
-Δ = [0.001, 0.4, 0.8, 1.6, 2, 2.5, 4]
+c = LinRange(0.001, 0.999, 20)
+pows = LinRange(-2, 2, 20)
+Δ = [(10^x) for x in pows]
 p = 4
 σ = 1
 η = 0.0
 r = zeros(length(c), length(Δ))
 
-plot()
 for (i, Δ_i) in enumerate(Δ)
     for (j, c_j) in enumerate(c)
         params = Params(p, N, Δ_i, c_j, σ, η, num_α)
         r[j, i] = ρ(params)
     end
-    plot!(c, r[:, i], label="Δ = $Δ_i")
 end
-xlabel!("Scattering ratio")
-ylabel!("Spectral radius")
-title!("p = $p, σ = $σ, η = $η")
-# savefig("scattering_ratio_vs_spectral_radius.png")
-display(plot!())
-
-# Plot as a scatter plot
-#scatter()
-#for (i, Δ_i) in enumerate(Δ)
-#    Δ_i_vec = fill(Δ_i, length(c))
-#    println(Δ_i_vec)
-#    scatter!(fill(Δ_i, length(c)), c, zcolor=r[:, i]) 
-#end
-#display(scatter!())
-
-heatmap(r)
-
+r_clamped = clamp.(r, 0, 1)
+levels = collect(LinRange(0, 1, 11))
+# Plot this such that any spectral radius over 1 is a single color
+contourf(Δ, c, r_clamped, xscale=:log10, levels=levels, xlabel="Δ", ylabel="Scattering ratio", title="Spectral radius")
+savefig("spectral_radius_adcmfd.png")
 
 
 
