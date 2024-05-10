@@ -2,7 +2,7 @@
 # Description
 #--------------------------------------------------------------------------
 # This script computes the predicted spectral radius of the CMFD
-# accelerated fixed-source iteration using Fourier analysis. The script is
+# accelerated fission-source iteration using Fourier analysis. The script is
 # for a 1D, 1-group problem based upon the following paper:
 #   Analysis of Stabilization Techniques for CMFD
 #   Acceleration of Neutron Transport Problems
