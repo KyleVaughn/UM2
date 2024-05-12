@@ -4,7 +4,7 @@ python API
 
 Benchmarks:
   measure effect of SIMD_VEC
-  measure effect of FAST_MATH -> error
+  measure effect of FASTMATH -> error
 
 for tests, check against max error and output error into some file
 

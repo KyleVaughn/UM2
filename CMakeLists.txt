@@ -330,6 +330,14 @@ if (UM2_USE_PUGIXML)
   target_include_directories(um2 SYSTEM PUBLIC "${PUGIXML_INC}")
 endif()
 
+# valgrind
+if (UM2_USE_VALGRIND)
+  find_program(VALGRIND valgrind REQUIRED)
+  if (NOT VALGRIND)
+    message(FATAL_ERROR "Could not find valgrind")
+  endif()
+endif()
+
 ###===============================================================================
 ### Optional dependencies
 ###===============================================================================
@@ -388,8 +396,6 @@ endif()
 ##  target_include_directories(um2 SYSTEM PUBLIC "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}")
 ##endif()
 ##
-
-
 #===============================================================================
 # Build optional subdirectories
 #===============================================================================

@@ -20,4 +20,14 @@ macro(um2_add_test FILENAME)
   if (UM2_USE_CLANG_TIDY)    
     set_clang_tidy_properties(${TESTNAME})    
   endif()
+
+   if (UM2_USE_VALGRIND)
+    add_test(NAME valgrind_${TESTNAME}
+      COMMAND valgrind
+        --error-exitcode=1
+        --tool=memcheck
+        --track-origins=yes
+        --leak-check=full
+        $<TARGET_FILE:${TESTNAME}>)
+  endif()
 endmacro()
