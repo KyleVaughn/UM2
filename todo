@@ -1,3 +1,12 @@
+check alignment of vec and the assembly it outputs
+
+revive makefile and submodules
+
+Array class ->
+  similar to eigen
+
+LAPACK _deev for eig and solve -> Compute spectral radius without writing entire scattering matrix
+
 change isFuel to be automatically computed.
   store isFissile on xsec?
 
@@ -16,10 +25,6 @@ want to review jarrett paper with Brendan
   -> estimate spectral radius
     -> error reduction between iterations
       -> can bound using linear
-
-Check computed tau with 
-Analysis of Stabilization Techniques for CMFD Acceleration of Neutron Transport Problems
-Jarrett
 
 method for deleting redundant verts in polysoup
 2D height truncate azimuthal quadrature?
@@ -311,3 +316,16 @@ bump gmsh version
 
 Restore the Make scripts for build dependencies 
 -> Effectively the github CI
+
+
+Dependencies:
+  C++ stdlib
+  XDMF
+    pugixml
+    HDF5
+  Mesh gen
+    gmsh
+  CAD 
+    gmsh/opencascade
+  linalg
+    eigen

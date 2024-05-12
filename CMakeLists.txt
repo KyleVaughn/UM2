@@ -159,6 +159,7 @@ endif()
 set(UM2_SOURCES
     "src/common/settings.cpp"
     "src/common/logger.cpp"
+    "src/math/matrix.cpp"
     "src/mesh/polytope_soup.cpp"
     "src/mesh/face_vertex_mesh.cpp"
     "src/physics/cross_section.cpp"
@@ -209,6 +210,12 @@ configure_file(
 find_package(HDF5 REQUIRED COMPONENTS CXX)
 target_link_libraries(um2 PUBLIC "${HDF5_CXX_LIBRARIES}")
 target_include_directories(um2 SYSTEM PUBLIC "${HDF5_INCLUDE_DIRS}")
+
+# BLAS
+set(BLA_VENDOR "OpenBLAS")
+find_package(BLAS REQUIRED)
+target_link_libraries(um2 PUBLIC "${BLAS_LIBRARIES}")
+target_include_directories(um2 SYSTEM PUBLIC "${BLAS_INCLUDE_DIRS}")
 
 # pugixml
 find_package(PugiXML REQUIRED)
