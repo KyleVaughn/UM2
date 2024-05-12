@@ -1,3 +1,4 @@
+#include <um2/config.hpp>
 #include <um2/stdlib/algorithm/min.hpp>
 
 #include "../../test_macros.hpp"

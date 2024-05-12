@@ -1,3 +1,4 @@
+#include <um2/config.hpp>
 #include <um2/stdlib/math/logarithms.hpp>
 
 #include <um2/stdlib/numbers.hpp>
@@ -17,11 +18,11 @@ TEST_CASE(log_float)
 }
 MAKE_CUDA_KERNEL(log_float);
 
-TEST_SUITE(log) { TEST_HOSTDEV(log_float); }
+TEST_SUITE(log_suite) { TEST_HOSTDEV(log_float); }
 
 auto
 main() -> int
 {
-  RUN_SUITE(log);
+  RUN_SUITE(log_suite);
   return 0;
 }

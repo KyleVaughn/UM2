@@ -1,3 +1,4 @@
+#include <um2/config.hpp>
 #include <um2/stdlib/math/trigonometric_functions.hpp>
 #include <um2/stdlib/numbers.hpp>
 
@@ -32,14 +33,14 @@ MAKE_CUDA_KERNEL(cos_float);
 MAKE_CUDA_KERNEL(sin_float);
 #endif
 
-TEST_SUITE(cos) { TEST_HOSTDEV(cos_float); }
+TEST_SUITE(cos_suite) { TEST_HOSTDEV(cos_float); }
 
-TEST_SUITE(sin) { TEST_HOSTDEV(sin_float); }
+TEST_SUITE(sin_suite) { TEST_HOSTDEV(sin_float); }
 
 auto
 main() -> int
 {
-  RUN_SUITE(cos);
-  RUN_SUITE(sin);
+  RUN_SUITE(cos_suite);
+  RUN_SUITE(sin_suite);
   return 0;
 }

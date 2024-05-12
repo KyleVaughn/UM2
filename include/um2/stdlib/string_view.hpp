@@ -335,7 +335,9 @@ StringView::compare(StringView sv) const noexcept -> int
   auto result = um2::memcmp(data(), sv.data(), min_size);
   // If they compare equal, but are different sizes, the longer one is greater
   if (result == 0) {
-    result = size() == sv.size() ? 0 : (size() < sv.size() ? -1 : 1);
+    if (size() != sv.size()) {
+      result = size() < sv.size() ? -1 : 1;
+    }
   }
   return result;
 }
@@ -438,8 +440,8 @@ StringView::find_first_of(StringView const sv, uint64_t pos) const noexcept -> u
 }
 
 PURE HOSTDEV constexpr auto
-StringView::find_first_of(char const * s, uint64_t pos, uint64_t count) const noexcept
-    -> uint64_t
+StringView::find_first_of(char const * s, uint64_t pos,
+                          uint64_t count) const noexcept -> uint64_t
 {
   return find_first_of(StringView(s, count), pos);
 }

@@ -1,4 +1,4 @@
-#include <um2/stdlib/math/abs.hpp>
+#include <um2/config.hpp>
 #include <um2/stdlib/math/exponential_functions.hpp>
 #include <um2/stdlib/numbers.hpp>
 

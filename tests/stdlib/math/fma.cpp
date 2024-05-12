@@ -1,3 +1,4 @@
+#include <um2/config.hpp>
 #include <um2/stdlib/math/fma.hpp>
 
 #include "../../test_macros.hpp"
@@ -23,7 +24,7 @@ TEST_CASE(fma_double)
   ASSERT_NEAR(result, 17.0, 1e-6);
 }
 
-TEST_SUITE(fma)
+TEST_SUITE(fma_suite)
 {
   TEST_HOSTDEV(fma_float);
   TEST_HOSTDEV(fma_double);
@@ -32,6 +33,6 @@ TEST_SUITE(fma)
 auto
 main() -> int
 {
-  RUN_SUITE(fma);
+  RUN_SUITE(fma_suite);
   return 0;
 }

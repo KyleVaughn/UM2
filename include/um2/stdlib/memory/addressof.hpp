@@ -6,7 +6,7 @@ namespace um2
 {
 
 template <class T>
-HOSTDEV [[nodiscard]] inline constexpr auto
+HOSTDEV [[nodiscard]] constexpr auto
 addressof(T & arg) noexcept -> T *
 {
   return __builtin_addressof(arg);

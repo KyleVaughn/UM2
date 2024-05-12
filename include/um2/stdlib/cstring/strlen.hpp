@@ -5,7 +5,7 @@
 namespace um2
 {
 
-PURE HOSTDEV [[nodiscard]] inline constexpr auto
+PURE HOSTDEV [[nodiscard]] constexpr auto
 strlen(char const * str) noexcept -> uint64_t
 {
   uint64_t i = 0;

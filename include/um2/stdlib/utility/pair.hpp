@@ -28,6 +28,7 @@ struct Pair {
   }
 
   template <class U1, class U2>
+  // NOLINTNEXTLINE(*missing-std-forward) OK
   HOSTDEV constexpr Pair(U1 && x, U2 && y) noexcept
       : first(um2::forward<U1>(x)),
         second(um2::forward<U2>(y))

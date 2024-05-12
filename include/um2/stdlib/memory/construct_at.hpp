@@ -18,7 +18,8 @@ namespace um2
 
 template <class T, class... Args>
 HOSTDEV constexpr auto
-// NOLINTNEXTLINE(readability-identifier-naming) match std::construct_at
+// match std::construct_at
+// NOLINTNEXTLINE(readability-identifier-naming,*missing-std-forward) OK
 construct_at(T * location, Args &&... args) noexcept -> T *
 {
   ASSERT_ASSUME(location != nullptr);

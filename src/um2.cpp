@@ -8,13 +8,13 @@ namespace um2
 void
 initialize()
 {
-  std::cout << "um2::initialize()" << std::endl;
+  std::cout << "um2::initialize()\n";
 }
 
 void
 finalize()
 {
-  std::cout << "um2::finalize()" << std::endl;
+  std::cout << "um2::finalize()\n";
 }
 
 } // namespace um2

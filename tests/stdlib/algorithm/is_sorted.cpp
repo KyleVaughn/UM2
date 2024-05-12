@@ -1,3 +1,4 @@
+#include <um2/config.hpp>
 #include <um2/stdlib/algorithm/is_sorted.hpp>
 #include <um2/stdlib/utility/swap.hpp>
 

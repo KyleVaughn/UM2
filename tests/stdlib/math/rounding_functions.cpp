@@ -1,4 +1,5 @@
-#include <um2/stdlib/math.hpp>
+#include <um2/config.hpp>
+#include <um2/stdlib/math/rounding_functions.hpp>
 
 #include "../../test_macros.hpp"
 
@@ -20,14 +21,14 @@ TEST_CASE(floor_float)
 }
 MAKE_CUDA_KERNEL(floor_float);
 
-TEST_SUITE(ceil) { TEST_HOSTDEV(ceil_float); }
+TEST_SUITE(ceil_suite) { TEST_HOSTDEV(ceil_float); }
 
-TEST_SUITE(floor) { TEST_HOSTDEV(floor_float); }
+TEST_SUITE(floor_suite) { TEST_HOSTDEV(floor_float); }
 
 auto
 main() -> int
 {
-  RUN_SUITE(ceil);
-  RUN_SUITE(floor);
+  RUN_SUITE(ceil_suite);
+  RUN_SUITE(floor_suite);
   return 0;
 }

@@ -1,3 +1,4 @@
+#include <um2/config.hpp>
 #include <um2/stdlib/cstring/strlen.hpp>
 
 #include "../../test_macros.hpp"
@@ -13,11 +14,11 @@ TEST_CASE(test_strlen)
 
 MAKE_CUDA_KERNEL(test_strlen);
 
-TEST_SUITE(strlen) { TEST_HOSTDEV(test_strlen); }
+TEST_SUITE(strlen_suite) { TEST_HOSTDEV(test_strlen); }
 
 auto
 main() -> int
 {
-  RUN_SUITE(strlen);
+  RUN_SUITE(strlen_suite);
   return 0;
 }

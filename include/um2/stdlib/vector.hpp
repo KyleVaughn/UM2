@@ -1,5 +1,7 @@
 #pragma once
 
+#include <um2/config.hpp>
+
 #include <um2/stdlib/algorithm/copy.hpp>
 #include <um2/stdlib/algorithm/equal.hpp>
 #include <um2/stdlib/algorithm/lexicographical_compare.hpp>
@@ -83,7 +85,7 @@ private:
 
   // Return the recommended capacity for a vector of size new_size.
   // Either double the current capacity or use the new_size if it is larger.
-  PURE HOSTDEV [[nodiscard]] inline constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   recommend(Int new_size) const noexcept -> Int;
 
   // Relocate the objects in the range [begin, end) into the front of v and
@@ -137,10 +139,10 @@ public:
   // Element access
   //==============================================================================
 
-  PURE HOSTDEV inline constexpr auto
+  PURE HOSTDEV constexpr auto
   operator[](Int i) noexcept -> T &;
 
-  PURE HOSTDEV inline constexpr auto
+  PURE HOSTDEV constexpr auto
   operator[](Int i) const noexcept -> T const &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -165,16 +167,16 @@ public:
   // Iterators
   //==============================================================================
 
-  PURE HOSTDEV [[nodiscard]] inline constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   begin() noexcept -> T *;
 
-  PURE HOSTDEV [[nodiscard]] inline constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   begin() const noexcept -> T const *;
 
-  PURE HOSTDEV [[nodiscard]] inline constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   end() noexcept -> T *;
 
-  PURE HOSTDEV [[nodiscard]] inline constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   end() const noexcept -> T const *;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -350,6 +352,7 @@ Vector<T>::destructAtEnd(Ptr new_last) noexcept
 template <class T>
 template <class... Args>
 HOSTDEV inline auto
+// NOLINTNEXTLINE(*-param-not-moved,*std-forward) // False positive.
 Vector<T>::emplaceBackSlowPath(Args &&... args) noexcept -> Ptr
 {
   Vector<T> temp;
@@ -363,6 +366,7 @@ Vector<T>::emplaceBackSlowPath(Args &&... args) noexcept -> Ptr
 template <class T>
 template <class U>
 HOSTDEV inline auto
+// NOLINTNEXTLINE(*-param-not-moved,*std-forward) // False positive.
 Vector<T>::pushBackSlowPath(U && value) noexcept -> Ptr
 {
   Vector<T> temp;
@@ -590,7 +594,7 @@ HOSTDEV Vector<T>::~Vector() noexcept
 //===============================================================================
 
 template <class T>
-PURE HOSTDEV inline constexpr auto
+PURE HOSTDEV constexpr auto
 Vector<T>::operator[](Int const i) noexcept -> T &
 {
   ASSERT_ASSUME(0 <= i);
@@ -599,7 +603,7 @@ Vector<T>::operator[](Int const i) noexcept -> T &
 }
 
 template <class T>
-PURE HOSTDEV inline constexpr auto
+PURE HOSTDEV constexpr auto
 Vector<T>::operator[](Int const i) const noexcept -> T const &
 {
   ASSERT_ASSUME(0 <= i);
@@ -755,6 +759,7 @@ Vector<T>::clear() noexcept
 
 template <class T>
 HOSTDEV inline void
+// NOLINTNEXTLINE(readability-identifier-naming) match std::vector
 Vector<T>::push_back(T const & value) noexcept
 {
   if (_end < _end_cap) {
@@ -767,6 +772,7 @@ Vector<T>::push_back(T const & value) noexcept
 
 template <class T>
 HOSTDEV inline void
+// NOLINTNEXTLINE(readability-identifier-naming,*not-moved,*std-forward) OK
 Vector<T>::push_back(T && value) noexcept
 {
   if (_end < _end_cap) {
@@ -780,6 +786,7 @@ Vector<T>::push_back(T && value) noexcept
 template <class T>
 template <class... Args>
 HOSTDEV inline void
+// NOLINTNEXTLINE(readability-identifier-naming,*not-moved,*std-forward) OK
 Vector<T>::emplace_back(Args &&... args) noexcept
 {
   if (_end < _end_cap) {

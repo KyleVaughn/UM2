@@ -1,3 +1,4 @@
+#include <um2/config.hpp>
 #include <um2/stdlib/utility/is_pointer_in_range.hpp>
 
 #include "../../test_macros.hpp"

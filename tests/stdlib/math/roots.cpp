@@ -1,3 +1,4 @@
+#include <um2/config.hpp>
 #include <um2/stdlib/math/roots.hpp>
 
 #include "../../test_macros.hpp"
@@ -29,14 +30,14 @@ TEST_CASE(sqrt_float)
 }
 MAKE_CUDA_KERNEL(sqrt_float);
 
-TEST_SUITE(cbrt) { TEST_HOSTDEV(cbrt_float); }
+TEST_SUITE(cbrt_suite) { TEST_HOSTDEV(cbrt_float); }
 
-TEST_SUITE(sqrt) { TEST_HOSTDEV(sqrt_float); }
+TEST_SUITE(sqrt_suite) { TEST_HOSTDEV(sqrt_float); }
 
 auto
 main() -> int
 {
-  RUN_SUITE(cbrt);
-  RUN_SUITE(sqrt);
+  RUN_SUITE(cbrt_suite);
+  RUN_SUITE(sqrt_suite);
   return 0;
 }

@@ -196,7 +196,7 @@ public:
   // Destructor
   //==============================================================================
 
-  HOSTDEV inline constexpr ~String() noexcept;
+  HOSTDEV constexpr ~String() noexcept;
 
   //==============================================================================
   // Element access
@@ -729,7 +729,7 @@ String::assign(StringView sv) noexcept -> String &
 // Destructor
 //==============================================================================
 
-HOSTDEV inline constexpr String::~String() noexcept
+HOSTDEV constexpr String::~String() noexcept
 {
   if (isLong()) {
     ::operator delete(getLongPointer());

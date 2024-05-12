@@ -1,6 +1,9 @@
+#include <um2/config.hpp>
 #include <um2/stdlib/math/abs.hpp>
 
-#include <numeric> // std::numeric_limits
+#if !defined(__CUDA_ARCH__) && !UM2_ENABLE_FASTMATH
+#  include <numeric>
+#endif
 
 #include "../../test_macros.hpp"
 
@@ -23,7 +26,7 @@ TEST_CASE(abs_float)
   static_assert(um2::abs(0.0F) == 0.0F);
   static_assert(um2::abs(-0.0F) == 0.0F);
   static_assert(um2::abs(1.0F) == 1.0F);
-#ifndef __CUDA_ARCH__
+#if !defined(__CUDA_ARCH__) && !UM2_ENABLE_FASTMATH
   float constexpr inf = std::numeric_limits<float>::infinity();
   static_assert(um2::abs(inf) == inf);
   static_assert(um2::abs(-inf) == inf);
@@ -32,7 +35,7 @@ TEST_CASE(abs_float)
 }
 MAKE_CUDA_KERNEL(abs_float);
 
-TEST_SUITE(abs)
+TEST_SUITE(abs_suite)
 {
   TEST_HOSTDEV(abs_int);
   TEST_HOSTDEV(abs_float);
@@ -41,6 +44,6 @@ TEST_SUITE(abs)
 auto
 main() -> int
 {
-  RUN_SUITE(abs);
+  RUN_SUITE(abs_suite);
   return 0;
 }

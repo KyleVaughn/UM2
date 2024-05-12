@@ -8,7 +8,7 @@ namespace um2
 {
 
 template <class T>
-HOSTDEV [[nodiscard]] inline constexpr auto
+HOSTDEV [[nodiscard]] constexpr auto
 forward(std::remove_reference_t<T> & t) noexcept -> T &&
 {
   // Forwards lvalues as either lvalues or as rvalues, depending on T.
@@ -16,7 +16,8 @@ forward(std::remove_reference_t<T> & t) noexcept -> T &&
 }
 
 template <class T>
-HOSTDEV [[nodiscard]] inline constexpr auto
+HOSTDEV [[nodiscard]] constexpr auto
+// NOLINTNEXTLINE(*-param-not-moved) // False positive.
 forward(std::remove_reference_t<T> && t) noexcept -> T &&
 {
   // Forwards rvalues as rvalues and prohibits forwarding of lvalues.

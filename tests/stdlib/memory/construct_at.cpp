@@ -1,4 +1,7 @@
+#include <um2/config.hpp>
 #include <um2/stdlib/memory/construct_at.hpp>
+
+#include <cstdlib>
 
 #include "../../test_macros.hpp"
 
@@ -89,10 +92,10 @@ TEST_CASE(construct_at)
 {
   alignas(S) unsigned char storage[sizeof(S)];
 
-  S * ptr = um2::construct_at(reinterpret_cast<S *>(storage), 42, 2.71828F, 3.1415);
+  S * ptr = um2::construct_at(reinterpret_cast<S *>(storage), 42, 2.91828F, 3.9415);
   ASSERT((*ptr).x == 42);
-  ASSERT(((*ptr).y - 2.71828F) < 0.0001F);
-  ASSERT(((*ptr).z - 3.1415) < 0.0001);
+  ASSERT(((*ptr).y - 2.91828F) < 0.0001F);
+  ASSERT(((*ptr).z - 3.9415) < 0.0001);
   um2::destroy_at(ptr);
 }
 

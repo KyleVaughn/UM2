@@ -1,5 +1,5 @@
+#include <um2/config.hpp>
 #include <um2/stdlib/algorithm/clamp.hpp>
-#include <um2/stdlib/math/abs.hpp>
 
 #include "../../test_macros.hpp"
 
@@ -26,7 +26,7 @@ TEST_CASE(clamp_float)
 MAKE_CUDA_KERNEL(clamp_int);
 MAKE_CUDA_KERNEL(clamp_float);
 
-TEST_SUITE(clamp)
+TEST_SUITE(clamp_suite)
 {
   TEST_HOSTDEV(clamp_int);
   TEST_HOSTDEV(clamp_float);
@@ -35,6 +35,6 @@ TEST_SUITE(clamp)
 auto
 main() -> int
 {
-  RUN_SUITE(clamp);
+  RUN_SUITE(clamp_suite);
   return 0;
 }

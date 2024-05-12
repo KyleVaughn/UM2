@@ -1,3 +1,4 @@
+#include <um2/config.hpp>
 #include <um2/stdlib/utility/forward.hpp>
 
 #include <utility> // std::move, since we um2::move is not tested yet at this step
@@ -22,12 +23,14 @@ value(A const & a) -> int
 }
 
 HOSTDEV PURE constexpr auto
+// NOLINTNEXTLINE(*param-not-moved) OK
 value(A && a) -> int
 {
   return a.r;
 }
 
 HOSTDEV PURE constexpr auto
+// NOLINTNEXTLINE(*param-not-moved) OK
 value(A const && a) -> int
 {
   return a.r;
@@ -35,6 +38,7 @@ value(A const && a) -> int
 
 template <typename T>
 HOSTDEV constexpr auto
+// NOLINTNEXTLINE(*missing-std-forward) OK
 pass(T && a) -> int
 {
   return value(um2::forward<T>(a));

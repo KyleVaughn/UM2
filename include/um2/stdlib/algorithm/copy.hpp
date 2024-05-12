@@ -21,7 +21,7 @@ struct IsAlwaysBitcastable {
       (std::is_same_v<UnqualFrom, UnqualTo> &&
        std::is_trivially_copyable_v<UnqualFrom>) ||
       (sizeof(From) == sizeof(To) && std::is_integral_v<From> && std::is_integral_v<To> &&
-       !std::is_same<UnqualTo, bool>::value);
+       !std::is_same_v<UnqualTo, bool>);
 };
 
 template <class From, class To>

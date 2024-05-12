@@ -1,3 +1,4 @@
+#include <um2/config.hpp>
 #include <um2/stdlib/algorithm/max.hpp>
 #include <um2/stdlib/math/abs.hpp>
 

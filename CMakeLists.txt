@@ -11,11 +11,11 @@ project(
 #===============================================================================
 
 # Build
-option(UM2_BUILD_BENCHMARKS   "Build benchmarks"                  OFF)
-option(UM2_BUILD_MODELS       "Build models"                      OFF)
+#option(UM2_BUILD_BENCHMARKS   "Build benchmarks"                  OFF)
+#option(UM2_BUILD_MODELS       "Build models"                      OFF)
 option(UM2_BUILD_SHARED_LIB   "Build UM2 as a shared library"     ON)
 option(UM2_BUILD_TESTS        "Build tests"                       ON)
-option(UM2_BUILD_TUTORIAL     "Build tutorial"                    OFF)
+#option(UM2_BUILD_TUTORIAL     "Build tutorial"                    OFF)
 
 # Enable/disable features
 option(UM2_ENABLE_ASSERTS   "Enable assertions"                              OFF)
@@ -29,12 +29,12 @@ option(UM2_ENABLE_SIMD_VEC  "Enable GCC vector extensions for the Vec class" ON)
 # External tools/dependencies
 option(UM2_USE_CLANG_FORMAT  "Use clang-format" ON) # Code formatting
 option(UM2_USE_CLANG_TIDY    "Use clang-tidy"   ON) # Static analysis
-option(UM2_USE_COVERAGE      "Use coverage"     ON) # Code coverage
+option(UM2_USE_COVERAGE      "Use coverage"     OFF) # Code coverage
 option(UM2_USE_CUDA          "Use CUDA"         OFF) # GPU acceleration
-option(UM2_USE_GMSH          "Use Gmsh"         ON)  # CAD geometry and meshing
-option(UM2_USE_HDF5          "Use HDF5"         ON)  # Binary data I/O (Mesh I/O)
+option(UM2_USE_GMSH          "Use Gmsh"         OFF)  # CAD geometry and meshing
+option(UM2_USE_HDF5          "Use HDF5"         OFF)  # Binary data I/O (Mesh I/O)
 option(UM2_USE_OPENMP        "Use OpenMP"       OFF) # Multi-threading
-option(UM2_USE_PUGIXML       "Use pugixml"      ON)  # XML parsing (Mesh I/O)
+option(UM2_USE_PUGIXML       "Use pugixml"      OFF)  # XML parsing (Mesh I/O)
 option(UM2_USE_TBB           "Use TBB"          OFF) # Parallel STL (std::execution::par, etc.)
 option(UM2_USE_VALGRIND      "Use valgrind"     OFF) # Memory checking
 
@@ -316,24 +316,19 @@ if (UM2_USE_COVERAGE)
   target_link_libraries(um2 PRIVATE gcov)
 endif()
 
-
-#option(UM2_USE_CUDA          "Use CUDA"         OFF) # GPU acceleration
-#option(UM2_USE_GMSH          "Use Gmsh"         ON)  # CAD geometry and meshing
-#option(UM2_USE_HDF5          "Use HDF5"         ON)  # Binary data I/O (Mesh I/O)
-#option(UM2_USE_OPENMP        "Use OpenMP"       OFF) # Multi-threading
-#option(UM2_USE_PUGIXML       "Use pugixml"      ON)  # XML parsing (Mesh I/O)
-#option(UM2_USE_TBB           "Use TBB"          OFF) # Parallel STL (std::execution::par, etc.)
-#option(UM2_USE_VALGRIND      "Use valgrind"     OFF) # Memory checking
-
 # HDF5
-find_package(HDF5 REQUIRED COMPONENTS CXX)
-target_link_libraries(um2 PUBLIC "${HDF5_CXX_LIBRARIES}")
-target_include_directories(um2 SYSTEM PUBLIC "${HDF5_INCLUDE_DIRS}")
+if (UM2_USE_HDF5)
+  find_package(HDF5 REQUIRED COMPONENTS CXX)
+  target_link_libraries(um2 PUBLIC "${HDF5_CXX_LIBRARIES}")
+  target_include_directories(um2 SYSTEM PUBLIC "${HDF5_INCLUDE_DIRS}")
+endif()
 
 # pugixml
-find_package(PugiXML REQUIRED)
-target_link_libraries(um2 PUBLIC "${PUGIXML_LIB}")
-target_include_directories(um2 SYSTEM PUBLIC "${PUGIXML_INC}")
+if (UM2_USE_PUGIXML)
+  find_package(PugiXML REQUIRED)
+  target_link_libraries(um2 PUBLIC "${PUGIXML_LIB}")
+  target_include_directories(um2 SYSTEM PUBLIC "${PUGIXML_INC}")
+endif()
 
 ###===============================================================================
 ### Optional dependencies

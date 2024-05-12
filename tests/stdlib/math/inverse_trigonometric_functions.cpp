@@ -1,3 +1,4 @@
+#include <um2/config.hpp>
 #include <um2/stdlib/math/inverse_trigonometric_functions.hpp>
 
 #include "../../test_macros.hpp"
@@ -27,15 +28,15 @@ TEST_CASE(atan_float)
   ASSERT_NEAR(um2::atan(-1.0F), -0.7853981633974483F, 1e-6F); // -pi/4
 }
 
-TEST_SUITE(acos) { TEST_HOSTDEV(acos_float); }
-TEST_SUITE(asin) { TEST_HOSTDEV(asin_float); }
-TEST_SUITE(atan) { TEST_HOSTDEV(atan_float); }
+TEST_SUITE(acos_suite) { TEST_HOSTDEV(acos_float); }
+TEST_SUITE(asin_suite) { TEST_HOSTDEV(asin_float); }
+TEST_SUITE(atan_suite) { TEST_HOSTDEV(atan_float); }
 
 auto
 main() -> int
 {
-  RUN_SUITE(acos);
-  RUN_SUITE(asin);
-  RUN_SUITE(atan);
+  RUN_SUITE(acos_suite);
+  RUN_SUITE(asin_suite);
+  RUN_SUITE(atan_suite);
   return 0;
 }

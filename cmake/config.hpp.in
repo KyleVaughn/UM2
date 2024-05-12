@@ -5,7 +5,7 @@
 //==============================================================================
 
 // Ignore clang-tidy, since these are CMake defines
-// NOLINTBEGIN(modernize-macro-to-enum)
+// NOLINTBEGIN(*-macro-to-enum)
 
 // Enable/disable features
 #cmakedefine01 UM2_ENABLE_ASSERTS
@@ -33,7 +33,7 @@
 // Default path to look for MPACT cross section libraries
 #define MPACT_DATA_DIR "@MPACT_DATA@"
 
-// NOLINTEND(modernize-macro-to-enum)
+// NOLINTEND(*-macro-to-enum)
 
 //==============================================================================
 // Includes

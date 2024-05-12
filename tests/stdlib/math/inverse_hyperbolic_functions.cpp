@@ -1,3 +1,4 @@
+#include <um2/config.hpp>
 #include <um2/stdlib/math/inverse_hyperbolic_functions.hpp>
 
 #include "../../test_macros.hpp"
@@ -10,11 +11,11 @@ TEST_CASE(atanh_float)
 }
 MAKE_CUDA_KERNEL(atanh_float);
 
-TEST_SUITE(atanh) { TEST_HOSTDEV(atanh_float); }
+TEST_SUITE(atanh_suite) { TEST_HOSTDEV(atanh_float); }
 
 auto
 main() -> int
 {
-  RUN_SUITE(atanh);
+  RUN_SUITE(atanh_suite);
   return 0;
 }

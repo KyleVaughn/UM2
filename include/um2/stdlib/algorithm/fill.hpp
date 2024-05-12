@@ -6,7 +6,7 @@ namespace um2
 {
 
 template <class It, class T>
-HOSTDEV inline constexpr void
+HOSTDEV constexpr void
 fill(It first, It last, T const & value)
 {
   for (; first != last; ++first) {

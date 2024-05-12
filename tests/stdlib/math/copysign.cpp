@@ -1,3 +1,4 @@
+#include <um2/config.hpp>
 #include <um2/stdlib/math/copysign.hpp>
 
 #include "../../test_macros.hpp"
@@ -26,7 +27,7 @@ MAKE_CUDA_KERNEL(copysign_double);
 #pragma GCC diagnostic pop
 // NOLINTEND(clang-diagnostic-float-equal)
 
-TEST_SUITE(copysign)
+TEST_SUITE(copysign_suite)
 {
   TEST_HOSTDEV(copysign_float);
   TEST_HOSTDEV(copysign_double);
@@ -35,6 +36,6 @@ TEST_SUITE(copysign)
 auto
 main() -> int
 {
-  RUN_SUITE(copysign);
+  RUN_SUITE(copysign_suite);
   return 0;
 }
