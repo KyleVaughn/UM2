@@ -64,7 +64,48 @@ public:
   static auto
   identity(Int n) -> Matrix<T>;
 
+  //==============================================================================
+  // Operators
+  //==============================================================================
+
+  auto
+  operator+=(Matrix<T> const & other) -> Matrix<T> &;
+
+  auto
+  operator-=(Matrix<T> const & other) -> Matrix<T> &;
+
+  //==============================================================================
+  // Methods
+  //==============================================================================
+
+  void
+  zero() noexcept;
 };
+
+//==============================================================================
+// Free functions 
+//==============================================================================
+
+// Matrix-vector operations 
+//------------------------------------------------------------------------------
+template <typename T>
+PURE auto
+operator*(Matrix<T> const & a, Vector<T> const & x) -> Vector<T>;
+
+// Matrix-matrix operations
+//------------------------------------------------------------------------------
+
+template <typename T>
+PURE auto
+operator+(Matrix<T> const & a, Matrix<T> const & b) -> Matrix<T>;
+
+template <typename T>
+PURE auto
+operator-(Matrix<T> const & a, Matrix<T> const & b) -> Matrix<T>;
+
+template <typename T>
+PURE auto
+operator*(Matrix<T> const & a, Matrix<T> const & b) -> Matrix<T>;
 
 //==============================================================================
 // Accessors
@@ -163,14 +204,76 @@ Matrix<T>::identity(Int n) -> Matrix<T>
 }
 
 //==============================================================================
+// Operators
+//==============================================================================
+
+template <typename T>
+auto
+Matrix<T>::operator+=(Matrix<T> const & other) -> Matrix<T> &
+{
+  ASSERT_ASSUME(_rows == other._rows);
+  ASSERT_ASSUME(_cols == other._cols);
+
+  for (Int i = 0; i < _rows * _cols; ++i) {
+    _data[i] += other._data[i];
+  }
+  return *this;
+}
+
+template <typename T>
+auto
+Matrix<T>::operator-=(Matrix<T> const & other) -> Matrix<T> &
+{
+  ASSERT_ASSUME(_rows == other._rows);
+  ASSERT_ASSUME(_cols == other._cols);
+
+  for (Int i = 0; i < _rows * _cols; ++i) {
+    _data[i] -= other._data[i];
+  }
+  return *this;
+}
+
+//==============================================================================
+// Methods
+//==============================================================================
+
+template <typename T>
+void
+Matrix<T>::zero() noexcept
+{
+  um2::fill(_data.begin(), _data.end(), static_cast<T>(0));
+}
+
+//==============================================================================
 // Free functions 
 //==============================================================================
 
-// Matrix-vector operations 
-//------------------------------------------------------------------------------
 template <typename T>
-auto
-operator*(Matrix<T> const & a, Vector<T> const & x) -> Vector<T>;
+PURE auto
+operator+(Matrix<T> const & a, Matrix<T> const & b) -> Matrix<T>
+{
+  ASSERT_ASSUME(a.rows() == b.rows());
+  ASSERT_ASSUME(a.cols() == b.cols());
 
+  Matrix<T> result(a.rows(), a.cols());
+  for (Int i = 0; i < a.rows() * a.cols(); ++i) {
+    result(i) = a(i) + b(i);
+  }
+  return result;
+}
+
+template <typename T>
+PURE auto
+operator-(Matrix<T> const & a, Matrix<T> const & b) -> Matrix<T>
+{
+  ASSERT_ASSUME(a.rows() == b.rows());
+  ASSERT_ASSUME(a.cols() == b.cols());
+
+  Matrix<T> result(a.rows(), a.cols());
+  for (Int i = 0; i < a.rows() * a.cols(); ++i) {
+    result(i) = a(i) - b(i);
+  }
+  return result;
+}
 
 } // namespace um2

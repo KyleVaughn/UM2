@@ -166,6 +166,7 @@ set(UM2_SOURCES
     "src/physics/nuclide.cpp"
     "src/physics/cross_section_library.cpp"
     "src/physics/material.cpp"
+    "src/physics/cmfd.cpp"
     "src/mpact/model.cpp"
     "src/gmsh/base_gmsh_api.cpp"
     "src/gmsh/io.cpp"

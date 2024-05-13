@@ -18,22 +18,23 @@ const FloatType = Float64
 
 # ASSUMPTIONS: 
 #   - K = 1: A single coarse cell with periodic boundary conditions.
-#   - The cell has thickness 1 cm, which makes Δ = p * Σ_t * h = Σ_t
 
 struct Params
-    p::Int          # Fine cells per coarse cell
-    N::Int          # Polar quadrature order, θ ∈ (0, 2π), hence μ ∈ (-1, 1)
+    w::FloatType      # Coarse cell width (cm) 
+    p::Int            # Fine cells per coarse cell
+    N::Int            # Polar quadrature order, θ ∈ (0, 2π), hence μ ∈ (-1, 1)
     Σ_t::FloatType    # Total cross section (cm^-1)
     c::FloatType      # Scattering ratio
-    σ::Int          # Number of sweeps
+    σ::Int            # Number of sweeps
     η::FloatType      # Diffusion coefficient modifier η ∈ [0, 1/4]
-    num_α::Int      # Number of equally spaced points to sample α ∈ [0, π/Δ]
+    num_α::Int        # Number of equally spaced points to sample α ∈ [0, π/Δ]
     # Computed parameters
     h::FloatType      # Fine cell thickness (cm)
     Δ::FloatType      # Equation 56, optical thickness of the coarse cell
     D::FloatType      # Equation 27
 
-    function Params(p, N, Σ_t, c, σ, η, num_α)
+    function Params(w, p, N, Σ_t, c, σ, η, num_α)
+        @assert 0 < w "w must be greater than 0"
         @assert 1 <= p "p must be greater than or equal to 1"
         @assert N % 2 == 0 "N must be a multiple of 2" 
         @assert 0 < Σ_t "Σ_t must be greater than 0"
@@ -42,9 +43,9 @@ struct Params
         @assert 0 <= η <= 1 / 4 "η must be between 0 and 1/4"
         @assert 1 <= num_α "num_α must be greater than or equal to 1"
 
-        return new(p, N, Σ_t, c, σ, η, num_α, 
-            1.0 / p, # Domain fixed at 1 cm 
-            Σ_t, # p * Σ_t * h = Σ_t
+        return new(w, p, N, Σ_t, c, σ, η, num_α, 
+            w / p, # Domain fixed at 1 cm 
+            w * Σ_t, # p * Σ_t * h = w * Σ_t
             1 / (3 * Σ_t) + η
            )
     end
@@ -134,7 +135,7 @@ function setBₙ!(Bₙ, Aₙ, params, μₙ, α)
     # Note: d = -u 
     u = μₙ / (params.Σ_t * params.h)
     d = -u
-    
+
     # Traverse in column-major order
     p = params.p
     Bₙ[1, 1] = d
@@ -260,10 +261,11 @@ const num_α = 1000
 #contourf(Δ, c, r_clamped, xscale=:log10, levels=levels, xlabel="Δ", ylabel="Scattering ratio", title="Spectral radius")
 #savefig("spectral_radius_adcmfd.png")
 
+w = 1.26
 c = 0.9359789916917574 
-Δ = 2.65038 
+Σ_t = 2.65038 
 p = 4
 σ = 1
 η = 0.0
-params = Params(p, N, Δ, c, σ, η, num_α)
+params = Params(w, p, N, Σ_t, c, σ, η, num_α)
 ρ(params)

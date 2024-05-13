@@ -1,3 +1,17 @@
+CMFD
+- p = ceil(sqrt(num_cells))
+- Total cross section = area averaged
+- c = area averaged
+- 
+
+
+revive angular quadrature
+add gauss-legendre
+add tests for angular quadrature
+-> Use 32 hard coded into the routine as N
+
+use restrict
+
 check alignment of vec and the assembly it outputs
 
 revive makefile and submodules
@@ -11,20 +25,6 @@ change isFuel to be automatically computed.
   store isFissile on xsec?
 
 add ASSUME(result >= 0) on all size, capacity, etc. functions
-
-tau vs approx spectral radius
-
-err norm starts around 1e-2, hence rho = np.exp(np.log(err/1e-2)/Niter)
-
-jarrett paper shows faster convergence than predicted by 1D based upon te group 7 xsec
-
-where are they getting the plot in figure 1?
-
-want to review jarrett paper with Brendan
-  -> Seems we have all variables to determine spectral radius 
-  -> estimate spectral radius
-    -> error reduction between iterations
-      -> can bound using linear
 
 method for deleting redundant verts in polysoup
 2D height truncate azimuthal quadrature?
