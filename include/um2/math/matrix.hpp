@@ -3,6 +3,8 @@
 #include <um2/stdlib/vector.hpp>
 #include <um2/stdlib/algorithm/fill.hpp>
 
+#include <complex>
+
 //==============================================================================
 // MATRIX
 //==============================================================================
@@ -106,6 +108,27 @@ operator-(Matrix<T> const & a, Matrix<T> const & b) -> Matrix<T>;
 template <typename T>
 PURE auto
 operator*(Matrix<T> const & a, Matrix<T> const & b) -> Matrix<T>;
+
+// Solver
+//------------------------------------------------------------------------------
+// Solve A X = B for X. X = A \ B
+template <typename T>
+PURE auto
+linearSolve(Matrix<T> const & a, Matrix<T> const & b) -> Matrix<T>;
+
+// Eigenvalues
+//------------------------------------------------------------------------------
+PURE auto
+eig(Matrix<float> const & a) -> Vector<std::complex<float>>;
+
+PURE auto
+eig(Matrix<double> const & a) -> Vector<std::complex<double>>;
+
+PURE auto
+eig(Matrix<std::complex<float>> const & a) -> Vector<std::complex<float>>;
+
+PURE auto
+eig(Matrix<std::complex<double>> const & a) -> Vector<std::complex<double>>;
 
 //==============================================================================
 // Accessors

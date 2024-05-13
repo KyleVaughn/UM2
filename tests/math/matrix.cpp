@@ -7,6 +7,8 @@
 using Complex32 = std::complex<float>;
 using Complex64 = std::complex<double>;
 
+#include <iostream>
+
 // TODO(kcvaughn): Template of float/double and Complex32/Complex64. This should reduce
 // code size by half
 
@@ -177,6 +179,169 @@ TEST_CASE(mat_mul_float)
   ASSERT_NEAR(ab(11), 6, eps);
 }
 
+TEST_CASE(lin_solve_float)
+{
+ 
+  // Solve A * X = B
+  // A = 6.80  -6.05  -0.45   8.32  -9.67
+  //    -2.11  -3.30   2.58   2.71  -5.14
+  //     5.66   5.36  -2.70   4.35  -7.26
+  //     5.97  -4.44   0.27  -7.17   6.08
+  //     8.23   1.08   9.04   2.14  -6.87
+  //
+  // B = 4.02  -1.56   9.81
+  //     6.19   4.00  -4.09
+  //    -8.22  -8.67  -4.57
+  //    -7.57   1.75  -8.61
+  //    -3.03   2.86   8.99
+
+  auto constexpr eps = 1e-2F;
+  um2::Matrix<float> a(5, 5);
+  a(0) = 6.80F;
+  a(1) = -2.11F;
+  a(2) = 5.66F;
+  a(3) = 5.97F;
+  a(4) = 8.23F;
+  
+  a(5) = -6.05F;
+  a(6) = -3.30F;
+  a(7) = 5.36F;
+  a(8) = -4.44F;
+  a(9) = 1.08F;
+  
+  a(10) = -0.45F;
+  a(11) = 2.58F;
+  a(12) = -2.70F;
+  a(13) = 0.27F;
+  a(14) = 9.04F;
+  
+  a(15) = 8.32F;
+  a(16) = 2.71F;
+  a(17) = 4.35F;
+  a(18) = -7.17F;
+  a(19) = 2.14F;
+  
+  a(20) = -9.67F;
+  a(21) = -5.14F;
+  a(22) = -7.26F;
+  a(23) = 6.08F;
+  a(24) = -6.87F;
+  
+  um2::Matrix<float> b(5, 3);
+  b(0) = 4.02F;
+  b(1) = 6.19F;
+  b(2) = -8.22F;
+  b(3) = -7.57F;
+  b(4) = -3.03F;
+  
+  b(5) = -1.56F;
+  b(6) = 4.00F;
+  b(7) = -8.67F;
+  b(8) = 1.75F;
+  b(9) = 2.86F;
+  
+  b(10) = 9.81F;
+  b(11) = -4.09F;
+  b(12) = -4.57F;
+  b(13) = -8.61F;
+  b(14) = 8.99F;
+
+  // X = -0.80  -0.39   0.96
+  //     -0.70  -0.55   0.22
+  //      0.59   0.84   1.90
+  //      1.32  -0.10   5.36
+  //      0.57   0.11   4.04
+
+  auto const x = linearSolve(a, b); 
+  ASSERT(x.rows() == 5);
+  ASSERT(x.cols() == 3);
+
+  ASSERT_NEAR(x(0, 0), -0.80F, eps);
+  ASSERT_NEAR(x(1, 0), -0.70F, eps);
+  ASSERT_NEAR(x(2, 0), 0.59F, eps);
+  ASSERT_NEAR(x(3, 0), 1.32F, eps);
+  ASSERT_NEAR(x(4, 0), 0.57F, eps);
+
+  ASSERT_NEAR(x(0, 1), -0.39F, eps);
+  ASSERT_NEAR(x(1, 1), -0.55F, eps);
+  ASSERT_NEAR(x(2, 1), 0.84F, eps);
+  ASSERT_NEAR(x(3, 1), -0.10F, eps);
+  ASSERT_NEAR(x(4, 1), 0.11F, eps);
+
+  ASSERT_NEAR(x(0, 2), 0.96F, eps);
+  ASSERT_NEAR(x(1, 2), 0.22F, eps);
+  ASSERT_NEAR(x(2, 2), 1.90F, eps);
+  ASSERT_NEAR(x(3, 2), 5.36F, eps);
+  ASSERT_NEAR(x(4, 2), 4.04F, eps);
+
+}
+
+TEST_CASE(eig_float)
+{
+  // A = -1.01   0.86  -4.60   3.31  -4.81
+  //      3.98   0.53  -7.04   5.29   3.55
+  //      3.30   8.26  -3.89   8.20  -1.51
+  //      4.43   4.96  -7.66  -7.33   6.18
+  //      7.31  -6.43  -6.16   2.47   5.58
+  //
+  // lambda =
+  //   (  2.86, 10.76)
+  //   (  2.86,-10.76)
+  //   ( -0.69,  4.70)
+  //   ( -0.69, -4.70)
+  //   (-10.46,  0.00)
+
+  auto constexpr eps = 1e-2F;
+  um2::Matrix<float> a(5, 5);
+  a(0) = -1.01F;
+  a(1) = 3.98F;
+  a(2) = 3.30F;
+  a(3) = 4.43F;
+  a(4) = 7.31F;
+
+  a(5) = 0.86F;
+  a(6) = 0.53F;
+  a(7) = 8.26F;
+  a(8) = 4.96F;
+  a(9) = -6.43F;
+
+  a(10) = -4.60F;
+  a(11) = -7.04F;
+  a(12) = -3.89F;
+  a(13) = -7.66F;
+  a(14) = -6.16F;
+
+  a(15) = 3.31F;
+  a(16) = 5.29F;
+  a(17) = 8.20F;
+  a(18) = -7.33F;
+  a(19) = 2.47F;
+
+  a(20) = -4.81F;
+  a(21) = 3.55F;
+  a(22) = -1.51F;
+  a(23) = 6.18F;
+  a(24) = 5.58F;
+
+  auto const lambda = eig(a);
+
+  ASSERT(lambda.size() == 5);
+  ASSERT_NEAR(lambda[0].real(),  2.86F, eps);
+  ASSERT_NEAR(lambda[0].imag(), 10.76F, eps);
+
+  ASSERT_NEAR(lambda[1].real(),  2.86F, eps);
+  ASSERT_NEAR(lambda[1].imag(),-10.76F, eps);
+
+  ASSERT_NEAR(lambda[2].real(), -0.69F, eps);
+  ASSERT_NEAR(lambda[2].imag(),  4.70F, eps);
+
+  ASSERT_NEAR(lambda[3].real(), -0.69F, eps);
+  ASSERT_NEAR(lambda[3].imag(), -4.70F, eps);
+
+  ASSERT_NEAR(lambda[4].real(),-10.46F, eps);
+  ASSERT_NEAR(lambda[4].imag(),  0.00F, eps);
+}
+
 //=============================================================================
 // double
 //=============================================================================
@@ -344,6 +509,169 @@ TEST_CASE(mat_mul_double)
   ASSERT_NEAR(ab(11), 6, eps);
 }
 
+TEST_CASE(lin_solve_double)
+{
+ 
+  // Solve A * X = B
+  // A = 6.80  -6.05  -0.45   8.32  -9.67
+  //    -2.11  -3.30   2.58   2.71  -5.14
+  //     5.66   5.36  -2.70   4.35  -7.26
+  //     5.97  -4.44   0.27  -7.17   6.08
+  //     8.23   1.08   9.04   2.14  -6.87
+  //
+  // B = 4.02  -1.56   9.81
+  //     6.19   4.00  -4.09
+  //    -8.22  -8.67  -4.57
+  //    -7.57   1.75  -8.61
+  //    -3.03   2.86   8.99
+
+  auto constexpr eps = 1e-2;
+  um2::Matrix<double> a(5, 5);
+  a(0) = 6.80;
+  a(1) = -2.11;
+  a(2) = 5.66;
+  a(3) = 5.97;
+  a(4) = 8.23;
+  
+  a(5) = -6.05;
+  a(6) = -3.30;
+  a(7) = 5.36;
+  a(8) = -4.44;
+  a(9) = 1.08;
+  
+  a(10) = -0.45;
+  a(11) = 2.58;
+  a(12) = -2.70;
+  a(13) = 0.27;
+  a(14) = 9.04;
+  
+  a(15) = 8.32;
+  a(16) = 2.71;
+  a(17) = 4.35;
+  a(18) = -7.17;
+  a(19) = 2.14;
+  
+  a(20) = -9.67;
+  a(21) = -5.14;
+  a(22) = -7.26;
+  a(23) = 6.08;
+  a(24) = -6.87;
+  
+  um2::Matrix<double> b(5, 3);
+  b(0) = 4.02;
+  b(1) = 6.19;
+  b(2) = -8.22;
+  b(3) = -7.57;
+  b(4) = -3.03;
+  
+  b(5) = -1.56;
+  b(6) = 4.00;
+  b(7) = -8.67;
+  b(8) = 1.75;
+  b(9) = 2.86;
+  
+  b(10) = 9.81;
+  b(11) = -4.09;
+  b(12) = -4.57;
+  b(13) = -8.61;
+  b(14) = 8.99;
+
+  // X = -0.80  -0.39   0.96
+  //     -0.70  -0.55   0.22
+  //      0.59   0.84   1.90
+  //      1.32  -0.10   5.36
+  //      0.57   0.11   4.04
+
+  auto const x = linearSolve(a, b); 
+  ASSERT(x.rows() == 5);
+  ASSERT(x.cols() == 3);
+
+  ASSERT_NEAR(x(0, 0), -0.80, eps);
+  ASSERT_NEAR(x(1, 0), -0.70, eps);
+  ASSERT_NEAR(x(2, 0), 0.59, eps);
+  ASSERT_NEAR(x(3, 0), 1.32, eps);
+  ASSERT_NEAR(x(4, 0), 0.57, eps);
+
+  ASSERT_NEAR(x(0, 1), -0.39, eps);
+  ASSERT_NEAR(x(1, 1), -0.55, eps);
+  ASSERT_NEAR(x(2, 1), 0.84, eps);
+  ASSERT_NEAR(x(3, 1), -0.10, eps);
+  ASSERT_NEAR(x(4, 1), 0.11, eps);
+
+  ASSERT_NEAR(x(0, 2), 0.96, eps);
+  ASSERT_NEAR(x(1, 2), 0.22, eps);
+  ASSERT_NEAR(x(2, 2), 1.90, eps);
+  ASSERT_NEAR(x(3, 2), 5.36, eps);
+  ASSERT_NEAR(x(4, 2), 4.04, eps);
+
+}
+
+TEST_CASE(eig_double)
+{
+  // A = -1.01   0.86  -4.60   3.31  -4.81
+  //      3.98   0.53  -7.04   5.29   3.55
+  //      3.30   8.26  -3.89   8.20  -1.51
+  //      4.43   4.96  -7.66  -7.33   6.18
+  //      7.31  -6.43  -6.16   2.47   5.58
+  //
+  // lambda =
+  //   (  2.86, 10.76)
+  //   (  2.86,-10.76)
+  //   ( -0.69,  4.70)
+  //   ( -0.69, -4.70)
+  //   (-10.46,  0.00)
+
+  auto constexpr eps = 1e-2;
+  um2::Matrix<double> a(5, 5);
+  a(0) = -1.01;
+  a(1) = 3.98;
+  a(2) = 3.30;
+  a(3) = 4.43;
+  a(4) = 7.31;
+
+  a(5) = 0.86;
+  a(6) = 0.53;
+  a(7) = 8.26;
+  a(8) = 4.96;
+  a(9) = -6.43;
+
+  a(10) = -4.60;
+  a(11) = -7.04;
+  a(12) = -3.89;
+  a(13) = -7.66;
+  a(14) = -6.16;
+
+  a(15) = 3.31;
+  a(16) = 5.29;
+  a(17) = 8.20;
+  a(18) = -7.33;
+  a(19) = 2.47;
+
+  a(20) = -4.81;
+  a(21) = 3.55;
+  a(22) = -1.51;
+  a(23) = 6.18;
+  a(24) = 5.58;
+
+  auto const lambda = eig(a);
+
+  ASSERT(lambda.size() == 5);
+  ASSERT_NEAR(lambda[0].real(),  2.86, eps);
+  ASSERT_NEAR(lambda[0].imag(), 10.76, eps);
+
+  ASSERT_NEAR(lambda[1].real(),  2.86, eps);
+  ASSERT_NEAR(lambda[1].imag(),-10.76, eps);
+
+  ASSERT_NEAR(lambda[2].real(), -0.69, eps);
+  ASSERT_NEAR(lambda[2].imag(),  4.70, eps);
+
+  ASSERT_NEAR(lambda[3].real(), -0.69, eps);
+  ASSERT_NEAR(lambda[3].imag(), -4.70, eps);
+
+  ASSERT_NEAR(lambda[4].real(),-10.46, eps);
+  ASSERT_NEAR(lambda[4].imag(),  0.00, eps);
+}
+
 //=============================================================================
 // Complex32
 //=============================================================================
@@ -489,6 +817,169 @@ TEST_CASE(mat_mul_Complex32)
   for (Int i = 0; i < 12; ++i) {
     ASSERT_NEAR(ab(i).imag(), 0, eps);
   }
+}
+
+TEST_CASE(lin_solve_Complex32)
+{
+ 
+  // Solve A * X = B
+  // A = 6.80  -6.05  -0.45   8.32  -9.67
+  //    -2.11  -3.30   2.58   2.71  -5.14
+  //     5.66   5.36  -2.70   4.35  -7.26
+  //     5.97  -4.44   0.27  -7.17   6.08
+  //     8.23   1.08   9.04   2.14  -6.87
+  //
+  // B = 4.02  -1.56   9.81
+  //     6.19   4.00  -4.09
+  //    -8.22  -8.67  -4.57
+  //    -7.57   1.75  -8.61
+  //    -3.03   2.86   8.99
+
+  auto constexpr eps = 1e-2F;
+  um2::Matrix<Complex32> a(5, 5);
+  a(0) = 6.80F;
+  a(1) = -2.11F;
+  a(2) = 5.66F;
+  a(3) = 5.97F;
+  a(4) = 8.23F;
+  
+  a(5) = -6.05F;
+  a(6) = -3.30F;
+  a(7) = 5.36F;
+  a(8) = -4.44F;
+  a(9) = 1.08F;
+  
+  a(10) = -0.45F;
+  a(11) = 2.58F;
+  a(12) = -2.70F;
+  a(13) = 0.27F;
+  a(14) = 9.04F;
+  
+  a(15) = 8.32F;
+  a(16) = 2.71F;
+  a(17) = 4.35F;
+  a(18) = -7.17F;
+  a(19) = 2.14F;
+  
+  a(20) = -9.67F;
+  a(21) = -5.14F;
+  a(22) = -7.26F;
+  a(23) = 6.08F;
+  a(24) = -6.87F;
+  
+  um2::Matrix<Complex32> b(5, 3);
+  b(0) = 4.02F;
+  b(1) = 6.19F;
+  b(2) = -8.22F;
+  b(3) = -7.57F;
+  b(4) = -3.03F;
+  
+  b(5) = -1.56F;
+  b(6) = 4.00F;
+  b(7) = -8.67F;
+  b(8) = 1.75F;
+  b(9) = 2.86F;
+  
+  b(10) = 9.81F;
+  b(11) = -4.09F;
+  b(12) = -4.57F;
+  b(13) = -8.61F;
+  b(14) = 8.99F;
+
+  // X = -0.80  -0.39   0.96
+  //     -0.70  -0.55   0.22
+  //      0.59   0.84   1.90
+  //      1.32  -0.10   5.36
+  //      0.57   0.11   4.04
+
+  auto const x = linearSolve(a, b); 
+  ASSERT(x.rows() == 5);
+  ASSERT(x.cols() == 3);
+
+  ASSERT_NEAR(x(0, 0).real(), -0.80F, eps);
+  ASSERT_NEAR(x(1, 0).real(), -0.70F, eps);
+  ASSERT_NEAR(x(2, 0).real(), 0.59F, eps);
+  ASSERT_NEAR(x(3, 0).real(), 1.32F, eps);
+  ASSERT_NEAR(x(4, 0).real(), 0.57F, eps);
+
+  ASSERT_NEAR(x(0, 1).real(), -0.39F, eps);
+  ASSERT_NEAR(x(1, 1).real(), -0.55F, eps);
+  ASSERT_NEAR(x(2, 1).real(), 0.84F, eps);
+  ASSERT_NEAR(x(3, 1).real(), -0.10F, eps);
+  ASSERT_NEAR(x(4, 1).real(), 0.11F, eps);
+
+  ASSERT_NEAR(x(0, 2).real(), 0.96F, eps);
+  ASSERT_NEAR(x(1, 2).real(), 0.22F, eps);
+  ASSERT_NEAR(x(2, 2).real(), 1.90F, eps);
+  ASSERT_NEAR(x(3, 2).real(), 5.36F, eps);
+  ASSERT_NEAR(x(4, 2).real(), 4.04F, eps);
+}
+
+TEST_CASE(eig_Complex32)
+{
+  // A = -1.01   0.86  -4.60   3.31  -4.81
+  //      3.98   0.53  -7.04   5.29   3.55
+  //      3.30   8.26  -3.89   8.20  -1.51
+  //      4.43   4.96  -7.66  -7.33   6.18
+  //      7.31  -6.43  -6.16   2.47   5.58
+  //
+  // lambda =
+  //   (  2.86, 10.76)
+  //   (  2.86,-10.76)
+  //   ( -0.69,  4.70)
+  //   ( -0.69, -4.70)
+  //   (-10.46,  0.00)
+
+  using T = Complex32;
+  auto constexpr eps = 1e-2F;
+  um2::Matrix<T> a(5, 5);
+  a(0) = -1.01F;
+  a(1) = 3.98F;
+  a(2) = 3.30F;
+  a(3) = 4.43F;
+  a(4) = 7.31F;
+
+  a(5) = 0.86F;
+  a(6) = 0.53F;
+  a(7) = 8.26F;
+  a(8) = 4.96F;
+  a(9) = -6.43F;
+
+  a(10) = -4.60F;
+  a(11) = -7.04F;
+  a(12) = -3.89F;
+  a(13) = -7.66F;
+  a(14) = -6.16F;
+
+  a(15) = 3.31F;
+  a(16) = 5.29F;
+  a(17) = 8.20F;
+  a(18) = -7.33F;
+  a(19) = 2.47F;
+
+  a(20) = -4.81F;
+  a(21) = 3.55F;
+  a(22) = -1.51F;
+  a(23) = 6.18F;
+  a(24) = 5.58F;
+
+  auto const lambda = eig(a);
+
+  ASSERT(lambda.size() == 5);
+  ASSERT_NEAR(lambda[0].real(),  2.86F, eps);
+  ASSERT_NEAR(lambda[0].imag(), 10.76F, eps);
+
+  ASSERT_NEAR(lambda[1].real(),  2.86F, eps);
+  ASSERT_NEAR(lambda[1].imag(),-10.76F, eps);
+
+  ASSERT_NEAR(lambda[2].real(), -0.69F, eps);
+  ASSERT_NEAR(lambda[2].imag(),  4.70F, eps);
+
+  ASSERT_NEAR(lambda[3].real(), -0.69F, eps);
+  ASSERT_NEAR(lambda[3].imag(), -4.70F, eps);
+
+  ASSERT_NEAR(lambda[4].real(),-10.46F, eps);
+  ASSERT_NEAR(lambda[4].imag(),  0.00F, eps);
 }
 
 //=============================================================================
@@ -638,12 +1129,178 @@ TEST_CASE(mat_mul_Complex64)
   }
 }
 
+TEST_CASE(lin_solve_Complex64)
+{
+ 
+  // Solve A * X = B
+  // A = 6.80  -6.05  -0.45   8.32  -9.67
+  //    -2.11  -3.30   2.58   2.71  -5.14
+  //     5.66   5.36  -2.70   4.35  -7.26
+  //     5.97  -4.44   0.27  -7.17   6.08
+  //     8.23   1.08   9.04   2.14  -6.87
+  //
+  // B = 4.02  -1.56   9.81
+  //     6.19   4.00  -4.09
+  //    -8.22  -8.67  -4.57
+  //    -7.57   1.75  -8.61
+  //    -3.03   2.86   8.99
+
+  auto constexpr eps = 1e-2;
+  um2::Matrix<Complex64> a(5, 5);
+  a(0) = 6.80;
+  a(1) = -2.11;
+  a(2) = 5.66;
+  a(3) = 5.97;
+  a(4) = 8.23;
+  
+  a(5) = -6.05;
+  a(6) = -3.30;
+  a(7) = 5.36;
+  a(8) = -4.44;
+  a(9) = 1.08;
+  
+  a(10) = -0.45;
+  a(11) = 2.58;
+  a(12) = -2.70;
+  a(13) = 0.27;
+  a(14) = 9.04;
+  
+  a(15) = 8.32;
+  a(16) = 2.71;
+  a(17) = 4.35;
+  a(18) = -7.17;
+  a(19) = 2.14;
+  
+  a(20) = -9.67;
+  a(21) = -5.14;
+  a(22) = -7.26;
+  a(23) = 6.08;
+  a(24) = -6.87;
+  
+  um2::Matrix<Complex64> b(5, 3);
+  b(0) = 4.02;
+  b(1) = 6.19;
+  b(2) = -8.22;
+  b(3) = -7.57;
+  b(4) = -3.03;
+  
+  b(5) = -1.56;
+  b(6) = 4.00;
+  b(7) = -8.67;
+  b(8) = 1.75;
+  b(9) = 2.86;
+  
+  b(10) = 9.81;
+  b(11) = -4.09;
+  b(12) = -4.57;
+  b(13) = -8.61;
+  b(14) = 8.99;
+
+  // X = -0.80  -0.39   0.96
+  //     -0.70  -0.55   0.22
+  //      0.59   0.84   1.90
+  //      1.32  -0.10   5.36
+  //      0.57   0.11   4.04
+
+  auto const x = linearSolve(a, b); 
+  ASSERT(x.rows() == 5);
+  ASSERT(x.cols() == 3);
+
+  ASSERT_NEAR(x(0, 0).real(), -0.80, eps);
+  ASSERT_NEAR(x(1, 0).real(), -0.70, eps);
+  ASSERT_NEAR(x(2, 0).real(), 0.59, eps);
+  ASSERT_NEAR(x(3, 0).real(), 1.32, eps);
+  ASSERT_NEAR(x(4, 0).real(), 0.57, eps);
+
+  ASSERT_NEAR(x(0, 1).real(), -0.39, eps);
+  ASSERT_NEAR(x(1, 1).real(), -0.55, eps);
+  ASSERT_NEAR(x(2, 1).real(), 0.84, eps);
+  ASSERT_NEAR(x(3, 1).real(), -0.10, eps);
+  ASSERT_NEAR(x(4, 1).real(), 0.11, eps);
+
+  ASSERT_NEAR(x(0, 2).real(), 0.96, eps);
+  ASSERT_NEAR(x(1, 2).real(), 0.22, eps);
+  ASSERT_NEAR(x(2, 2).real(), 1.90, eps);
+  ASSERT_NEAR(x(3, 2).real(), 5.36, eps);
+  ASSERT_NEAR(x(4, 2).real(), 4.04, eps);
+}
+
+TEST_CASE(eig_Complex64)
+{
+  // A = -1.01   0.86  -4.60   3.31  -4.81
+  //      3.98   0.53  -7.04   5.29   3.55
+  //      3.30   8.26  -3.89   8.20  -1.51
+  //      4.43   4.96  -7.66  -7.33   6.18
+  //      7.31  -6.43  -6.16   2.47   5.58
+  //
+  // lambda =
+  //   (  2.86, 10.76)
+  //   (  2.86,-10.76)
+  //   ( -0.69,  4.70)
+  //   ( -0.69, -4.70)
+  //   (-10.46,  0.00)
+
+  using T = Complex64;
+  auto constexpr eps = 1e-2;
+  um2::Matrix<T> a(5, 5);
+  a(0) = -1.01;
+  a(1) = 3.98;
+  a(2) = 3.30;
+  a(3) = 4.43;
+  a(4) = 7.31;
+
+  a(5) = 0.86;
+  a(6) = 0.53;
+  a(7) = 8.26;
+  a(8) = 4.96;
+  a(9) = -6.43;
+
+  a(10) = -4.60;
+  a(11) = -7.04;
+  a(12) = -3.89;
+  a(13) = -7.66;
+  a(14) = -6.16;
+
+  a(15) = 3.31;
+  a(16) = 5.29;
+  a(17) = 8.20;
+  a(18) = -7.33;
+  a(19) = 2.47;
+
+  a(20) = -4.81;
+  a(21) = 3.55;
+  a(22) = -1.51;
+  a(23) = 6.18;
+  a(24) = 5.58;
+
+  auto const lambda = eig(a);
+
+  ASSERT(lambda.size() == 5);
+  ASSERT_NEAR(lambda[0].real(),  2.86, eps);
+  ASSERT_NEAR(lambda[0].imag(), 10.76, eps);
+
+  ASSERT_NEAR(lambda[1].real(),  2.86, eps);
+  ASSERT_NEAR(lambda[1].imag(),-10.76, eps);
+
+  ASSERT_NEAR(lambda[2].real(), -0.69, eps);
+  ASSERT_NEAR(lambda[2].imag(),  4.70, eps);
+
+  ASSERT_NEAR(lambda[3].real(), -0.69, eps);
+  ASSERT_NEAR(lambda[3].imag(), -4.70, eps);
+
+  ASSERT_NEAR(lambda[4].real(),-10.46, eps);
+  ASSERT_NEAR(lambda[4].imag(),  0.00, eps);
+}
+
+
 TEST_SUITE(Matrix_float)
 {
   TEST_HOSTDEV(accessors_float);
   TEST_HOSTDEV(mat_vec_float);
   TEST_HOSTDEV(add_sub_float);
   TEST_HOSTDEV(mat_mul_float);
+  TEST_HOSTDEV(lin_solve_float);
+  TEST_HOSTDEV(eig_float);
 }
 
 TEST_SUITE(Matrix_double)
@@ -652,6 +1309,8 @@ TEST_SUITE(Matrix_double)
   TEST_HOSTDEV(mat_vec_double);
   TEST_HOSTDEV(add_sub_double);
   TEST_HOSTDEV(mat_mul_double);
+  TEST_HOSTDEV(lin_solve_double);
+  TEST_HOSTDEV(eig_double);
 }
 
 TEST_SUITE(Matrix_Complex32)
@@ -660,6 +1319,8 @@ TEST_SUITE(Matrix_Complex32)
   TEST_HOSTDEV(mat_vec_Complex32);
   TEST_HOSTDEV(add_sub_Complex32);
   TEST_HOSTDEV(mat_mul_Complex32);
+  TEST_HOSTDEV(lin_solve_Complex32);
+  TEST_HOSTDEV(eig_Complex32);
 }
 
 TEST_SUITE(Matrix_Complex64)
@@ -668,6 +1329,8 @@ TEST_SUITE(Matrix_Complex64)
   TEST_HOSTDEV(mat_vec_Complex64);
   TEST_HOSTDEV(add_sub_Complex64);
   TEST_HOSTDEV(mat_mul_Complex64);
+  TEST_HOSTDEV(lin_solve_Complex64);
+  TEST_HOSTDEV(eig_Complex64);
 }
 
 auto
