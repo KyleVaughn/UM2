@@ -364,7 +364,7 @@ linearSolve(Matrix<std::complex<double>> const & a, Matrix<std::complex<double>>
 //==============================================================================
 
 PURE auto
-eig(Matrix<float> const & a) -> Vector<std::complex<float>>
+eigvals(Matrix<float> const & a) -> Vector<std::complex<float>>
 {
   ASSERT(a.rows() == a.cols()); // A must be square
 
@@ -398,7 +398,7 @@ eig(Matrix<float> const & a) -> Vector<std::complex<float>>
 }
 
 PURE auto
-eig(Matrix<double> const & a) -> Vector<std::complex<double>>
+eigvals(Matrix<double> const & a) -> Vector<std::complex<double>>
 {
   ASSERT(a.rows() == a.cols()); // A must be square
 
@@ -432,7 +432,7 @@ eig(Matrix<double> const & a) -> Vector<std::complex<double>>
 }
 
 PURE auto
-eig(Matrix<std::complex<float>> const & a) -> Vector<std::complex<float>>
+eigvals(Matrix<std::complex<float>> const & a) -> Vector<std::complex<float>>
 {
   using Complex32 = std::complex<float>;
   ASSERT(a.rows() == a.cols()); // A must be square
@@ -465,7 +465,7 @@ eig(Matrix<std::complex<float>> const & a) -> Vector<std::complex<float>>
 }
 
 PURE auto
-eig(Matrix<std::complex<double>> const & a) -> Vector<std::complex<double>>
+eigvals(Matrix<std::complex<double>> const & a) -> Vector<std::complex<double>>
 {
   using Complex64 = std::complex<double>;
   ASSERT(a.rows() == a.cols()); // A must be square

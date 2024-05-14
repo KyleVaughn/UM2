@@ -3,6 +3,7 @@
 #include <um2/stdlib/vector.hpp>
 #include <um2/stdlib/algorithm/fill.hpp>
 
+#include <iostream>
 #include <complex>
 
 //==============================================================================
@@ -71,6 +72,9 @@ public:
   //==============================================================================
 
   auto
+  operator*=(T scalar) -> Matrix<T> &;
+
+  auto
   operator+=(Matrix<T> const & other) -> Matrix<T> &;
 
   auto
@@ -82,6 +86,9 @@ public:
 
   void
   zero() noexcept;
+
+  void
+  transpose() noexcept;
 };
 
 //==============================================================================
@@ -119,16 +126,16 @@ linearSolve(Matrix<T> const & a, Matrix<T> const & b) -> Matrix<T>;
 // Eigenvalues
 //------------------------------------------------------------------------------
 PURE auto
-eig(Matrix<float> const & a) -> Vector<std::complex<float>>;
+eigvals(Matrix<float> const & a) -> Vector<std::complex<float>>;
 
 PURE auto
-eig(Matrix<double> const & a) -> Vector<std::complex<double>>;
+eigvals(Matrix<double> const & a) -> Vector<std::complex<double>>;
 
 PURE auto
-eig(Matrix<std::complex<float>> const & a) -> Vector<std::complex<float>>;
+eigvals(Matrix<std::complex<float>> const & a) -> Vector<std::complex<float>>;
 
 PURE auto
-eig(Matrix<std::complex<double>> const & a) -> Vector<std::complex<double>>;
+eigvals(Matrix<std::complex<double>> const & a) -> Vector<std::complex<double>>;
 
 //==============================================================================
 // Accessors
@@ -232,6 +239,16 @@ Matrix<T>::identity(Int n) -> Matrix<T>
 
 template <typename T>
 auto
+Matrix<T>::operator*=(T const scalar) -> Matrix<T> &
+{
+  for (Int i = 0; i < _rows * _cols; ++i) {
+    _data[i] *= scalar;
+  }
+  return *this;
+}
+
+template <typename T>
+auto
 Matrix<T>::operator+=(Matrix<T> const & other) -> Matrix<T> &
 {
   ASSERT_ASSUME(_rows == other._rows);
@@ -265,6 +282,34 @@ void
 Matrix<T>::zero() noexcept
 {
   um2::fill(_data.begin(), _data.end(), static_cast<T>(0));
+}
+
+// THIS IS HACKED TOGETHER. DELETE AND BE SMARTER.
+// N x M matrix fails
+// differentiate between conjugate transpose and transpose
+template <typename T>
+void
+Matrix<T>::transpose() noexcept
+{
+  ASSERT(_rows == _cols);
+  for (Int j = 0; j < _cols - 1; ++j) {
+    for (Int i = j + 1; i < _rows; ++i) {
+      // Fix this.
+      T  aij = _data[j * _rows + i]; 
+      T  aji = _data[i * _rows + j]; 
+      if constexpr(std::is_same_v<T, std::complex<float>> || std::is_same_v<T, std::complex<double>>) {
+        aij = std::conj(aij);
+        aji = std::conj(aji);
+      }
+      _data[j * _rows + i] = aji;
+      _data[i * _rows + j] = aij;
+    }
+  }
+  if constexpr(std::is_same_v<T, std::complex<float>> || std::is_same_v<T, std::complex<double>>) {
+    for (Int i = 0; i < _rows; ++i) {
+      _data[i * _rows + i] = std::conj(_data[i * _rows + i]);
+    }
+  }
 }
 
 //==============================================================================

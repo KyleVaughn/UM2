@@ -25,11 +25,12 @@
 // ASSUMPTIONS:
 // - K = 1: A single coarse cell with periodic boundary conditions.
 
-
 // NOLINTBEGIN(readability-identifier-naming)
 
 namespace um2
 {
+
+using ComplexF = std::complex<Float>;
 
 struct CMFDCellParams
 {
@@ -50,7 +51,6 @@ struct CMFDCellParams
   static Int constexpr num_alpha = 1000; // Number of α values to test
 
   // Constructor
-
   inline
   CMFDCellParams(Float iw, Int ip, Float iSigma_t, Float ic, Int is, Float ieta)
     : w(iw), p(ip), Sigma_t(iSigma_t), c(ic), s(is), eta(ieta)
@@ -69,7 +69,7 @@ struct CMFDCellParams
 
     h = w / p;
     delta = Sigma_t * w;
-    D = 1.0 / (3.0 * Sigma_t) + eta;
+    D = 1.0 / (3.0 * delta) + eta;
   }
 
 };
@@ -79,7 +79,6 @@ struct CMFDCellParams
 namespace um2::cmfd
 {
 
-using ComplexF = std::complex<Float>;
 
 PURE auto
 beta_n(Float h, Float mu_n) -> Float;
@@ -92,9 +91,25 @@ set_Bn(Matrix<ComplexF> & Bn, Matrix<ComplexF> const & An,
     CMFDCellParams const & params, Float mu_n, Float alpha);
 
 void
-set_U(Matrix<ComplexF> & U, Matrix<ComplexF> const & An, Matrix<ComplexF> const & Bn,
+set_U(Matrix<ComplexF> & U, Matrix<ComplexF> & An, Matrix<ComplexF> & Bn,
     CMFDCellParams const & params, Float alpha);
 
+PURE auto
+getF(CMFDCellParams const & params, Float alpha) -> Float;
+
+void
+set_omega(Matrix<ComplexF> & omega, Matrix<ComplexF> & An, Matrix<ComplexF> & Bn,
+    Matrix<ComplexF> & U, Matrix<ComplexF> const & J, CMFDCellParams const & params, Float alpha); 
+
 } // namespace um2::cmfd
+
+
+namespace um2
+{
+
+PURE auto
+spectral_radius(CMFDCellParams const & params) -> ComplexF; 
+
+} // namespace um2
 
 // NOLINTEND(readability-identifier-naming)

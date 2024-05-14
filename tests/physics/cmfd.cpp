@@ -33,7 +33,7 @@ TEST_CASE(set_An)
   auto constexpr alpha = 0.0;
 
   um2::CMFDCellParams const params(w, p, Sigma_t, c, s, eta);
-  using ComplexF = um2::cmfd::ComplexF;
+  using ComplexF = um2::ComplexF;
   um2::Matrix<ComplexF> An(p, p);
   An.zero();
   um2::cmfd::set_An(An, params, mu_n, alpha);
@@ -61,7 +61,7 @@ TEST_CASE(set_Bn)
   auto constexpr alpha = 0.0;
 
   um2::CMFDCellParams const params(w, p, Sigma_t, c, s, eta);
-  using ComplexF = um2::cmfd::ComplexF;
+  using ComplexF = um2::ComplexF;
   um2::Matrix<ComplexF> An(p, p);
   An.zero();
   um2::cmfd::set_An(An, params, mu_n, alpha);
@@ -80,11 +80,117 @@ TEST_CASE(set_Bn)
   ASSERT_NEAR(Bn(p - 1, 0).real(), u, 1e-6);
 }
 
+TEST_CASE(set_U)
+{
+  auto constexpr w = castIfNot<Float>(1.26);
+  Int constexpr p = 4;
+  auto constexpr Sigma_t = castIfNot<Float>(2.65038);
+  auto constexpr Sigma_s = castIfNot<Float>(2.4807);
+  auto constexpr c = Sigma_s / Sigma_t;
+  Int constexpr s = 1;
+  auto constexpr eta = castIfNot<Float>(0.0);
+  auto constexpr alpha = 0.0;
+
+  um2::CMFDCellParams const params(w, p, Sigma_t, c, s, eta);
+  using ComplexF = um2::ComplexF;
+  um2::Matrix<ComplexF> An(p, p);
+  An.zero();
+
+  um2::Matrix<ComplexF> Bn(p, p);
+  Bn.zero();
+
+  um2::Matrix<ComplexF> U(p, p);
+  um2::cmfd::set_U(U, An, Bn, params, alpha);
+
+  auto constexpr eps = castIfNot<Float>(1e-6);
+
+  ASSERT_NEAR(U(0).real(), 0.5087806449082054, eps);
+  ASSERT_NEAR(U(0).imag(), 0, eps);
+
+  ASSERT_NEAR(U(1).real(), 0.18634624363994187, eps);
+  ASSERT_NEAR(U(1).imag(), 0, eps);
+
+  ASSERT_NEAR(U(2).real(), 0.054505859503668194, eps);
+  ASSERT_NEAR(U(2).imag(), 0, eps);
+}
+
+TEST_CASE(getF)
+{
+  auto constexpr w = castIfNot<Float>(1.26);
+  Int constexpr p = 4;
+  auto constexpr Sigma_t = castIfNot<Float>(2.65038);
+  auto constexpr Sigma_s = castIfNot<Float>(2.4807);
+  auto constexpr c = Sigma_s / Sigma_t;
+  Int constexpr s = 1;
+  auto constexpr eta = castIfNot<Float>(0.0);
+  auto constexpr alpha = 0.0;
+
+  um2::CMFDCellParams const params(w, p, Sigma_t, c, s, eta);
+  ASSERT_NEAR(um2::cmfd::getF(params, alpha), 3.654968175388965, 1e-6);
+}
+
+TEST_CASE(set_omega)
+{
+  auto constexpr w = castIfNot<Float>(1.26);
+  Int constexpr p = 4;
+  auto constexpr Sigma_t = castIfNot<Float>(2.65038);
+  auto constexpr Sigma_s = castIfNot<Float>(2.4807);
+  auto constexpr c = Sigma_s / Sigma_t;
+  Int constexpr s = 1;
+  auto constexpr eta = castIfNot<Float>(0.0);
+  Float alpha = 0.0;
+
+  um2::CMFDCellParams const params(w, p, Sigma_t, c, s, eta);
+  using ComplexF = um2::ComplexF;
+  um2::Matrix<ComplexF> An(p, p);
+  um2::Matrix<ComplexF> Bn(p, p);
+  um2::Matrix<ComplexF> U(p, p);
+  um2::Matrix<ComplexF> J(p, p);
+  um2::Matrix<ComplexF> omega(p, p);
+  An.zero();
+  Bn.zero();
+  U.zero();
+  J.zero();
+  omega.zero();
+  // set J to ones
+  um2::fill(J.data(), J.data() + static_cast<ptrdiff_t>(p * p), ComplexF(1.0, 0.0));
+  um2::cmfd::set_omega(omega, An, Bn, U, J, params, alpha);
+  auto constexpr eps = castIfNot<Float>(1e-6);
+  ASSERT_NEAR(omega(0, 0).real(), 0.2747858969852661, eps); 
+  ASSERT_NEAR(omega(0, 0).imag(), 0, eps);
+
+  ASSERT_NEAR(omega(0, 1).real(), -0.04764850428299747, eps); 
+  ASSERT_NEAR(omega(0, 1).imag(), 0, eps);
+
+  ASSERT_NEAR(omega(1, 0).real(), -0.04764850428299747, eps);
+  ASSERT_NEAR(omega(1, 0).imag(), 0, eps);
+
+  alpha = 0.012241906156957803;
+  um2::cmfd::set_omega(omega, An, Bn, U, J, params, alpha);
+}
+
+TEST_CASE(spectral_radius)
+{
+  auto constexpr w = castIfNot<Float>(1.0);
+  Int constexpr p = 4;
+  auto constexpr Sigma_t = castIfNot<Float>(0.8);
+  auto constexpr c = 0.8;
+  Int constexpr s = 1;
+  auto constexpr eta = castIfNot<Float>(0.0);
+
+  um2::CMFDCellParams const params(w, p, Sigma_t, c, s, eta);
+  auto const rho = spectral_radius(params);
+}
+
 TEST_SUITE(cmfd)
 { 
   TEST(beta_n);
   TEST(set_An);
   TEST(set_Bn);
+  TEST(set_U);
+  TEST(getF);
+  TEST(set_omega);
+  TEST(spectral_radius);
 }
 
 auto

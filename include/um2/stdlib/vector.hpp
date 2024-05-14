@@ -504,7 +504,7 @@ template <class T>
 HOSTDEV inline constexpr auto
 Vector<T>::operator=(Vector<T> const & v) noexcept -> Vector<T> &
 {
-  if (this != addressof(v)) {
+  if (this != um2::addressof(v)) {
     assign(v._begin, v._end);
   }
   return *this;
@@ -514,7 +514,7 @@ template <class T>
 HOSTDEV inline constexpr auto
 Vector<T>::operator=(Vector<T> && v) noexcept -> Vector<T> &
 {
-  if (this != addressof(v)) {
+  if (this != um2::addressof(v)) {
     deallocate();
     // Move the buffer from v
     _begin = v._begin;

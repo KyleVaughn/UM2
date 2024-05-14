@@ -7,8 +7,6 @@
 using Complex32 = std::complex<float>;
 using Complex64 = std::complex<double>;
 
-#include <iostream>
-
 // TODO(kcvaughn): Template of float/double and Complex32/Complex64. This should reduce
 // code size by half
 
@@ -276,7 +274,7 @@ TEST_CASE(lin_solve_float)
 
 }
 
-TEST_CASE(eig_float)
+TEST_CASE(eigvals_float)
 {
   // A = -1.01   0.86  -4.60   3.31  -4.81
   //      3.98   0.53  -7.04   5.29   3.55
@@ -323,7 +321,7 @@ TEST_CASE(eig_float)
   a(23) = 6.18F;
   a(24) = 5.58F;
 
-  auto const lambda = eig(a);
+  auto const lambda = eigvals(a);
 
   ASSERT(lambda.size() == 5);
   ASSERT_NEAR(lambda[0].real(),  2.86F, eps);
@@ -340,6 +338,31 @@ TEST_CASE(eig_float)
 
   ASSERT_NEAR(lambda[4].real(),-10.46F, eps);
   ASSERT_NEAR(lambda[4].imag(),  0.00F, eps);
+}
+
+TEST_CASE(transpose_float)
+{
+
+  // A = 1  2  3
+  //     4  5  6
+  //     7  8  9
+  um2::Matrix<float> a(3, 3);
+  a(0) = 1;
+  a(1) = 4;
+  a(2) = 7;
+
+  a(3) = 2;
+  a(4) = 5;
+  a(5) = 8;
+
+  a(6) = 3;
+  a(7) = 6;
+  a(8) = 9;
+
+  a.transpose();
+  for (Int i = 0; i < 9; ++i) {
+    ASSERT_NEAR(a(i), static_cast<float>(i + 1), 1e-6F);
+  }
 }
 
 //=============================================================================
@@ -606,7 +629,7 @@ TEST_CASE(lin_solve_double)
 
 }
 
-TEST_CASE(eig_double)
+TEST_CASE(eigvals_double)
 {
   // A = -1.01   0.86  -4.60   3.31  -4.81
   //      3.98   0.53  -7.04   5.29   3.55
@@ -653,7 +676,7 @@ TEST_CASE(eig_double)
   a(23) = 6.18;
   a(24) = 5.58;
 
-  auto const lambda = eig(a);
+  auto const lambda = eigvals(a);
 
   ASSERT(lambda.size() == 5);
   ASSERT_NEAR(lambda[0].real(),  2.86, eps);
@@ -915,7 +938,7 @@ TEST_CASE(lin_solve_Complex32)
   ASSERT_NEAR(x(4, 2).real(), 4.04F, eps);
 }
 
-TEST_CASE(eig_Complex32)
+TEST_CASE(eigvals_Complex32)
 {
   // A = -1.01   0.86  -4.60   3.31  -4.81
   //      3.98   0.53  -7.04   5.29   3.55
@@ -963,7 +986,7 @@ TEST_CASE(eig_Complex32)
   a(23) = 6.18F;
   a(24) = 5.58F;
 
-  auto const lambda = eig(a);
+  auto const lambda = eigvals(a);
 
   ASSERT(lambda.size() == 5);
   ASSERT_NEAR(lambda[0].real(),  2.86F, eps);
@@ -980,6 +1003,33 @@ TEST_CASE(eig_Complex32)
 
   ASSERT_NEAR(lambda[4].real(),-10.46F, eps);
   ASSERT_NEAR(lambda[4].imag(),  0.00F, eps);
+}
+
+TEST_CASE(transpose_Complex32)
+{
+
+  // A = (1, 1)  (2, -2)
+  //     (3, 3)  (4, -4)
+  um2::Matrix<Complex32> a(2, 2);
+  a(0) = Complex32(1, 1);
+  a(1) = Complex32(3, 3);
+  a(2) = Complex32(2, -2);
+  a(3) = Complex32(4, -4);
+
+  auto constexpr eps = 1e-6F;
+  a.transpose();
+  ASSERT_NEAR(a(0).real(), 1, eps); 
+  ASSERT_NEAR(a(0).imag(), -1, eps);
+
+  ASSERT_NEAR(a(1).real(), 2, eps);
+  ASSERT_NEAR(a(1).imag(), 2, eps);
+
+  ASSERT_NEAR(a(2).real(), 3, eps);
+  ASSERT_NEAR(a(2).imag(), -3, eps);
+
+  ASSERT_NEAR(a(3).real(), 4, eps);
+  ASSERT_NEAR(a(3).imag(), 4, eps);
+
 }
 
 //=============================================================================
@@ -1225,7 +1275,7 @@ TEST_CASE(lin_solve_Complex64)
   ASSERT_NEAR(x(4, 2).real(), 4.04, eps);
 }
 
-TEST_CASE(eig_Complex64)
+TEST_CASE(eigvals_Complex64)
 {
   // A = -1.01   0.86  -4.60   3.31  -4.81
   //      3.98   0.53  -7.04   5.29   3.55
@@ -1273,7 +1323,7 @@ TEST_CASE(eig_Complex64)
   a(23) = 6.18;
   a(24) = 5.58;
 
-  auto const lambda = eig(a);
+  auto const lambda = eigvals(a);
 
   ASSERT(lambda.size() == 5);
   ASSERT_NEAR(lambda[0].real(),  2.86, eps);
@@ -1300,7 +1350,8 @@ TEST_SUITE(Matrix_float)
   TEST_HOSTDEV(add_sub_float);
   TEST_HOSTDEV(mat_mul_float);
   TEST_HOSTDEV(lin_solve_float);
-  TEST_HOSTDEV(eig_float);
+  TEST_HOSTDEV(eigvals_float);
+  TEST_HOSTDEV(transpose_float);
 }
 
 TEST_SUITE(Matrix_double)
@@ -1310,7 +1361,7 @@ TEST_SUITE(Matrix_double)
   TEST_HOSTDEV(add_sub_double);
   TEST_HOSTDEV(mat_mul_double);
   TEST_HOSTDEV(lin_solve_double);
-  TEST_HOSTDEV(eig_double);
+  TEST_HOSTDEV(eigvals_double);
 }
 
 TEST_SUITE(Matrix_Complex32)
@@ -1320,7 +1371,8 @@ TEST_SUITE(Matrix_Complex32)
   TEST_HOSTDEV(add_sub_Complex32);
   TEST_HOSTDEV(mat_mul_Complex32);
   TEST_HOSTDEV(lin_solve_Complex32);
-  TEST_HOSTDEV(eig_Complex32);
+  TEST_HOSTDEV(eigvals_Complex32);
+  TEST_HOSTDEV(transpose_Complex32);
 }
 
 TEST_SUITE(Matrix_Complex64)
@@ -1330,7 +1382,7 @@ TEST_SUITE(Matrix_Complex64)
   TEST_HOSTDEV(add_sub_Complex64);
   TEST_HOSTDEV(mat_mul_Complex64);
   TEST_HOSTDEV(lin_solve_Complex64);
-  TEST_HOSTDEV(eig_Complex64);
+  TEST_HOSTDEV(eigvals_Complex64);
 }
 
 auto
