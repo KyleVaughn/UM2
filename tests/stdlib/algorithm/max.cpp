@@ -1,6 +1,5 @@
 #include <um2/config.hpp>
 #include <um2/stdlib/algorithm/max.hpp>
-#include <um2/stdlib/math/abs.hpp>
 
 #include "../../test_macros.hpp"
 
@@ -16,9 +15,9 @@ MAKE_CUDA_KERNEL(max_int);
 HOSTDEV
 TEST_CASE(max_float)
 {
-  static_assert(um2::abs(um2::max(0.0F, 1.0F) - 1.0F) < 1e-6F);
-  static_assert(um2::abs(um2::max(1.0F, 0.0F) - 1.0F) < 1e-6F);
-  static_assert(um2::abs(um2::max(0.0F, 0.0F) - 0.0F) < 1e-6F);
+  STATIC_ASSERT_NEAR(um2::max(0.0F, 1.0F), 1.0F, 1e-6F);
+  STATIC_ASSERT_NEAR(um2::max(1.0F, 0.0F), 1.0F, 1e-6F);
+  STATIC_ASSERT_NEAR(um2::max(0.0F, 0.0F), 0.0F, 1e-6F);
 }
 MAKE_CUDA_KERNEL(max_float);
 

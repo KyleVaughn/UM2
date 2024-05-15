@@ -7,12 +7,6 @@
 
 #include "../test_macros.hpp"
 
-#if UM2_USE_CUDA
-#  define CHECK_STD_VECTOR 0
-#else
-#  define CHECK_STD_VECTOR 1
-#endif
-
 //==============================================================================
 // Constructors
 //==============================================================================

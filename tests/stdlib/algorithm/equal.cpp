@@ -15,9 +15,25 @@ TEST_CASE(test_equal)
   static_assert(um2::equal(a, a, c));
 }
 
-MAKE_CUDA_KERNEL(test_equal);
+constexpr auto
+foo() -> bool
+{
+  int constexpr a[] = {10, 20, 30};
+  int constexpr b[] = {10, 20, 30};
+  return um2::equal(a, a + 3, b);
+}
 
-TEST_SUITE(equal) { TEST_HOSTDEV(test_equal); }
+HOSTDEV
+TEST_CASE(test_equal_constexpr) { static_assert(foo()); }
+
+MAKE_CUDA_KERNEL(test_equal);
+MAKE_CUDA_KERNEL(test_equal_constexpr);
+
+TEST_SUITE(equal)
+{
+  TEST_HOSTDEV(test_equal);
+  TEST_HOSTDEV(test_equal_constexpr);
+}
 
 auto
 main() -> int

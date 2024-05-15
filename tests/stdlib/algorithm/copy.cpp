@@ -31,6 +31,7 @@ foo() -> int
 HOSTDEV
 TEST_CASE(copy_trivial_constexpr) { static_assert(foo() == 45); }
 
+// Define a struct with a non-trivial copy constructor and assignment operator
 struct A {
   int a;
   int * b{nullptr};

@@ -11,32 +11,87 @@ project(
 #===============================================================================
 
 # Build
-#option(UM2_BUILD_BENCHMARKS   "Build benchmarks"                  OFF)
-#option(UM2_BUILD_MODELS       "Build models"                      OFF)
-option(UM2_BUILD_SHARED_LIB   "Build UM2 as a shared library"     ON)
-option(UM2_BUILD_TESTS        "Build tests"                       ON)
-#option(UM2_BUILD_TUTORIAL     "Build tutorial"                    OFF)
+#-------------------------------------------------------------------------------
 
-# Enable/disable features
-option(UM2_ENABLE_ASSERTS   "Enable assertions"                              OFF)
-option(UM2_ENABLE_BMI2      "Enable BMI2 instruction set"                    ON)  # Morton sorting, etc.
-option(UM2_ENABLE_FASTMATH  "Enable fast math optimizations on CPU and GPU"  ON)  # e.g. -ffast-math
-option(UM2_ENABLE_FLOAT64   "Enable 64-bit Float"                            ON)  # x,y,z = double
-option(UM2_ENABLE_INT64     "Enable 64-bit Int"                              OFF) # index type
-option(UM2_ENABLE_NATIVE    "Enable -march=native"                           ON)
-option(UM2_ENABLE_SIMD_VEC  "Enable GCC vector extensions for the Vec class" ON)
+# Build code benchmarks. These are code snippets that are used to measure the
+# performance of UM2. These are not IRPhE or other nuclear reactor benchmarks.
+option(UM2_BUILD_BENCHMARKS "Build benchmarks" OFF)
+
+# Build models. These are nuclear reactor models or other physics benchmarks
+# (e.g. C5G7).
+option(UM2_BUILD_MODELS "Build models" OFF)
+
+# Build UM2 as a shared library (ON) or static library (OFF). This option is
+# overriden if CUDA is enabled, in which case a static library is always built.
+option(UM2_BUILD_SHARED_LIB "Build UM2 as a shared library" ON)
+
+# Build tests. These are unit tests that are used to verify the correctness of
+# UM2.
+option(UM2_BUILD_TESTS "Build tests" ON)
+
+# Build tutorial. This is a tutorial that demonstrates how to use UM2.
+option(UM2_BUILD_TUTORIAL "Build tutorial" OFF)
+
+# Features
+#------------------------------------------------------------------------------
+
+# Enable assertions. This option enables UM2_ASSERT*(condition) macros, which
+# are evaluated regardless of the build type, unlike the standard assert macro
+# which is only evaluated if NDEBUG is not defined.
+option(UM2_ENABLE_ASSERTS "Enable assertions" OFF)
+
+# Enable BMI2 instruction set. This option enables the BMI2 instruction set,
+# if it is supported by the architecture. This is primarily for fast Morton 
+# sorting.
+option(UM2_ENABLE_BMI2 "Enable BMI2 instruction set" ON)
+
+# Enable fast math optimizations. This option enables fast math optimizations
+# -ffast-math on the CPU and --use_fast_math on the GPU. Note that this may
+# result in a loss of precision.
+option(UM2_ENABLE_FASTMATH "Enable fast math optimizations on CPU and GPU" ON)
+
+# Set the Float type to 64-bit (double) instead of 32-bit (float). This option
+# determines the precision of the floating point numbers used in UM2.
+option(UM2_ENABLE_FLOAT64 "Enable 64-bit Float" ON)
+
+# Set the Int type to 64-bit (int64_t) instead of 32-bit (int32_t). This option
+# determines the precision of the integer numbers used in UM2. Note that this
+# influences the index type used by all UM2 classes.
+option(UM2_ENABLE_INT64 "Enable 64-bit Int" OFF)
+
+# Enable native architecture. This option enables the -march=native flag, which
+# optimizes the code for the architecture on which it is built.
+option(UM2_ENABLE_NATIVE "Enable -march=native" ON)
+
+# Enable GCC vector extensions for the Vec class. Vec<D, T> uses T[D] as the 
+# underlying storage type by default. When ON, if D is a power of 2 and T is 
+# an arithmetic type, Vec<D, T> will use GCC vector extensions instead to store
+# a SIMD vector of D elements of type T. Despite aligned T[D] being functionally
+# the same as the SIMD vector, the compiler tends to generate better code with 
+# the vector extensions.
+option(UM2_ENABLE_SIMD_VEC "Enable GCC vector extensions for the Vec class" ON)
 
 # External tools/dependencies
-option(UM2_USE_CLANG_FORMAT  "Use clang-format" ON) # Code formatting
-option(UM2_USE_CLANG_TIDY    "Use clang-tidy"   ON) # Static analysis
-option(UM2_USE_COVERAGE      "Use coverage"     OFF) # Code coverage
-option(UM2_USE_CUDA          "Use CUDA"         OFF) # GPU acceleration
-option(UM2_USE_GMSH          "Use Gmsh"         OFF)  # CAD geometry and meshing
-option(UM2_USE_HDF5          "Use HDF5"         OFF)  # Binary data I/O (Mesh I/O)
-option(UM2_USE_OPENMP        "Use OpenMP"       OFF) # Multi-threading
-option(UM2_USE_PUGIXML       "Use pugixml"      OFF)  # XML parsing (Mesh I/O)
-option(UM2_USE_TBB           "Use TBB"          OFF) # Parallel STL (std::execution::par, etc.)
-option(UM2_USE_VALGRIND      "Use valgrind"     OFF) # Memory checking
+#-----------------------------------------------------------------------------
+
+# Use clang-format for code formatting. This option enables the format-check
+# and format-fix targets, which check and fix the formatting of the code.
+option(UM2_USE_CLANG_FORMAT "Use clang-format" ON)
+
+# Use clang-tidy for static analysis. Enable clang-tidy on all targets.
+option(UM2_USE_CLANG_TIDY "Use clang-tidy" ON)
+
+
+option(UM2_USE_COVERAGE      "Use coverage" OFF) # Code coverage
+option(UM2_USE_CUDA          "Use CUDA"     OFF) # GPU acceleration
+option(UM2_USE_GMSH          "Use Gmsh"     OFF)  # CAD geometry and meshing
+option(UM2_USE_HDF5          "Use HDF5"     OFF)  # Binary data I/O (Mesh I/O)
+option(UM2_USE_OPENMP        "Use OpenMP"   OFF) # Multi-threading
+option(UM2_USE_PUGIXML       "Use pugixml"  OFF)  # XML parsing (Mesh I/O)
+option(UM2_USE_TBB           "Use TBB"      OFF) # Parallel STL (std::execution::par, etc.)
+
+# Use valgrind for memory checking. Creates a valgrind_X target for each test.
+option(UM2_USE_VALGRIND "Use valgrind" OFF)
 
 #===============================================================================
 # Basic CMake configuration
@@ -164,7 +219,7 @@ if (!UM2_USE_CUDA)
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,undefined")
 endif()
 
-# Disable math-errno
+# Disable math-errno, since we don't use it and it can slow down math operations
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-math-errno")
 
 # Set general warning flags
@@ -224,6 +279,8 @@ endif()
 
 # Sources
 set(UM2_SOURCES
+    "src/common/settings.cpp"    
+    "src/common/logger.cpp"
     "src/um2.cpp")
 
 if (UM2_BUILD_SHARED_LIB)
@@ -275,7 +332,7 @@ if (UM2_USE_CLANG_FORMAT)
     message(FATAL_ERROR "Could not find clang-format")
   endif()
   set(FORMAT_COMMAND ${CLANG_FORMAT})
-  
+
   add_custom_target(
     format-check
     COMMAND "${CMAKE_COMMAND}"
@@ -285,7 +342,7 @@ if (UM2_USE_CLANG_FORMAT)
     WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
     COMMENT "Checking formatting"
     VERBATIM)
-  
+
   add_custom_target(
     format-fix
     COMMAND "${CMAKE_COMMAND}"
@@ -294,7 +351,7 @@ if (UM2_USE_CLANG_FORMAT)
     -D FIX=YES
     -P "${PROJECT_SOURCE_DIR}/cmake/clang_format.cmake"
     WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
-    COMMENT "Fixing formatting" 
+    COMMENT "Fixing formatting"
     VERBATIM)
 endif()
 

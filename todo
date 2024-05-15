@@ -1,4 +1,8 @@
-add cuda and valgrind to unit test macto
+Document exclusions from clang-tidy
+  
+Document clang-format
+
+add cuda to unit test macto
 
 python API
 
