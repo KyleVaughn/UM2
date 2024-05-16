@@ -1,26 +1,36 @@
-Document exclusions from clang-tidy
+Document: 
+  Exclusions from clang-tidy
+  Clang format choices (var_name, Class, etc.)
+  Lack of constexpr -> stdlib is cheating
   
-Document clang-format
-
-add cuda to unit test macto
-
-python API
-
 Benchmarks:
-  measure effect of SIMD_VEC
-  measure effect of FASTMATH -> error
+  measure effect of SIMD_VEC on vec ops
+  measure effect of FASTMATH -> error & speed
+  measure Mat<N x N> vs Matrix N x N
 
-for tests, check against max error and output error into some file
-
-use build scripts to bundle CMAKE options
-
-Dirs done with NOLINT/pragma:
-
-constexpr tests up to:
-  stdlib
+Enhancements:
+  Small matrix operators
+    How to do this in a smart way? Check on Eigen and others.
+  Python API
+  Rigorous testing of constexpr functions at compile time and runtime
 
 CUDA:
-  simplify CUDA unit test macros now that we default to 1 thread. Includes TEST_HOSTDEV(f<T>)
+  Add CUDA to unit test macro
+  simplify CUDA unit test macros now that we default to 1 thread. TEST_HOSTDEV(f<T>)
 
-Once I'm done with refactor:
+Misc:
+  OK on lints
+  OK on pragma
+  Use build scripts to bundle CMAKE options
+
+Naming:
   static_assert to STATIC_ASSERT in tests
+
+constexpr asserts?
+check for purity -> noreturn assert
+
+constexpr:
+  assert.hpp
+  construct at-> placement new
+
+Need to take a hard look at CUDA before proceeding

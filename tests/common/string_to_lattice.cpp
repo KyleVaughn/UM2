@@ -1,4 +1,5 @@
 #include <um2/common/string_to_lattice.hpp>
+#include <um2/stdlib/vector.hpp>
 
 #include "../test_macros.hpp"
 

@@ -13,11 +13,10 @@ namespace um2
 // construct_at
 //==============================================================================
 // This cannot be constexpr because it uses placement new. In the C++ stdlib,
-// their construct_at IS constexpr because the standard gives them special
-// permission to use placement new in a constexpr context :(
+// their construct_at IS constexpr because they have cheat codes... :(
 
 template <class T, class... Args>
-HOSTDEV constexpr auto
+HOSTDEV inline auto
 // match std::construct_at
 // NOLINTNEXTLINE(readability-identifier-naming,*missing-std-forward) OK
 construct_at(T * location, Args &&... args) noexcept -> T *

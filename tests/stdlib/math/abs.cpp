@@ -2,7 +2,7 @@
 #include <um2/stdlib/math/abs.hpp>
 
 #if !defined(__CUDA_ARCH__) && !UM2_ENABLE_FASTMATH
-#  include <numeric>
+#  include <limits>
 #endif
 
 #include "../../test_macros.hpp"
