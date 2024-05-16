@@ -173,7 +173,7 @@ public:
   [[nodiscard]] constexpr auto
   hasXSec() const noexcept -> bool
   {
-    return _xsec.isMacro() && !_xsec.t().empty();
+    return _xsec.isMacro() && !_xsec.a().empty();
   }
 
   void

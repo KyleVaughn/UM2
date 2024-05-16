@@ -114,6 +114,14 @@ public:
   // Methods
   //======================================================================
 
+  PURE [[nodiscard]] constexpr auto 
+  t(Int g) const noexcept -> Float
+  {
+    ASSERT(0 <= g);
+    ASSERT(g < _num_groups);
+    return _a[g] + _s[g];
+  }
+
   void
   validate() const noexcept;
 

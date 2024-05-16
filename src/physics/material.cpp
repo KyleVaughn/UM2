@@ -1,5 +1,7 @@
 #include <um2/physics/material.hpp>
 
+#include <um2/common/logger.hpp>
+
 namespace um2
 {
 
@@ -10,44 +12,60 @@ namespace um2
 void
 Material::validateProperties() const noexcept
 {
-#if UM2_ENABLE_ASSERTS
-  ASSERT(!_name.empty());
-  ASSERT(_temperature > 0);
-  ASSERT(_density > 0);
-  ASSERT(!_num_density.empty());
-  ASSERT(_num_density.size() == _zaid.size());
+  if (_name.empty()) {
+    LOG_ERROR("Material name is empty"); 
+  }
+  if (_temperature <= 0) {
+    LOG_ERROR("Material temperature is not positive");
+  }
+  if (_density <= 0) {
+    LOG_ERROR("Material density is not positive");
+  }
+  if (_num_density.empty()) {
+    LOG_ERROR("Material number densities are empty"); 
+  }
+  if (_zaid.empty()) {
+    LOG_ERROR("Material ZAIDs are empty");
+  }
+  if (_num_density.size() != _zaid.size()) {
+    LOG_ERROR("Material number densities and ZAIDs are not the same size");
+  }
   for (auto const & num_density : _num_density) {
-    ASSERT(num_density >= 0);
+    if (num_density < 0) {
+      LOG_ERROR("Material number density is negative");
+    }
   }
   for (auto const & zaid : _zaid) {
-    ASSERT(zaid > 0);
+    if (zaid <= 0) {
+      LOG_ERROR("Material ZAID is not positive");
+    }
   }
-#endif
 }
 
 void
 Material::validateXSec() const noexcept
 {
-#if UM2_ENABLE_ASSERTS
-  ASSERT(!_xsec.t().empty());
-  ASSERT(_xsec.isMacro());
-  for (auto const & t_i : _xsec.t()) {
-    ASSERT(t_i >= 0);
+  if (!_xsec.isMacro()) {
+    LOG_ERROR("Material cross section is not macroscopic"); 
   }
-#endif
+  _xsec.validate();
 }
 
 void
 Material::addNuclide(Int zaid, Float num_density) noexcept
 {
-#if UM2_ENABLE_ASSERTS
-  ASSERT(zaid > 0);
-  ASSERT(num_density >= 0);
+  if (zaid <= 0) {
+    LOG_ERROR("Invalid ZAID");
+  }
+  if (num_density < 0) {
+    LOG_ERROR("Invalid number density");
+  }
   // Check if the nuclide is already in the list
   for (auto const & z : _zaid) {
-    ASSERT(z != zaid);
+    if (z == zaid) {
+      LOG_ERROR("Nuclide already exists in material");
+    }
   }
-#endif
   _zaid.emplace_back(zaid);
   _num_density.emplace_back(num_density);
 }
@@ -62,12 +80,11 @@ Material::addNuclide(String const & symbol, Float num_density) noexcept
 void
 Material::populateXSec(XSLibrary const & xsec_lib) noexcept
 {
-  _xsec.t().clear();
+  Int const num_groups = xsec_lib.numGroups();
+  _xsec = XSec(num_groups);
   // Ensure temperature, density, and number densities are set
   validateProperties();
   _xsec.isMacro() = true;
-  Int const num_groups = xsec_lib.numGroups();
-  _xsec.t().resize(num_groups);
   // For each nuclide in the material:
   //  find the corresponding nuclide in the library
   //  interpolate the cross sections to the temperature of the material
@@ -79,8 +96,16 @@ Material::populateXSec(XSLibrary const & xsec_lib) noexcept
     auto const & lib_nuc = xsec_lib.getNuclide(zaid);
     auto const xs_nuc = lib_nuc.interpXS(getTemperature());
     auto const atom_density = numDensity(inuc);
+    // TODO(kcvaughn): This should be done using arithmetic operations on XSec
     for (Int ig = 0; ig < num_groups; ++ig) {
-      _xsec.t(ig) += xs_nuc.t(ig) * atom_density;
+      _xsec.a()[ig] += xs_nuc.a()[ig] * atom_density;
+      _xsec.f()[ig] += xs_nuc.f()[ig] * atom_density;
+      _xsec.nuf()[ig] += xs_nuc.nuf()[ig] * atom_density;
+      _xsec.tr()[ig] += xs_nuc.tr()[ig] * atom_density;
+      _xsec.s()[ig] += xs_nuc.s()[ig] * atom_density;
+      for (Int jg = 0; jg < num_groups; ++jg) {
+        _xsec.ss()(jg, ig) += xs_nuc.ss()(jg, ig) * atom_density;
+      }
     }
   }
   _xsec.validate();
