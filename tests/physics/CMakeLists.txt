@@ -1,5 +1,5 @@
 add_um2_test(./cross_section.cpp)
 add_um2_test(./nuclide.cpp)
 add_um2_test(./cross_section_library.cpp)
-add_um2_test(./material.cpp)
-add_um2_test(./cmfd.cpp)
+#add_um2_test(./material.cpp)
+#add_um2_test(./cmfd.cpp)

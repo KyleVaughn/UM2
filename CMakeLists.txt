@@ -165,15 +165,15 @@ set(UM2_SOURCES
     "src/physics/cross_section.cpp"
     "src/physics/nuclide.cpp"
     "src/physics/cross_section_library.cpp"
-    "src/physics/material.cpp"
-    "src/physics/cmfd.cpp"
-    "src/mpact/model.cpp"
-    "src/gmsh/base_gmsh_api.cpp"
-    "src/gmsh/io.cpp"
-    "src/gmsh/model.cpp"
-    "src/gmsh/mesh.cpp"
-    "src/um2.cpp"
-    "src/um2c.cpp"
+    #"src/physics/material.cpp"
+    #"src/physics/cmfd.cpp"
+    #    "src/mpact/model.cpp"
+    #    "src/gmsh/base_gmsh_api.cpp"
+    #    "src/gmsh/io.cpp"
+    #    "src/gmsh/model.cpp"
+    #    "src/gmsh/mesh.cpp"
+    # "src/um2.cpp"
+    # "src/um2c.cpp"
   )
 
 
@@ -215,7 +215,7 @@ target_include_directories(um2 SYSTEM PUBLIC "${HDF5_INCLUDE_DIRS}")
 # BLAS
 set(BLA_VENDOR "OpenBLAS")
 find_package(BLAS REQUIRED)
-target_link_libraries(um2 PUBLIC "${BLAS_LIBRARIES}")
+target_link_libraries(um2 PUBLIC "lapacke ${BLAS_LIBRARIES}")
 target_include_directories(um2 SYSTEM PUBLIC "${BLAS_INCLUDE_DIRS}")
 
 # pugixml
@@ -359,11 +359,11 @@ if (UM2_BUILD_BENCHMARKS)
 endif()
 
 if (UM2_BUILD_POSTPROCESS)
-  add_subdirectory(post-process)
+  #add_subdirectory(post-process)
 endif()
 
 if (UM2_BUILD_MODELS)
-  add_subdirectory(models)
+  #add_subdirectory(models)
 endif()
 
 if (UM2_BUILD_TESTS)

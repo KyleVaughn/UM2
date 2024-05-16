@@ -1,3 +1,8 @@
+Define arithmetic operators on XSec
+
+
+logger should be &&
+
 CMFD
 - p = ceil(sqrt(num_cells))
 - Total cross section = area averaged

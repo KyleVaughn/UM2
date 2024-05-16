@@ -86,18 +86,6 @@ public:
   }
 
   PURE [[nodiscard]] constexpr auto
-  temperatures(Int i) noexcept -> Float &
-  {
-    return _temperatures[i];
-  }
-
-  PURE [[nodiscard]] constexpr auto
-  temperatures(Int i) const noexcept -> Float
-  {
-    return _temperatures[i];
-  }
-
-  PURE [[nodiscard]] constexpr auto
   xs() noexcept -> Vector<XSec> &
   {
     return _xs;
@@ -107,18 +95,6 @@ public:
   xs() const noexcept -> Vector<XSec> const &
   {
     return _xs;
-  }
-
-  PURE [[nodiscard]] constexpr auto
-  xs(Int i) noexcept -> XSec &
-  {
-    return _xs[i];
-  }
-
-  PURE [[nodiscard]] constexpr auto
-  xs(Int i) const noexcept -> XSec const &
-  {
-    return _xs[i];
   }
 
   //======================================================================

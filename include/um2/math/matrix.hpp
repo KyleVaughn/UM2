@@ -3,7 +3,6 @@
 #include <um2/stdlib/vector.hpp>
 #include <um2/stdlib/algorithm/fill.hpp>
 
-#include <iostream>
 #include <complex>
 
 //==============================================================================
@@ -63,6 +62,8 @@ public:
   constexpr Matrix() noexcept = default;
 
   Matrix(Int rows, Int cols) noexcept;
+
+  Matrix(Int rows, Int cols, T const & value) noexcept;
 
   static auto
   identity(Int n) -> Matrix<T>;
@@ -216,6 +217,14 @@ Matrix<T>::operator()(Int i, Int j) const noexcept -> T const &
 template <typename T>
 Matrix<T>::Matrix(Int rows, Int cols) noexcept
   : _rows{rows}, _cols{cols}, _data(rows * cols)
+{
+  ASSERT(rows >= 0);
+  ASSERT(cols >= 0);
+}
+
+template <typename T>
+Matrix<T>::Matrix(Int rows, Int cols, T const & value) noexcept
+  : _rows{rows}, _cols{cols}, _data(rows * cols, value)
 {
   ASSERT(rows >= 0);
   ASSERT(cols >= 0);

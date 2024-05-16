@@ -16,7 +16,6 @@ namespace um2
 void
 Nuclide::clear() noexcept
 {
-  _is_fissile = false;
   _zaid = 0;
   _mass = 0;
   _temperatures.clear();
@@ -26,19 +25,29 @@ Nuclide::clear() noexcept
 void
 Nuclide::validate() const noexcept
 {
-#if UM2_ENABLE_ASSERTS
-  ASSERT(_zaid > 0);
-  ASSERT(_mass > 0);
+  if (_zaid <= 0) {
+    LOG_ERROR("Nuclide has invalid ZAID: ", _zaid);
+  }
+  if (_mass <= 0) {
+    LOG_ERROR("Nuclide has invalid mass number: ", _mass);
+  }
   for (auto const & xsec : _xs) {
     xsec.validate();
-    ASSERT(!xsec.isMacro())
+    if (xsec.isMacro()) {
+      LOG_ERROR("Nuclide has a macroscopic cross section");
+    }
   }
-  ASSERT(_temperatures.size() == _xs.size())
+  if (_temperatures.size() != _xs.size()) {
+    LOG_ERROR("Nuclide has mismatched temperatures and cross sections");
+  }
   for (auto temp : _temperatures) {
-    ASSERT(temp > 0)
+    if (temp <= 0) {
+      LOG_ERROR("Nuclide has invalid temperature: ", temp);
+    }
   }
-  ASSERT(um2::is_sorted(_temperatures.begin(), _temperatures.end()))
-#endif
+  if (!um2::is_sorted(_temperatures.begin(), _temperatures.end())) {
+    LOG_ERROR("Nuclide has unsorted temperatures");
+  }
 }
 
 PURE [[nodiscard]] auto
@@ -56,7 +65,7 @@ Nuclide::interpXS(Float const temperature) const noexcept -> XSec
   // If the requested temperature is outside the range, use the closest value
   if (temperature <= _temperatures[0]) {
     return _xs[0];
-  } 
+  }
   if (temperature >= _temperatures.back()) {
     return _xs.back();
   }
@@ -78,12 +87,21 @@ Nuclide::interpXS(Float const temperature) const noexcept -> XSec
   Float const d = (sqrt_t - sqrt_t0) / (sqrt_t1 - sqrt_t0);
   XSec const & xs0 = _xs[i0];
   XSec const & xs1 = _xs[i1];
-  XSec xs;
-  Int const n = xs0.t().size();
-  ASSERT(n == xs1.t().size());
-  xs.t().resize(n);
-  for (Int j = 0; j < n; ++j) {
-    xs.t(j) = xs0.t(j) + d * (xs1.t(j) - xs0.t(j));
+  Int const ng = xs0.numGroups();
+  XSec xs(xs0.numGroups());
+  ASSERT(xs1.numGroups() == ng);
+
+  // Interpolate the cross sections
+  // TODO(kcvaughn): This should be handled with arithmetic operators on the XSec
+  for (Int g = 0; g < ng; ++g) {
+    xs.a()[g] = xs0.a()[g] + d * (xs1.a()[g] - xs0.a()[g]);
+    xs.f()[g] = xs0.f()[g] + d * (xs1.f()[g] - xs0.f()[g]);
+    xs.nuf()[g] = xs0.nuf()[g] + d * (xs1.nuf()[g] - xs0.nuf()[g]);
+    xs.tr()[g] = xs0.tr()[g] + d * (xs1.tr()[g] - xs0.tr()[g]);
+    xs.s()[g] = xs0.s()[g] + d * (xs1.s()[g] - xs0.s()[g]);
+    for (Int gg = 0; gg < ng; ++gg) {
+      xs.ss()(gg, g) = xs0.ss()(gg, g) + d * (xs1.ss()(gg, g) - xs0.ss()(gg, g));
+    }
   }
   return xs;
 }
@@ -165,7 +183,7 @@ toZAID(String const & str) -> Int
   for (Int i = n; i < str.size(); ++i) {
     if (isDigit(s[i])) {
       m = i;
-      break; 
+      break;
     }
   }
   String const mass = str.substr(m);

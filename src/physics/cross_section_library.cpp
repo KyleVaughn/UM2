@@ -251,7 +251,8 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
     nuclide.temperatures().resize(num_temps);
     nuclide.xs().resize(num_temps);
     for (Int itemp = 0; itemp < num_temps; ++itemp) {
-      nuclide.xs(itemp).t().resize(num_groups);
+      auto & xsec = nuclide.xs()[itemp];
+      xsec = XSec(num_groups);
     }
 
     // Read the temperature data
@@ -282,13 +283,14 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
     // 4. nu-fission
     // 5. transport
     // 6. total scattering
-    // 7+. scatter data we don't use
+    // 7+. scattering matrix
     file.getline(line, max_line_length);
     line_view = StringView(line);
     line_view.removeLeadingSpaces();
     ASSERT(line_view.starts_with("XSD+"));
     for (Int ig = 0; ig < num_groups; ++ig) {
       for (Int itemp = 0; itemp < num_temps; ++itemp) {
+
         file.getline(line, max_line_length);
         line_view = StringView(line);
         line_view.removeLeadingSpaces();
@@ -311,6 +313,8 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
         ASSERT(temp_index == itemp + 1);
 #endif
 
+        auto & xsec = nuclide.xs()[itemp];
+
         // Absorption
         token = line_view.getTokenAndShrink();
         Float const absorption = strto<Float>(token.data(), &end);
@@ -321,13 +325,13 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
                     " has negative absorption cross section at group ", ig,
                     " and temperature ", itemp);
         }
+        xsec.a()[ig] = absorption;
 
         // If this token is empty, only absorption is given
         token = line_view.getTokenAndShrink();
         bool const absorption_only = token.empty();
-        if (absorption_only) {
-          nuclide.xs(itemp).t(ig) = absorption;
-        } else {
+        if (!absorption_only) {
+
           // Fission
           Float const fission = strto<Float>(token.data(), &end);
           ASSERT(end != nullptr);
@@ -335,11 +339,36 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
           if (um2::abs(fission) > castIfNot<Float>(1e-10)) {
             nuclide.isFissile() = true;
           }
-
-          // Skip nu-fission and transport
-          for (Int i = 0; i < 2; ++i) {
-            token = line_view.getTokenAndShrink();
+          if (fission < 0) {
+            LOG_WARN("Nuclide with ZAID ", zaid,
+                      " has negative fission cross section at group ", ig,
+                      " and temperature ", itemp);
           }
+          xsec.f()[ig] = fission;
+
+          // nu-fission 
+          token = line_view.getTokenAndShrink();
+          Float const nu_fission = strto<Float>(token.data(), &end);
+          ASSERT(end != nullptr);
+          end = nullptr;
+          if (nu_fission < 0) {
+            LOG_WARN("Nuclide with ZAID ", zaid,
+                      " has negative nu-fission cross section at group ", ig,
+                      " and temperature ", itemp);
+          }
+          xsec.nuf()[ig] = nu_fission;
+
+          // Transport
+          token = line_view.getTokenAndShrink();
+          Float const transport = strto<Float>(token.data(), &end);
+          ASSERT(end != nullptr);
+          end = nullptr;
+          if (transport < 0) {
+            LOG_WARN("Nuclide with ZAID ", zaid,
+                      " has negative transport cross section at group ", ig,
+                      " and temperature ", itemp);
+          }
+          xsec.tr()[ig] = transport;
 
           // Total scattering
           token = line_view.getTokenAndShrink();
@@ -351,16 +380,41 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
                       " has negative P0 scattering cross section at group ", ig,
                       " and temperature ", itemp);
           }
+          xsec.s()[ig] = total_scatter;
 
-          Float const total = absorption + total_scatter;
-          if (total < 0) {
-            LOG_WARN("Nuclide with ZAID ", zaid,
-                      " has negative total cross section at group ", ig,
-                      " and temperature ", itemp);
+          // Scattering matrix
+          // Minimum column index
+          token = line_view.getTokenAndShrink();
+          Int const min_col = strto<Int>(token.data(), &end);
+          ASSERT(end != nullptr);
+          end = nullptr;
+          ASSERT(min_col >= 1); // MPACT is 1-based
+          Int const min_col0 = min_col - 1;
+
+          // Maximum column index
+          token = line_view.getTokenAndShrink();
+          Int const max_col = strto<Int>(token.data(), &end);
+          ASSERT(end != nullptr);
+          end = nullptr;
+          ASSERT(max_col >= min_col);
+
+          // Number of columns
+          Int const num_cols = max_col - min_col + 1;
+
+          // Read the scattering matrix elements
+          for (Int icol = 0; icol < num_cols; ++icol) {
+            token = line_view.getTokenAndShrink();
+            Float const value = strto<Float>(token.data(), &end);
+            ASSERT(end != nullptr);
+            end = nullptr;
+            if (value < 0) {
+              LOG_WARN("Nuclide with ZAID ", zaid,
+                        " has negative scattering matrix element at group ", ig,
+                        " and temperature ", itemp);
+            }
+            xsec.ss()(ig, min_col0 + icol) = value;
           }
-
-          nuclide.xs(itemp).t(ig) = total;
-        } // if (absorption_only)
+        } // if (!absorption_only)
       }   // for (Int itemp = 0; itemp < num_temps; ++itemp)
     }     // for (Int ig = 0; ig < num_groups; ++ig)
 
