@@ -43,6 +43,24 @@ public:
   PURE HOSTDEV [[nodiscard]] constexpr auto
   data() const noexcept -> T const *;
 
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  begin() noexcept -> T *;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  begin() const noexcept -> T const *;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  end() noexcept -> T *;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  end() const noexcept -> T const *;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  asVector() noexcept -> Vector<T> &;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  asVector() const noexcept -> Vector<T> const &;
+
   PURE HOSTDEV constexpr auto
   operator()(Int i) noexcept -> T &;
 
@@ -172,6 +190,48 @@ Matrix<T>::data() const noexcept -> T const *
 
 template <typename T>
 PURE HOSTDEV constexpr auto
+Matrix<T>::begin() noexcept -> T *
+{
+  return _data.begin();
+}
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+Matrix<T>::begin() const noexcept -> T const *
+{
+  return _data.begin();
+}
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+Matrix<T>::end() noexcept -> T *
+{
+  return _data.end();
+}
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+Matrix<T>::end() const noexcept -> T const *
+{
+  return _data.end();
+}
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+Matrix<T>::asVector() noexcept -> Vector<T> &
+{
+  return _data;
+}
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+Matrix<T>::asVector() const noexcept -> Vector<T> const &
+{
+  return _data;
+}
+
+template <typename T>
+PURE HOSTDEV constexpr auto
 Matrix<T>::operator()(Int i) noexcept -> T &
 {
   ASSERT_ASSUME(0 <= i);
@@ -235,7 +295,7 @@ auto
 Matrix<T>::identity(Int n) -> Matrix<T>
 {
   Matrix<T> result(n, n);
-  um2::fill(result._data.begin(), result._data.end(), static_cast<T>(0)); 
+  um2::fill(result.begin(), result.end(), static_cast<T>(0)); 
   for (Int i = 0; i < n; ++i) {
     result(i, i) = static_cast<T>(1); 
   }

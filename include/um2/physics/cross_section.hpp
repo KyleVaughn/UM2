@@ -15,11 +15,6 @@
 namespace um2
 {
 
-enum class XSecReduction {
-  Max,
-  Mean,
-};
-
 class XSec
 {
 
@@ -125,10 +120,20 @@ public:
   void
   validate() const noexcept;
 
-//  // Get the 1-group cross section
-//  PURE [[nodiscard]] auto
-//  collapse(XSecReduction strategy = XSecReduction::Mean) const noexcept -> XSec;
+  // Get the 1-group "average" cross section
+  // Takes the arithmetic mean of the values in each group
+  // NOTE: this is not a replacement for a one-group cross section, which
+  // should perform a weighted sum which preserve the total reaction rate. 
+  PURE [[nodiscard]] auto
+  collapseTo1GroupAvg() const noexcept -> XSec;
 }; // class XS
+
+//======================================================================
+// Free functions
+//======================================================================
+
+PURE [[nodiscard]] auto
+getC5G7XSecs() noexcept -> Vector<XSec>;
 
 //======================================================================
 // Accessors

@@ -274,7 +274,7 @@ spectral_radius(CMFDCellParams const & params) -> ComplexF
 
   // J is a matrix of ones
   Matrix<ComplexF> J(p, p);
-  um2::fill(J.data(), J.data() + static_cast<ptrdiff_t>(p * p), ComplexF(1.0, 0.0));
+  um2::fill(J.begin(), J.end(), ComplexF(1.0, 0.0));
 
   ComplexF r(0, 0);
   Float r_abs = 0;

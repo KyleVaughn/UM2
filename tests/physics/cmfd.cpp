@@ -180,6 +180,7 @@ TEST_CASE(spectral_radius)
 
   um2::CMFDCellParams const params(w, p, Sigma_t, c, s, eta);
   auto const rho = spectral_radius(params);
+  std::cout << "rho = " << rho << std::endl; 
 }
 
 TEST_SUITE(cmfd)
