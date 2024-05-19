@@ -363,7 +363,7 @@ if (UM2_BUILD_POSTPROCESS)
 endif()
 
 if (UM2_BUILD_MODELS)
-  #add_subdirectory(models)
+  add_subdirectory(models)
 endif()
 
 if (UM2_BUILD_TESTS)

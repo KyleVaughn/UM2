@@ -416,7 +416,7 @@ main(int argc, char** argv) -> int
   //===========================================================================
 
   model.importCoarseCellMeshes("4_2d.inp");
-  model.writeOpticalThickness("4_2d_optical_thickness.xdmf");
+  model.writeCMFDInfo("4_2d_cmfd_info.xdmf");
   model.write("4_2d.xdmf", /*write_knudsen_data=*/true, /*write_xsec_data=*/true);
   um2::finalize();
   return 0;

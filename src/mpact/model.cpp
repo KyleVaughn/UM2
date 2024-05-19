@@ -3030,7 +3030,7 @@ Model::writeCMFDInfo(String const & filename) const
   // Construct the group g total cross section elsets 
   for (Int ig = 0; ig < num_groups; ++ig) {
     um2::fill(data.begin(), data.end(), -inf_distance);
-    String const elset_name = "Homogenized_Group_" + getASCIINumber(ig) + "_Total_XS";
+    String const elset_name = "Homogenized_Total_XS_Group_" + getASCIINumber(ig);
     for (Int icc = 0; icc < num_coarse_cells; ++icc) {
       auto const sigma_t = coarse_cell_xsecs[icc].t(ig);
       auto const & face_ids = coarse_cell_face_ids[icc];
@@ -3050,7 +3050,7 @@ Model::writeCMFDInfo(String const & filename) const
   // Construct the group g scattering ratio elsets
   for (Int ig = 0; ig < num_groups; ++ig) {
     um2::fill(data.begin(), data.end(), -inf_distance);
-    String const elset_name = "Homogenized_Group_" + getASCIINumber(ig) + "_Scattering_Ratio";
+    String const elset_name = "Homogenized_Scattering_Ratio_Group_" + getASCIINumber(ig);
     for (Int icc = 0; icc < num_coarse_cells; ++icc) {
       auto const sigma_t = coarse_cell_xsecs[icc].t(ig);
       auto const sigma_s = coarse_cell_xsecs[icc].s()[ig];
@@ -3072,7 +3072,7 @@ Model::writeCMFDInfo(String const & filename) const
   // Construct the group g 1D CMFD spectral radius
   for (Int ig = 0; ig < num_groups; ++ig) {
     um2::fill(data.begin(), data.end(), -inf_distance);
-    String const elset_name = "1D_Group_" + getASCIINumber(ig) + "_CMFD_Spectral_Radius";
+    String const elset_name = "1D_odCMFD_Spectral_Radius_Group_" + getASCIINumber(ig);
     for (Int icc = 0; icc < num_coarse_cells; ++icc) {
       LOG_INFO("Computing spectral radius for coarse cell ", icc, " group ", ig);
       auto const sigma_t = coarse_cell_xsecs[icc].t(ig);

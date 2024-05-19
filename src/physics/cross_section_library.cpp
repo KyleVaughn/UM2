@@ -321,7 +321,7 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
         ASSERT(end != nullptr);
         end = nullptr;
         if (absorption < 0) {
-          logger::debug("Nuclide with ZAID ", zaid,
+          LOG_DEBUG("Nuclide with ZAID ", zaid,
                     " has negative absorption cross section at group ", ig,
                     " and temperature ", itemp);
         }
@@ -341,7 +341,7 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
             xsec.isFissile() = true;
           }
           if (fission < 0) {
-            LOG_WARN("Nuclide with ZAID ", zaid,
+            LOG_DEBUG("Nuclide with ZAID ", zaid,
                       " has negative fission cross section at group ", ig,
                       " and temperature ", itemp);
           }
@@ -353,7 +353,7 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
           ASSERT(end != nullptr);
           end = nullptr;
           if (nu_fission < 0) {
-            LOG_WARN("Nuclide with ZAID ", zaid,
+            LOG_DEBUG("Nuclide with ZAID ", zaid,
                       " has negative nu-fission cross section at group ", ig,
                       " and temperature ", itemp);
           }
@@ -365,7 +365,7 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
           ASSERT(end != nullptr);
           end = nullptr;
           if (transport < 0) {
-            LOG_WARN("Nuclide with ZAID ", zaid,
+            LOG_DEBUG("Nuclide with ZAID ", zaid,
                       " has negative transport cross section at group ", ig,
                       " and temperature ", itemp);
           }
@@ -377,7 +377,7 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
           ASSERT(end != nullptr);
           end = nullptr;
           if (total_scatter < 0) {
-            LOG_WARN("Nuclide with ZAID ", zaid,
+            LOG_DEBUG("Nuclide with ZAID ", zaid,
                       " has negative P0 scattering cross section at group ", ig,
                       " and temperature ", itemp);
           }
@@ -409,7 +409,7 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
             ASSERT(end != nullptr);
             end = nullptr;
             if (value < 0) {
-              LOG_WARN("Nuclide with ZAID ", zaid,
+              LOG_DEBUG("Nuclide with ZAID ", zaid,
                         " has negative scattering matrix element at group ", ig,
                         " and temperature ", itemp);
             }
