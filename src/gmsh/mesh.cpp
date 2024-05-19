@@ -148,9 +148,7 @@ auto
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & materials,
                               double const kn_target, double const mfp_threshold,
-                              double const mfp_scale,
-                              std::vector<int> const & is_fuel,
-                              XSecReduction const strategy) -> int
+                              double const mfp_scale) -> int
 {
   //-----------------------------------------------------------------------
   // Check that each material exists as a physical group
@@ -218,21 +216,11 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
   // Compute the target characteristic length for each material
   std::vector<double> lcs(num_materials, 0.0);
   std::vector<double> sigmas_t(num_materials, 0.0);
-  // If using average MFP, we need the average Sigma_t for each material
-  if (strategy == XSecReduction::Mean) {
-    LOG_INFO("Computing Knudsen number using groupwise average mean free path");
-  } else if (strategy == XSecReduction::Max) {
-    LOG_INFO("Computing Knudsen number using groupwise minimum mean free path");
-  } else {
-    LOG_ERROR("Invalid Knudsen number computation strategy");
-    return -1;
-  }
-
+  std::vector<int> is_fissile(num_materials, 0);
   for (size_t i = 0; i < num_materials; ++i) {
-    XSec const xs_1g = materials[static_cast<Int>(i)].xsec().collapse(strategy);
-    ASSERT(xs_1g.numGroups() == 1);
-    ASSERT(xs_1g.t(0) > 0);
-    double const sigma_t = xs_1g.t(0);
+    XSec const xs_avg_1g = materials[static_cast<Int>(i)].xsec().collapseTo1GroupAvg();
+    ASSERT(xs_avg_1g.t(0) > 0);
+    double const sigma_t = xs_avg_1g.t(0);
     // The mean chord length of an equilateral triangle with side length l:
     // s = pi * A / 3l = pi * (sqrt(3) * l^2 / 4) / (3l) = pi * sqrt(3) * l / 12
     //
@@ -244,6 +232,9 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
     // l = 12 / (sigma_t * Kn * sqrt(3) * pi)
     lcs[i] = 12.0 / (um2::pi<double> * um2::sqrt(3.0) * kn_target * sigma_t);
     sigmas_t[i] = sigma_t;
+    if (materials[static_cast<Int>(i)].xsec().isFissile()) {
+      is_fissile[i] = 1;
+    }
   }
 
   // Create the base fields, which are constant in each material
@@ -283,16 +274,16 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
   // after some threshold MFPs
   if (mfp_threshold >= 0.0) {
     ASSERT(mfp_scale >= 1.0);
-    ASSERT(is_fuel.size() == num_materials);
+    ASSERT(is_fissile.size() == num_materials);
     // ASSERT that there is at least one fuel material
-    if (std::all_of(is_fuel.begin(), is_fuel.end(), [](int const x) { return x == 0; })) {
+    if (std::all_of(is_fissile.begin(), is_fissile.end(), [](int const x) { return x == 0; })) {
       LOG_ERROR("No fuel materials found");
       return -1;
     }
     // First, get all the entities in the fuel materials
     std::vector<int> fuel_ent_tags;
     for (size_t i = 0; i < num_materials; ++i) {
-      if (is_fuel[i] == 1) {
+      if (is_fissile[i] == 1) {
         std::vector<int> ent_tags;
         gmsh::model::getEntitiesForPhysicalGroup(dim, material_group_tags[i], ent_tags);
         fuel_ent_tags.insert(fuel_ent_tags.end(), ent_tags.begin(), ent_tags.end());
@@ -349,7 +340,7 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
     //    lc * (1 - mfp_threshold * mfp_scale) 
     // Then, create a field which takes the max(lc, lc_linear)
     for (size_t i = 0; i < num_materials; ++i) {
-      if (is_fuel[i] == 0) {
+      if (is_fissile[i] == 0) {
         // Create a field that multiplies the base field by the distance to the fuel
         // material
         int const fid = gmsh::model::mesh::field::add("MathEval");

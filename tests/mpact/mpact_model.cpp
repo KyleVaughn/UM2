@@ -608,64 +608,11 @@ TEST_CASE(io)
   // Materials
   //===========================================================================
 
-  um2::Material uo2;
-  uo2.setName("UO2");
-  uo2.setColor(um2::forestgreen);
-  uo2.xsec() = um2::XSec(1);
-  uo2.xsec().isMacro() = true;
-
-  um2::Material mox43;
-  mox43.setName("MOX_4.3");
-  mox43.setColor(um2::yellow);
-  mox43.xsec() = um2::XSec(1);
-  mox43.xsec().isMacro() = true;
-
-  um2::Material mox70;
-  mox70.setName("MOX_7.0");
-  mox70.setColor(um2::orange);
-  mox70.xsec() = um2::XSec(1);
-  mox70.xsec().isMacro() = true;
-
-  um2::Material mox87;
-  mox87.setName("MOX_8.7");
-  mox87.setColor(um2::red);
-  mox87.xsec() = um2::XSec(1);
-  mox87.xsec().isMacro() = true;
-
-  um2::Material fiss_chamber;
-  fiss_chamber.setName("Fission_Chamber");
-  fiss_chamber.setColor(um2::black);
-  fiss_chamber.xsec() = um2::XSec(1);
-  fiss_chamber.xsec().isMacro() = true;
-
-  um2::Material guide_tube;
-  guide_tube.setName("Guide_Tube");
-  guide_tube.setColor(um2::darkgrey);
-  guide_tube.xsec() = um2::XSec(1);
-  guide_tube.xsec().isMacro() = true;
-
-  um2::Material moderator;
-  moderator.setName("Moderator");
-  moderator.setColor(um2::royalblue);
-  moderator.xsec() = um2::XSec(1);
-  moderator.xsec().isMacro() = true;
-
-  // Safety checks
-  uo2.validateXSec();
-  mox43.validateXSec();
-  mox70.validateXSec();
-  mox87.validateXSec();
-  fiss_chamber.validateXSec();
-  guide_tube.validateXSec();
-  moderator.validateXSec();
-
-  model_out.addMaterial(uo2);
-  model_out.addMaterial(mox43);
-  model_out.addMaterial(mox70);
-  model_out.addMaterial(mox87);
-  model_out.addMaterial(fiss_chamber);
-  model_out.addMaterial(guide_tube);
-  model_out.addMaterial(moderator);
+  auto const materials = um2::getC5G7Materials();
+  for (auto const & mat : materials) {
+    mat.validateXSec();
+    model_out.addMaterial(mat);
+  }
 
   //===========================================================================
   // Geometry
@@ -842,7 +789,7 @@ TEST_CASE(io)
 
   model_out.addCore(ids);
 
-//  model_out.writeOpticalThickness("c5g7_out_optical_thickness.xdmf");
+//  model_out.writeCMFDInfo("c5g7_cmfd_info.xdmf");
 
   // Test the numXXXXTotal functions
   ASSERT(model_out.numAssembliesTotal() == 9);
@@ -893,117 +840,93 @@ TEST_CASE(io)
   ASSERT(model_in.core().getChild(2, 2) == 2);
 }
 
-//TEST_CASE(getCoarseCellOpticalThickness)
-//{
-//
-//  um2::mpact::Model model;
-//
-//  //===========================================================================
-//  // Materials
-//  //===========================================================================
-//
-//  um2::Material uo2;
-//  uo2.setName("UO2");
-//  uo2.setColor(um2::forestgreen);
-//  uo2.xsec().t() = {2.12450e-01, 3.55470e-01, 4.85540e-01, 5.59400e-01,
-//                    3.18030e-01, 4.01460e-01, 5.70610e-01};
-//  uo2.xsec().isMacro() = true;
-//
-//  um2::Material moderator;
-//  moderator.setName("Moderator");
-//  moderator.setColor(um2::royalblue);
-//  moderator.xsec().t() = {2.30070e-01, 7.76460e-01, 1.48420e+00,
-// 1.50520e+00, 1.55920e+00, 2.02540e+00,
-// 3.30570e+00};
-//  moderator.xsec().isMacro() = true;
-//
-//  uo2.validateXSec();
-//  moderator.validateXSec();
-//
-//  model.addMaterial(uo2);
-//  model.addMaterial(moderator);
-//
-//  //===========================================================================
-//  // Geometry
-//  //===========================================================================
-//  
-//  auto const pin_pitch = castIfNot<Float>(1.26);
-//  um2::Vec2F const xy_extents = {pin_pitch, pin_pitch};
-//                                                                                          
-//  auto const rect_pin_mesh_type = um2::MeshType::Quad;
-//  auto const rect_pin_id = model.addRectangularPinMesh(xy_extents, 2, 1);
-//                                                                                          
-//  // Coarse cells
-//  //---------------------------------------------------------------------------
-// 
-//  // Add a pure fuel pin cell
-//  um2::Vector<MatID> mat_ids(2, 0);
-//  model.addCoarseCell(xy_extents, rect_pin_mesh_type, rect_pin_id, mat_ids);
-//
-//  // Compute the optical thickness for each energy group
-//  um2::Vector<Float> taus(7);
-//  model.getCoarseCellOpticalThickness(0, taus);
-//
-//  // In a homogenous cell, the optical thickness is simply:
-//  // tau_g = sigma_t,g * mcl
-//  // where mcl is the mean chord length of the cell
-//  // mcl = pi * area / perimeter
-//
-//  auto const area = pin_pitch * pin_pitch;
-//  auto const perimeter = 4 * pin_pitch; 
-//  auto const mcl = um2::pi<Float> * area / perimeter;
-//  
-//  for (Int g = 0; g < 7; ++g) {
-//    Float const sigma_t0 = uo2.xsec().t(g);
-//    Float const tau_ref = sigma_t0 * mcl;
-//    Float const rel_err = (taus[g] - tau_ref) / tau_ref;
-//    ASSERT_NEAR(rel_err, 0, eps);
-//  }
-//
-//  // Add a pin with one face fuel, one face moderator
-//  mat_ids[1] = 1;
-//  model.addCoarseCell(xy_extents, rect_pin_mesh_type, rect_pin_id, mat_ids);
-//  um2::fill(taus.begin(), taus.end(), static_cast<Float>(0)); 
-//  model.getCoarseCellOpticalThickness(1, taus);
-//  
-//  for (Int g = 0; g < 7; ++g) {
-//    Float const sigma_t0 = uo2.xsec().t(g);
-//    Float const sigma_t1 = moderator.xsec().t(g);
-//    Float const tau_ref = (sigma_t0 * mcl + sigma_t1 * mcl) / 2; 
-//    Float const rel_err = (taus[g] - tau_ref) / tau_ref;
-//    ASSERT_NEAR(rel_err, 0, eps);
-//  }
-//
-//  // Add a pin like the following:
-//  // 0 0 1 0 0
-//  // 0 0 1 0 0
-//  // 0 0 1 1 1
-//  // 0 0 0 0 1
-//  // 0 0 0 0 1
-//  auto const rect_pin_id_5x5 = model.addRectangularPinMesh(xy_extents, 5, 5);
-//  mat_ids.resize(25);
-//  um2::fill(mat_ids.begin(), mat_ids.end(), static_cast<MatID>(0));
-//  mat_ids[4] = static_cast<MatID>(1);
-//  mat_ids[9] = static_cast<MatID>(1);
-//  mat_ids[12] = static_cast<MatID>(1);
-//  mat_ids[13] = static_cast<MatID>(1);
-//  mat_ids[14] = static_cast<MatID>(1);
-//  mat_ids[17] = static_cast<MatID>(1);
-//  mat_ids[22] = static_cast<MatID>(1);
-//
-//  model.addCoarseCell(xy_extents, rect_pin_mesh_type, rect_pin_id_5x5, mat_ids);
-//  model.getCoarseCellOpticalThickness(2, taus);
-//
-//  for (Int g = 0; g < 7; ++g) {
-//    Float const sigma_t0 = uo2.xsec().t(g);
-//    Float const sigma_t1 = moderator.xsec().t(g);
-//    Float const area0 = 18 * area / 25;
-//    Float const area1 = 7 * area / 25;
-//    Float const tau_ref = um2::pi<Float> * (sigma_t0 * area0 + sigma_t1 * area1) / perimeter; 
-//    Float const rel_err = (taus[g] - tau_ref) / tau_ref;
-//    ASSERT_NEAR(rel_err, 0, eps);
-//  }
-//}
+TEST_CASE(getCoarseCellHomogenizedXSec)
+{
+  um2::mpact::Model model;
+
+  //===========================================================================
+  // Materials
+  //===========================================================================
+
+  auto const materials = um2::getC5G7Materials();
+  for (auto const & mat : materials) {
+    mat.validateXSec();
+    model.addMaterial(mat);
+  }
+
+  //===========================================================================
+  // Geometry
+  //===========================================================================
+  
+  // Pin meshes
+  //---------------------------------------------------------------------------
+  auto const radius = castIfNot<Float>(0.54);
+  auto const pin_pitch = castIfNot<Float>(1.26);
+  um2::Vec2F const xy_extents = {pin_pitch, pin_pitch};
+
+  um2::Vector<Float> const radii = {radius, castIfNot<Float>(0.62)};
+  um2::Vector<Int> const rings = {3, 2};
+
+  // 8 azimuthal divisions, order 2 mesh
+  // The first 8 * 3 = 24 faces are the inner material
+  // The next 8 * 2 + 8 = 24 faces are moderator
+  auto const cyl_pin_mesh_type = um2::MeshType::QuadraticQuad; 
+  auto const cyl_pin_id = model.addCylindricalPinMesh(pin_pitch, radii, rings, 8, 2);
+
+  // 5 by 5 mesh for the reflector
+  auto const rect_pin_mesh_type = um2::MeshType::Quad;
+  auto const rect_pin_id = model.addRectangularPinMesh(xy_extents, 5, 5);
+
+  // Coarse cells
+  //---------------------------------------------------------------------------
+  // Pin ID  |  Material
+  // --------+----------------
+  // 0       |  UO2
+  // 1       |  Guide Tube
+  // 2       |  Moderator
+
+  // Add the 2 cylindrical pins
+  um2::Vector<MatID> mat_ids(48, 6);
+  um2::fill(mat_ids.begin(), mat_ids.begin() + 24, static_cast<MatID>(0)); 
+  model.addCoarseCell(xy_extents, cyl_pin_mesh_type, cyl_pin_id, mat_ids);
+
+  um2::fill(mat_ids.begin(), mat_ids.end(), static_cast<MatID>(5)); 
+  model.addCoarseCell(xy_extents, cyl_pin_mesh_type, cyl_pin_id, mat_ids);
+
+  // Add the 1 rectangular pin
+  mat_ids.resize(25);
+  um2::fill(mat_ids.begin(), mat_ids.end(), static_cast<MatID>(6)); 
+  model.addCoarseCell(xy_extents, rect_pin_mesh_type, rect_pin_id, mat_ids); 
+
+  // Moderator cell
+  auto const xsec = model.getCoarseCellHomogenizedXSec(2);
+  ASSERT(xsec.isMacro());
+  ASSERT(!xsec.isFissile());
+  ASSERT(xsec.numGroups() == 7);
+  for (Int i = 0; i < 7; ++i) {
+    ASSERT_NEAR(xsec.t(i), materials[6].xsec().tr()[i], 100*eps);
+  }
+
+  auto const area_cyl = um2::pi<Float> * radius * radius;
+  auto const area_mod = pin_pitch * pin_pitch - area_cyl;
+  auto const area_pin = pin_pitch * pin_pitch;
+
+  // The homogenized cross section is the area-weighted average of the two
+  // materials
+  auto const & xsec_uo2 = materials[0].xsec();
+  auto const & xsec_mod = materials[6].xsec();
+  auto const xsec_uo2_h = model.getCoarseCellHomogenizedXSec(0);
+  ASSERT(xsec_uo2_h.isMacro());
+  ASSERT(xsec_uo2_h.isFissile());
+  ASSERT(xsec_uo2_h.numGroups() == 7);
+  for (Int g = 0; g < 7; ++g) {
+    Float const a_ref = (area_cyl * xsec_uo2.a()[g] + area_mod * xsec_mod.a()[g]) / area_pin;
+    Float const t_ref = (area_cyl * xsec_uo2.t(g) + area_mod * xsec_mod.t(g)) / area_pin;
+    ASSERT_NEAR(xsec_uo2_h.a()[g], a_ref, 100*eps);
+    ASSERT_NEAR(xsec_uo2_h.t(g), t_ref, 100*eps);
+  }
+
+}
 
 TEST_SUITE(mpact_Model)
 {
@@ -1019,8 +942,8 @@ TEST_SUITE(mpact_Model)
   TEST(addCoarseGrid);
   TEST(importCoarseCellMeshes);
   TEST(operator_PolytopeSoup);
- // TEST(io);
-//  TEST(getCoarseCellOpticalThickness);
+  TEST(io);
+  TEST(getCoarseCellHomogenizedXSec);
 }
 
 auto

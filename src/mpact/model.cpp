@@ -7,6 +7,8 @@
 #include <um2/stdlib/algorithm/fill.hpp>
 #include <um2/stdlib/numeric/iota.hpp>
 #include <um2/stdlib/utility/pair.hpp>
+#include <um2/math/stats.hpp>
+#include <um2/physics/cmfd.hpp>
 
 #include <algorithm> // std::any_of
 #include <numeric> // std::reduce
@@ -2771,9 +2773,13 @@ computeCellHomogenizedXSec(
   XSec result(num_groups);
   // For each material with non-zero area, reduce into result 
   for (Int imat = 0; imat < materials.size(); ++imat) {
-    if (areas[imat]  zero) {
+    // Want exact comparison to zero
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+    if (areas[imat] == zero) {
       continue;
     }
+#pragma GCC diagnostic pop
     auto const & xsec = materials[imat].xsec();
     // a, f, nuf, tr, s, ss
     for (Int ig = 0; ig < num_groups; ++ig) {
@@ -2794,6 +2800,9 @@ computeCellHomogenizedXSec(
   for (Int ig = 0; ig < num_groups; ++ig) {
     result.a()[ig] *= inv_total_area;
     result.f()[ig] *= inv_total_area;
+    if (result.f()[ig] > 0) {
+      result.isFissile() = true;
+    }
     result.nuf()[ig] *= inv_total_area;
     result.tr()[ig] *= inv_total_area;
     result.s()[ig] *= inv_total_area;
@@ -2802,6 +2811,7 @@ computeCellHomogenizedXSec(
     }
   }
 
+  result.isMacro() = true;
   result.validate();
   return result;
 }
@@ -2814,27 +2824,35 @@ Model::getCoarseCellHomogenizedXSec(Int cc_id) const -> XSec
   // For each face in the coarse cell, get the material ID and area. Keep track
   // of the area of each material in the cell, then at the end, use area
   // weighting to compute the homogenized cross section.
-   ASSERT(cc_id >= 0);
-   ASSERT(cc_id < _coarse_cells.size());
+  ASSERT(cc_id >= 0);
+  ASSERT(cc_id < _coarse_cells.size());
  
-   // Get the coarse cell
-   auto const & cc = _coarse_cells[cc_id];
+  // Get the coarse cell
+  auto const & cc = _coarse_cells[cc_id];
  
-   // Call the appropriate function based on the mesh type
-   switch (cc.mesh_type) {
-     case MeshType::Tri:
-       auto const & tri_mesh = getTriMesh(cc.mesh_id);
-       return computeCellHomogenizedXSec(tri_mesh, cc.material_ids, _materials);
-     case MeshType::Quad:
-       auto const & quad_mesh = getQuadMesh(cc.mesh_id);
-       return computeCellHomogenizedXSec(quad_mesh, cc.material_ids, _materials);
-     case MeshType::QuadraticTri:
+  // Call the appropriate function based on the mesh type
+  switch (cc.mesh_type) {
+    case MeshType::Tri:
+      {
+        auto const & tri_mesh = getTriMesh(cc.mesh_id);
+        return computeCellHomogenizedXSec(tri_mesh, cc.material_ids, _materials);
+      }
+    case MeshType::Quad:
+      {
+        auto const & quad_mesh = getQuadMesh(cc.mesh_id);
+        return computeCellHomogenizedXSec(quad_mesh, cc.material_ids, _materials);
+      }
+    case MeshType::QuadraticTri:
+      {
        auto const & tri6_mesh = getTri6Mesh(cc.mesh_id);
        return computeCellHomogenizedXSec(tri6_mesh, cc.material_ids, _materials);
-     case MeshType::QuadraticQuad:
+      }
+    case MeshType::QuadraticQuad:
+      {
        auto const & quad8_mesh = getQuad8Mesh(cc.mesh_id);
        return computeCellHomogenizedXSec(quad8_mesh, cc.material_ids, _materials);
-     default:
+      }
+    default:
        logger::error("Unsupported mesh type");
    }
    return XSec();
@@ -2850,211 +2868,244 @@ Model::writeCMFDInfo(String const & filename) const
 {
   LOG_INFO("Writing MPACT model CMFD data to ", filename);
 
-//  PolytopeSoup soup;
-//
-//  auto const & core = _core;
-//  auto const & assemblies = _assemblies;
-//  auto const & lattices = _lattices;
-//  auto const & rtms = _rtms;
-//  auto const & coarse_cells = _coarse_cells;
-//  auto const & materials = _materials;
-//
-//  // Validate the XSecs of each material and ensure they have the same number of groups
-//  Int const num_groups = materials[0].xsec().numGroups();
-//  for (auto const & mat : materials) {
-//    mat.validateXSec();
-//    ASSERT(mat.xsec().numGroups() == num_groups);
-//  }
-//
-//  if (core.children().empty()) {
-//    logger::error("Core has no children");
-//    return;
-//  }
-//
-//  // Store:
-//  //  group-wise optical thicknesses for each coarse cell
-//  //  collapsed optical thickness for each coarse cell
-//  //  vector of face IDs for each coarse cell
-//  Int const num_coarse_cells = coarse_cells.size();
-//  Vector<Vector<Float>> coarse_cell_taus(num_coarse_cells);
-//  Vector<Float> collapsed_taus(num_coarse_cells, 0);
-//  Vector<Vector<Int>> coarse_cell_face_ids(num_coarse_cells);
-//  for (Int icc = 0; icc < num_coarse_cells; ++icc) {
-//    auto & taus = coarse_cell_taus[icc];
-//    // getCoarseCellOpticalThickness will resize taus
-//    getCoarseCellOpticalThickness(icc, taus);
-//    for (Int ig = 0; ig < num_groups; ++ig) {
-//      collapsed_taus[icc] += taus[ig];
-//    }
-//    collapsed_taus[icc] /= static_cast<Float>(num_groups);
-//  }
-//
-//  // Store the IDs of the vertices of each face
-//  Vector<Int> conn(4);
-//
-//  // For each assembly
-//  Int const nyasy = core.grid().numCells(1);
-//  Int const nxasy = core.grid().numCells(0);
-//  for (Int iyasy = 0; iyasy < nyasy; ++iyasy) {
-//    for (Int ixasy = 0; ixasy < nxasy; ++ixasy) {
-//
-//      // Get the assembly ID
-//      auto const asy_id = core.getChild(ixasy, iyasy);
-//      ASSERT(asy_id >= 0);
-//      ASSERT(asy_id < assemblies.size());
-//
-//      // Get the assembly offset (lower left corner)
-//      Point2 const asy_ll = core.grid().getBox(ixasy, iyasy).minima();
-//
-//      // Get the assembly
-//      auto const & assembly = assemblies[asy_id];
-//      if (assembly.children().empty()) {
-//        logger::error("Assembly has no children");
-//        return;
-//      }
-//
-//      // For each lattice
-//      Int const nzlat = assembly.grid().numCells(0);
-//      for (Int izlat = 0; izlat < nzlat; ++izlat) {
-//
-//        // Get the lattice ID
-//        auto const lat_id = assembly.getChild(izlat);
-//        ASSERT(lat_id >= 0);
-//        ASSERT(lat_id < lattices.size());
-//
-//        // Get the lattice offset (z direction)
-//        // The midplane is the location that the geometry was sampled at.
-//        Float const low_z = assembly.grid().divs(0)[izlat];
-//        Float const high_z = assembly.grid().divs(0)[izlat + 1];
-//        Float const lat_z = (low_z + high_z) / 2;
-//
-//        // Get the lattice
-//        auto const & lattice = lattices[lat_id];
-//        if (lattice.children().empty()) {
-//          logger::error("Lattice has no children");
-//          return;
-//        }
-//
-//        // For each RTM
-//        Int const nyrtm = lattice.grid().numCells(1);
-//        Int const nxrtm = lattice.grid().numCells(0);
-//        for (Int iyrtm = 0; iyrtm < nyrtm; ++iyrtm) {
-//          for (Int ixrtm = 0; ixrtm < nxrtm; ++ixrtm) {
-//
-//            // Get the RTM ID
-//            auto const rtm_id = lattice.getChild(ixrtm, iyrtm);
-//            ASSERT(rtm_id >= 0);
-//            ASSERT(rtm_id < rtms.size());
-//
-//            // Get the RTM offset (lower left corner)
-//            Point2 const rtm_ll = lattice.grid().getBox(ixrtm, iyrtm).minima();
-//
-//            // Get the rtm
-//            auto const & rtm = rtms[rtm_id];
-//            if (rtm.children().empty()) {
-//              logger::error("RTM has no children");
-//              return;
-//            }
-//
-//            // For each coarse cell
-//            Int const nycells = rtm.grid().numCells(1);
-//            Int const nxcells = rtm.grid().numCells(0);
-//            for (Int iycell = 0; iycell < nycells; ++iycell) {
-//              for (Int ixcell = 0; ixcell < nxcells; ++ixcell) {
-//
-//                // Get the coarse cell ID
-//                auto const & cell_id = rtm.getChild(ixcell, iycell);
-//                ASSERT(cell_id >= 0);
-//                ASSERT(cell_id < coarse_cells.size());
-//
-//                // Get the cell box
-//                auto const cell_bb = rtm.grid().getBox(ixcell, iycell);
-//                // Get the cell offset (lower left corner)
-//                Point2 const cell_ll = cell_bb.minima();
-//                // Get the cell extents
-//                Vec2F const cell_extents = cell_bb.extents();
-//
-//                // Compute the global xyz offset
-//                Point2 const xy_offset = cell_ll + rtm_ll + asy_ll;
-//
-//                // Add the quad to the soup
-//                Point3 const v0(xy_offset[0], xy_offset[1], lat_z);
-//                Point3 const v1(xy_offset[0] + cell_extents[0], xy_offset[1], lat_z);
-//                Point3 const v2(xy_offset[0] + cell_extents[0], xy_offset[1] + cell_extents[1], lat_z);
-//                Point3 const v3(xy_offset[0], xy_offset[1] + cell_extents[1], lat_z);
-//
-//                conn[0] = soup.addVertex(v0);
-//                conn[1] = soup.addVertex(v1);
-//                conn[2] = soup.addVertex(v2);
-//                conn[3] = soup.addVertex(v3);
-//
-//                auto const face_id = soup.addElement(VTKElemType::Quad, conn);
-//
-//                // add the face ID to coarse_cell_face_ids
-//                auto & cc_face_ids = coarse_cell_face_ids[cell_id];
-//                cc_face_ids.emplace_back(face_id);
-//
-//              } // for (ixcell)
-//            }   // for (iycell)
-//          }   // for (ixrtm)
-//        }     // for (iyrtm)
-//      } // for (izlat)
-//    } // for (ixasy)
-//  }   // for (iyasy)
-//
-//  // add elsets for each coarse cell
-//  for (Int icc = 0; icc < num_coarse_cells; ++icc) {
-//    String const elset_name = "Coarse_Cell_" + getASCIINumber(icc);
-//    auto const & cc_face_ids = coarse_cell_face_ids[icc];
-//    soup.addElset(elset_name, cc_face_ids);
-//  } // for (icc)
-//
-//  // add the group-wise optical thicknesses for each coarse cell
-//  auto const num_faces = soup.numElements();
-//  Vector<Int> ids(num_faces);
-//  um2::iota(ids.begin(), ids.end(), 0);
-//  Vector<Float> data(num_faces);
-//
-//  // Construct the group g optical thickness elsets
-//  for (Int ig = 0; ig < num_groups; ++ig) {
-//    um2::fill(data.begin(), data.end(), -inf_distance);
-//    String const elset_name = "Group_" + getASCIINumber(ig) + "_Optical_Thickness";
-//    for (Int icc = 0; icc < num_coarse_cells; ++icc) {
-//      auto const tau_g = coarse_cell_taus[icc][ig];
-//      auto const & face_ids = coarse_cell_face_ids[icc];
-//      // Fill the data vector with tau_g at the face IDs
-//      for (auto const & face_id : face_ids) {
-//        data[face_id] = tau_g;
-//      }
-//    }
-//    soup.addElset(elset_name, ids, data);
-//  }
-//#if UM2_ENABLE_ASSERTS
-//  // check that all data has been filled
-//  for (auto const & d : data) {
-//    ASSERT(d > -inf_distance);
-//  }
-//#endif
-//
-//  // add the collapsed optical thickness
-//  um2::fill(data.begin(), data.end(), -inf_distance);
-//  String const elset_name = "Mean_Optical_Thickness";
-//  for (Int icc = 0; icc < num_coarse_cells; ++icc) {
-//    auto const & face_ids = coarse_cell_face_ids[icc];
-//    auto const tau = collapsed_taus[icc];
-//    // Fill the data vector with tau at the face IDs
-//    for (auto const & face_id : face_ids) {
-//      data[face_id] = tau;
-//    }
-//  }
-//  soup.addElset(elset_name, ids, data);
-//#if UM2_ENABLE_ASSERTS
-//  for (auto const & d : data) {
-//    ASSERT(d > -inf_distance);
-//  }
-//#endif
-//
-//  soup.write(filename);
+  PolytopeSoup soup;
+
+  auto const & core = _core;
+  auto const & assemblies = _assemblies;
+  auto const & lattices = _lattices;
+  auto const & rtms = _rtms;
+  auto const & coarse_cells = _coarse_cells;
+  auto const & materials = _materials;
+
+  // Validate the XSecs of each material and ensure they have the same number of groups
+  Int const num_groups = materials[0].xsec().numGroups();
+  for (auto const & mat : materials) {
+    mat.validateXSec();
+    ASSERT(mat.xsec().numGroups() == num_groups);
+  }
+
+  if (core.children().empty()) {
+    logger::error("Core has no children");
+    return;
+  }
+
+  // Store:
+  //  group-wise homogenized xsecs for each coarse cell
+//  //  group-wise optical thicknesses for each coarse cell 
+//  //    (pi * area * homogenized xsec / perimeter) 
+  //  vector of face IDs for each coarse cell
+  Int const num_coarse_cells = coarse_cells.size();
+  Vector<XSec> coarse_cell_xsecs(num_coarse_cells);
+  for (Int icc = 0; icc < num_coarse_cells; ++icc) {
+    coarse_cell_xsecs[icc] = getCoarseCellHomogenizedXSec(icc);
+  }
+
+  Vector<Vector<Int>> coarse_cell_face_ids(num_coarse_cells);
+
+  // Store the IDs of the vertices of each face
+  Vector<Int> conn(4);
+
+  // For each assembly
+  Int const nyasy = core.grid().numCells(1);
+  Int const nxasy = core.grid().numCells(0);
+  for (Int iyasy = 0; iyasy < nyasy; ++iyasy) {
+    for (Int ixasy = 0; ixasy < nxasy; ++ixasy) {
+
+      // Get the assembly ID
+      auto const asy_id = core.getChild(ixasy, iyasy);
+      ASSERT(asy_id >= 0);
+      ASSERT(asy_id < assemblies.size());
+
+      // Get the assembly offset (lower left corner)
+      Point2 const asy_ll = core.grid().getBox(ixasy, iyasy).minima();
+
+      // Get the assembly
+      auto const & assembly = assemblies[asy_id];
+      if (assembly.children().empty()) {
+        logger::error("Assembly has no children");
+        return;
+      }
+
+      // For each lattice
+      Int const nzlat = assembly.grid().numCells(0);
+      for (Int izlat = 0; izlat < nzlat; ++izlat) {
+
+        // Get the lattice ID
+        auto const lat_id = assembly.getChild(izlat);
+        ASSERT(lat_id >= 0);
+        ASSERT(lat_id < lattices.size());
+
+        // Get the lattice offset (z direction)
+        // The midplane is the location that the geometry was sampled at.
+        Float const low_z = assembly.grid().divs(0)[izlat];
+        Float const high_z = assembly.grid().divs(0)[izlat + 1];
+        Float const lat_z = (low_z + high_z) / 2;
+
+        // Get the lattice
+        auto const & lattice = lattices[lat_id];
+        if (lattice.children().empty()) {
+          logger::error("Lattice has no children");
+          return;
+        }
+
+        // For each RTM
+        Int const nyrtm = lattice.grid().numCells(1);
+        Int const nxrtm = lattice.grid().numCells(0);
+        for (Int iyrtm = 0; iyrtm < nyrtm; ++iyrtm) {
+          for (Int ixrtm = 0; ixrtm < nxrtm; ++ixrtm) {
+
+            // Get the RTM ID
+            auto const rtm_id = lattice.getChild(ixrtm, iyrtm);
+            ASSERT(rtm_id >= 0);
+            ASSERT(rtm_id < rtms.size());
+
+            // Get the RTM offset (lower left corner)
+            Point2 const rtm_ll = lattice.grid().getBox(ixrtm, iyrtm).minima();
+
+            // Get the rtm
+            auto const & rtm = rtms[rtm_id];
+            if (rtm.children().empty()) {
+              logger::error("RTM has no children");
+              return;
+            }
+
+            // For each coarse cell
+            Int const nycells = rtm.grid().numCells(1);
+            Int const nxcells = rtm.grid().numCells(0);
+            for (Int iycell = 0; iycell < nycells; ++iycell) {
+              for (Int ixcell = 0; ixcell < nxcells; ++ixcell) {
+
+                // Get the coarse cell ID
+                auto const & cell_id = rtm.getChild(ixcell, iycell);
+                ASSERT(cell_id >= 0);
+                ASSERT(cell_id < coarse_cells.size());
+
+                // Get the cell box
+                auto const cell_bb = rtm.grid().getBox(ixcell, iycell);
+                // Get the cell offset (lower left corner)
+                Point2 const cell_ll = cell_bb.minima();
+                // Get the cell extents
+                Vec2F const cell_extents = cell_bb.extents();
+
+                // Compute the global xyz offset
+                Point2 const xy_offset = cell_ll + rtm_ll + asy_ll;
+
+                // Add the quad to the soup
+                Point3 const v0(xy_offset[0], xy_offset[1], lat_z);
+                Point3 const v1(xy_offset[0] + cell_extents[0], xy_offset[1], lat_z);
+                Point3 const v2(xy_offset[0] + cell_extents[0], xy_offset[1] + cell_extents[1], lat_z);
+                Point3 const v3(xy_offset[0], xy_offset[1] + cell_extents[1], lat_z);
+
+                conn[0] = soup.addVertex(v0);
+                conn[1] = soup.addVertex(v1);
+                conn[2] = soup.addVertex(v2);
+                conn[3] = soup.addVertex(v3);
+
+                auto const face_id = soup.addElement(VTKElemType::Quad, conn);
+
+                // add the face ID to coarse_cell_face_ids
+                auto & cc_face_ids = coarse_cell_face_ids[cell_id];
+                cc_face_ids.emplace_back(face_id);
+
+              } // for (ixcell)
+            }   // for (iycell)
+          }   // for (ixrtm)
+        }     // for (iyrtm)
+      } // for (izlat)
+    } // for (ixasy)
+  }   // for (iyasy)
+
+  // add elsets for each coarse cell
+  for (Int icc = 0; icc < num_coarse_cells; ++icc) {
+    String const elset_name = "Coarse_Cell_" + getASCIINumber(icc);
+    auto const & cc_face_ids = coarse_cell_face_ids[icc];
+    soup.addElset(elset_name, cc_face_ids);
+  } // for (icc)
+
+  auto const num_faces = soup.numElements();
+  Vector<Int> ids(num_faces);
+  um2::iota(ids.begin(), ids.end(), 0);
+  Vector<Float> data(num_faces);
+
+  // Construct the group g total cross section elsets 
+  for (Int ig = 0; ig < num_groups; ++ig) {
+    um2::fill(data.begin(), data.end(), -inf_distance);
+    String const elset_name = "Homogenized_Group_" + getASCIINumber(ig) + "_Total_XS";
+    for (Int icc = 0; icc < num_coarse_cells; ++icc) {
+      auto const sigma_t = coarse_cell_xsecs[icc].t(ig);
+      auto const & face_ids = coarse_cell_face_ids[icc];
+      for (auto const & face_id : face_ids) {
+        data[face_id] = sigma_t;
+      }
+    }
+    soup.addElset(elset_name, ids, data);
+#if UM2_ENABLE_ASSERTS
+    // check that all data has been filled
+    for (auto const & d : data) {
+      ASSERT(d > -inf_distance);
+    }
+#endif
+  }
+
+  // Construct the group g scattering ratio elsets
+  for (Int ig = 0; ig < num_groups; ++ig) {
+    um2::fill(data.begin(), data.end(), -inf_distance);
+    String const elset_name = "Homogenized_Group_" + getASCIINumber(ig) + "_Scattering_Ratio";
+    for (Int icc = 0; icc < num_coarse_cells; ++icc) {
+      auto const sigma_t = coarse_cell_xsecs[icc].t(ig);
+      auto const sigma_s = coarse_cell_xsecs[icc].s()[ig];
+      auto const c = sigma_s / sigma_t;
+      auto const & face_ids = coarse_cell_face_ids[icc];
+      for (auto const & face_id : face_ids) {
+        data[face_id] = c;
+      }
+    }
+    soup.addElset(elset_name, ids, data);
+#if UM2_ENABLE_ASSERTS
+    // check that all data has been filled
+    for (auto const & d : data) {
+      ASSERT(d > -inf_distance);
+    }
+#endif
+  }
+
+  // Construct the group g 1D CMFD spectral radius
+  for (Int ig = 0; ig < num_groups; ++ig) {
+    um2::fill(data.begin(), data.end(), -inf_distance);
+    String const elset_name = "1D_Group_" + getASCIINumber(ig) + "_CMFD_Spectral_Radius";
+    for (Int icc = 0; icc < num_coarse_cells; ++icc) {
+      LOG_INFO("Computing spectral radius for coarse cell ", icc, " group ", ig);
+      auto const sigma_t = coarse_cell_xsecs[icc].t(ig);
+      auto const sigma_s = coarse_cell_xsecs[icc].s()[ig];
+      auto const c = sigma_s / sigma_t;
+
+      // CMFD Cell Parameters
+      // Use the average side length of the cell as the width of the 1D cell
+      auto const & cc = getCoarseCell(icc);
+      auto const & xy_extents = cc.xy_extents;
+      auto const w = (xy_extents[0] + xy_extents[1]) / 2;
+      // Fix number of cells at 4
+      Int const p = 4;
+      Int const s = 1; // number of sweeps
+      Float const eta = 0.25; // odcmfd
+
+      CMFDCellParams const params(w, p, sigma_t, c, s, eta);
+      auto const rho = spectral_radius(params);
+      auto const & face_ids = coarse_cell_face_ids[icc];
+      for (auto const & face_id : face_ids) {
+        data[face_id] = rho.real();
+      }
+    }
+    soup.addElset(elset_name, ids, data);
+#if UM2_ENABLE_ASSERTS
+    // check that all data has been filled
+    for (auto const & d : data) {
+      ASSERT(d > -inf_distance);
+    }
+#endif
+  }
+
+  soup.write(filename);
 
 } // writeCMFDInfo
 

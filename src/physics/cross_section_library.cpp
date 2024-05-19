@@ -336,8 +336,9 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
           Float const fission = strto<Float>(token.data(), &end);
           ASSERT(end != nullptr);
           end = nullptr;
-          if (um2::abs(fission) > castIfNot<Float>(1e-10)) {
+          if (fission > 0) {
             nuclide.isFissile() = true;
+            xsec.isFissile() = true;
           }
           if (fission < 0) {
             LOG_WARN("Nuclide with ZAID ", zaid,

@@ -168,12 +168,12 @@ set(UM2_SOURCES
     "src/physics/material.cpp"
     "src/physics/cmfd.cpp"
     "src/mpact/model.cpp"
-    #    "src/gmsh/base_gmsh_api.cpp"
-    #    "src/gmsh/io.cpp"
-    #    "src/gmsh/model.cpp"
-    #    "src/gmsh/mesh.cpp"
-    # "src/um2.cpp"
-    # "src/um2c.cpp"
+    "src/gmsh/base_gmsh_api.cpp"
+    "src/gmsh/io.cpp"
+    "src/gmsh/model.cpp"
+    "src/gmsh/mesh.cpp"
+    "src/um2.cpp"
+    "src/um2c.cpp"
   )
 
 

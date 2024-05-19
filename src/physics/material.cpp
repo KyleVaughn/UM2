@@ -96,6 +96,10 @@ Material::populateXSec(XSLibrary const & xsec_lib) noexcept
     auto const & lib_nuc = xsec_lib.getNuclide(zaid);
     auto const xs_nuc = lib_nuc.interpXS(getTemperature());
     auto const atom_density = numDensity(inuc);
+    ASSERT(atom_density > 0);
+    if (xs_nuc.isFissile()) {
+      _xsec.isFissile() = true;
+    } 
     // TODO(kcvaughn): This should be done using arithmetic operations on XSec
     for (Int ig = 0; ig < num_groups; ++ig) {
       _xsec.a()[ig] += xs_nuc.a()[ig] * atom_density;
@@ -109,6 +113,55 @@ Material::populateXSec(XSLibrary const & xsec_lib) noexcept
     }
   }
   _xsec.validate();
+}
+
+//==============================================================================
+// Free functions
+//==============================================================================
+
+PURE auto
+getC5G7Materials() noexcept -> Vector<Material>
+{
+  Vector<Material> materials(7);
+
+  auto const xsecs = getC5G7XSecs();
+
+  // UO2
+  materials[0].setName("UO2");
+  materials[0].setColor(um2::forestgreen);
+  materials[0].xsec() = xsecs[0];
+
+  // MOX 4.3%
+  materials[1].setName("MOX_4.3");
+  materials[1].setColor(um2::yellow);
+  materials[1].xsec() = xsecs[1];
+
+  // MOX 7.0%
+  materials[2].setName("MOX_7.0");
+  materials[2].setColor(um2::orange);
+  materials[2].xsec() = xsecs[2];
+
+  // MOX 8.7%
+  materials[3].setName("MOX_8.7");
+  materials[3].setColor(um2::red);
+  materials[3].xsec() = xsecs[3];
+
+  // Fisstion Chamber 
+  materials[4].setName("Fission_Chamber");
+  materials[4].setColor(um2::black);
+  materials[4].xsec() = xsecs[4];
+
+  // Guide Tube
+  materials[5].setName("Guide_Tube");
+  materials[5].setColor(um2::darkgrey);
+  materials[5].xsec() = xsecs[5];
+
+  // Moderator
+  materials[6].setName("Moderator");
+  materials[6].setColor(um2::royalblue);
+  materials[6].xsec() = xsecs[6];
+
+  return materials;
 }
 
 } // namespace um2

@@ -31,11 +31,18 @@ Nuclide::validate() const noexcept
   if (_mass <= 0) {
     LOG_ERROR("Nuclide has invalid mass number: ", _mass);
   }
+  bool any_fissile_xs = false;
   for (auto const & xsec : _xs) {
+    if (xsec.isFissile()) {
+      any_fissile_xs = true;
+    }
     xsec.validate();
     if (xsec.isMacro()) {
       LOG_ERROR("Nuclide has a macroscopic cross section");
     }
+  }
+  if (any_fissile_xs != isFissile()) {
+    LOG_ERROR("Nuclide has mismatched fissile cross sections");
   }
   if (_temperatures.size() != _xs.size()) {
     LOG_ERROR("Nuclide has mismatched temperatures and cross sections");
@@ -90,6 +97,8 @@ Nuclide::interpXS(Float const temperature) const noexcept -> XSec
   Int const ng = xs0.numGroups();
   XSec xs(xs0.numGroups());
   ASSERT(xs1.numGroups() == ng);
+  xs.isMacro() = xs0.isMacro();
+  xs.isFissile() = xs0.isFissile();
 
   // Interpolate the cross sections
   // TODO(kcvaughn): This should be handled with arithmetic operators on the XSec
