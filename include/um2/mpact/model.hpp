@@ -299,11 +299,17 @@ public:
       bool write_xsec_data = false) const;
 
   // Return a vector of group-wise optical thicknesses for the coarse cell.
-  void 
-  getCoarseCellOpticalThickness(Int cc_id, Vector<Float> & taus) const;
+  //void 
+  //getCoarseCellOpticalThickness(Int cc_id, Vector<Float> & taus) const;
+
+  // Homogenize the material and return the resulting cross section.
+  // for each face i in 0, 1, ... num_faces - 1, 
+  // Sigma_x = (sum_{i} A_i * Sigma_x_i) / sum_{i} A_i
+  PURE auto
+  getCoarseCellHomogenizedXSec(Int cc_id) const -> XSec;
 
   void
-  writeOpticalThickness(String const & filename) const;
+  writeCMFDInfo(String const & filename) const;
 
 }; // struct Model
 

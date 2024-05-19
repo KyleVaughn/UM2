@@ -1,3 +1,6 @@
+implement ranges-like versions of operations
+  Automatically use begin,end or begin + size, etc to do sum, mean, etc.
+
 Define arithmetic operators on XSec
 
 
