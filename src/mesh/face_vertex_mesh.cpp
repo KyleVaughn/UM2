@@ -8,6 +8,8 @@
 #include <algorithm> // sort
 #include <numeric> // inclusive_scan
 
+#include <iostream> // std::cerr
+
 namespace um2
 {
 
@@ -407,7 +409,11 @@ checkSelfIntersections(FaceVertexMesh<2, N> const & mesh)
   Point2 buffer[2 * N];
   for (Int iface = 0; iface < num_faces; ++iface) {
     if (mesh.getFace(iface).hasSelfIntersection(buffer)) {
-      logger::error("Mesh has self-intersecting face at index: ", iface);
+      PolytopeSoup const soup = mesh;
+      soup.write("self_intersecting_mesh.xdmf");
+      std::cerr << "Intersection at (" << buffer[0][0] << ", " << buffer[0][1] << ") or ("
+                << buffer[1][0] << ", " << buffer[1][1] << ")" << std::endl;
+      logger::error("Mesh has self-intersecting face at index: ", iface, ". Mesh written to self_intersecting_mesh.xdmf");
       return;
     }
   }

@@ -10,8 +10,6 @@ main(int argc, char** argv) -> int
 {
   um2::initialize();
 
-  bool constexpr rodded = false;
-
   // Check the number of arguments
   if (argc != 2) {
     um2::logger::error("Usage: ./4_2d num_coarse_cells");
@@ -175,21 +173,6 @@ main(int argc, char** argv) -> int
   ss304.addNuclide(28064, 7.21770e-05);
   ss304.populateXSec(xslib);
 
-  // AIC
-  //---------------------------------------------------------------------------
-  um2::Material aic;
-  aic.setName("AIC");
-  aic.setDensity(10.2); // g/cm^3, Table 8 (pg. 10)
-  aic.setTemperature(565.0); // K, Table P4-1 (pg. 50)
-  aic.setColor(um2::purple);
-  // Number densities in atoms/b-cm from Table P4-3 (pg. 55)
-  aic.addNuclide(47107, 2.36159e-02);
-  aic.addNuclide(47109, 2.19403e-02);
-  aic.addNuclide(48000, 2.73220e-03); // Natural Cadmium
-  aic.addNuclide(49113, 3.44262e-04);
-  aic.addNuclide(49115, 7.68050e-03);
-  aic.populateXSec(xslib);
-
   //============================================================================
   // Geometry
   //============================================================================
@@ -217,9 +200,6 @@ main(int argc, char** argv) -> int
   Float const r_pyrex_outer = 0.427; // Pyrex outer radius = 0.427 cm (pg. 8)
 //  Float const r_pyrex_clad_inner = 0.437; // Clad inner radius = 0.437 cm (pg. 8)
   Float const r_pyrex_clad_outer = 0.484; // Clad outer radius = 0.484 cm (pg. 8)
-  Float const r_aic = 0.382;    // Poison radius = 0.382 cm (pg. 10)
-//  Float const r_aic_inner = 0.386; // Cladding inner radius = 0.386 cm (pg. 10)
-  Float const r_aic_outer = 0.484; // Cladding outer radius = 0.484 cm (pg. 10)
   Float const pitch = 1.26;    // Pitch = 1.26 cm (pg. 4)
   Float const assembly_pitch = 21.50; // Assembly pitch = 21.50 cm (pg. 5)
   Float const inter_assembly_gap = 0.04; // Inter-assembly gap = 0.04 cm (pg. 5)
@@ -262,24 +242,15 @@ main(int argc, char** argv) -> int
     gap, ss304, pyrex, ss304, moderator, clad
   };
 
-  // AIC
-  //---------------------------------------------------------------------------
-  //um2::Vector<Float> const aic_radii = {r_aic, r_aic_inner, r_aic_outer};
-  //um2::Vector<um2::Material> const aic_materials = {aic, gap, ss304};
-
-  um2::Vector<Float> const aic_radii = {r_aic, r_aic_outer};
-  um2::Vector<um2::Material> const aic_materials = {aic, ss304};
-
   // Materials, radii, and xy_extents for each pin
   //---------------------------------------------------------------------------
   um2::Vector<um2::Vector<um2::Material>> const materials = {
-    fuel_2110_materials, gt_materials, it_materials, fuel_2619_materials, pyrex_materials,
-    aic_materials
+    fuel_2110_materials, gt_materials, it_materials, fuel_2619_materials, pyrex_materials
   };
   um2::Vector<um2::Vector<Float>> const radii = {
-    fuel_radii, gt_radii, it_radii, fuel_radii, pyrex_radii, aic_radii
+    fuel_radii, gt_radii, it_radii, fuel_radii, pyrex_radii
   };
-  um2::Vector<um2::Vec2F> const xy_extents(6, pin_size);
+  um2::Vector<um2::Vec2F> const xy_extents(5, pin_size);
 
   // Lattice layout (Fig. 3, pg. 5)
   um2::Vector<um2::Vector<Int>> const fuel_2110_lattice = um2::stringToLattice<Int>(R"(
@@ -322,26 +293,6 @@ main(int argc, char** argv) -> int
       3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
     )");
 
-//  um2::Vector<um2::Vector<Int>> const fuel_2110_aic_lattice = um2::stringToLattice<Int>(R"(
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 0 0 0 5 0 0 5 0 0 5 0 0 0 0 0
-//      0 0 0 5 0 0 0 0 0 0 0 0 0 5 0 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 5 0 0 5 0 0 5 0 0 5 0 0 5 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 5 0 0 5 0 0 2 0 0 5 0 0 5 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 5 0 0 5 0 0 5 0 0 5 0 0 5 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 0 5 0 0 0 0 0 0 0 0 0 5 0 0 0
-//      0 0 0 0 0 5 0 0 5 0 0 5 0 0 0 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//    )");
-
   ASSERT(fuel_2110_lattice.size() == 17);
   ASSERT(fuel_2110_lattice[0].size() == 17);
   ASSERT(fuel_2619_lattice.size() == 17);
@@ -374,7 +325,6 @@ main(int argc, char** argv) -> int
 
   factory::addCylindricalPinLattice2D(
       fuel_2110_lattice,
-//      fuel_2110_aic_lattice,
       xy_extents,
       radii,
       materials,
@@ -393,9 +343,6 @@ main(int argc, char** argv) -> int
   model.addMaterial(moderator);
   model.addMaterial(pyrex);
   model.addMaterial(ss304);
-  if constexpr (rodded) {
-    model.addMaterial(aic);
-  }
 
    // Add a coarse grid that evenly subdivides the domain (quarter core)
   um2::Vec2F const domain_extents(1.5 * assembly_pitch, 1.5 * assembly_pitch);

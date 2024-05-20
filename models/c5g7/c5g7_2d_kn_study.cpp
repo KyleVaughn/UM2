@@ -11,8 +11,8 @@ main(int argc, char** argv) -> int
   um2::initialize();
 
   // Check the number of arguments
-  if (argc != 2) {
-    um2::logger::error("Usage: ./c5g7_2d num_coarse_cells");
+  if (argc != 4) {
+    um2::logger::error("Usage: ./c5g7_2d target_kn mfp_threshold mfp_scale"); 
     return 1;
   }
 
@@ -20,10 +20,24 @@ main(int argc, char** argv) -> int
   // Parametric study parameters
   //===========================================================================
 
+  Int constexpr num_coarse_cells = 51;
+
   char * end = nullptr;
-  Int const num_coarse_cells = um2::strto<Int>(argv[1], &end);
+  Float const target_kn = um2::strto<Float>(argv[1], &end);
   ASSERT(end != nullptr);
-  ASSERT(num_coarse_cells > 0);
+  ASSERT(target_kn > 0.0);
+  end = nullptr;
+
+  Float const mfp_threshold = um2::strto<Float>(argv[2], &end);
+  ASSERT(end != nullptr);
+  end = nullptr;
+
+  Float const mfp_scale = um2::strto<Float>(argv[3], &end);
+  ASSERT(end != nullptr);
+
+  um2::logger::info("Target Knudsen number: ", target_kn);
+  um2::logger::info("MFP threshold: ", mfp_threshold);
+  um2::logger::info("MFP scale: ", mfp_scale);
 
   //===========================================================================
   // Model parameters
@@ -37,18 +51,11 @@ main(int argc, char** argv) -> int
   // Materials
   //===========================================================================
 
-  um2::Vector<um2::Material> materials = um2::getC5G7Materials();
+  um2::Vector<um2::Material> const materials = um2::getC5G7Materials();
   auto const & uo2 = materials[0];
   auto const & mox43 = materials[1];
   auto const & mox70 = materials[2];
   auto const & mox87 = materials[3];
-  // Modify the fission chamber group 7->7 scattering to be 10x larger
-  materials[4].xsec().ss()(6, 6) *= 10.0;
-  // Need to recompute total scattering for group 7
-  materials[4].xsec().s()[6] = 0.0;
-  for (Int g = 0; g < 7; ++g) {
-    materials[4].xsec().s()[6] += materials[4].xsec().ss()(g, 6);
-  }
   auto const & fiss_chamber = materials[4];
   auto const & guide_tube = materials[5];
   auto const & moderator = materials[6];
@@ -182,12 +189,9 @@ main(int argc, char** argv) -> int
   // Generate the mesh
   //===========================================================================
 
-  um2::gmsh::model::mesh::setGlobalMeshSize(pin_pitch / 4);
-//  Float const kn_target = 5.0;
-//  Float const mfp_threshold = 4.0;
-//  Float const mfp_scale = 1.2;
-//  um2::gmsh::model::mesh::setMeshFieldFromKnudsenNumber(
-//      2, model.materials(), kn_target, mfp_threshold, mfp_scale, is_fuel);
+//  um2::gmsh::model::mesh::setGlobalMeshSize(pin_pitch / 4);
+  um2::gmsh::model::mesh::setMeshFieldFromKnudsenNumber(
+      2, model.materials(), target_kn, mfp_threshold, mfp_scale);
   um2::gmsh::model::mesh::generateMesh(um2::MeshType::QuadraticTri);
   um2::gmsh::write("c5g7_2d.inp");
 
@@ -196,8 +200,7 @@ main(int argc, char** argv) -> int
   //===========================================================================
 
   model.importCoarseCellMeshes("c5g7_2d.inp");
-  model.writeCMFDInfo("c5g7_2d_cmfd_info.xdmf");
-  model.write("c5g7_2d.xdmf", /*write_knudsen_data=*/true, /*write_xsec_data=*/true);
+  model.write("c5g7_2d.xdmf", /*write_knudsen_data=*/true, /*write_xsec_data=*/false);
   um2::finalize();
   return 0;
 }

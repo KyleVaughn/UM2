@@ -3089,8 +3089,13 @@ Model::writeCMFDInfo(String const & filename) const
       Int const s = 1; // number of sweeps
       Float const eta = 0.25; // odcmfd
 
-      CMFDCellParams const params(w, p, sigma_t, c, s, eta);
-      auto const rho = spectral_radius(params);
+      std::complex<Float> rho(-1, 0);
+      if (c > 1) {
+        LOG_WARN("Scattering ratio is greater than 1 for coarse cell ", icc, " group ", ig, ". Setting rho to -1.");
+      } else {
+        CMFDCellParams const params(w, p, sigma_t, c, s, eta);
+        rho = spectral_radius(params);
+      }
       auto const & face_ids = coarse_cell_face_ids[icc];
       for (auto const & face_id : face_ids) {
         data[face_id] = rho.real();
