@@ -359,7 +359,7 @@ if (UM2_BUILD_BENCHMARKS)
 endif()
 
 if (UM2_BUILD_POSTPROCESS)
-  #add_subdirectory(post-process)
+  add_subdirectory(post-process)
 endif()
 
 if (UM2_BUILD_MODELS)
