@@ -73,9 +73,57 @@ main(int argc, char **argv) -> int
     }
   }
 
-  int const ret = fclose(file);
-  if (ret != 0) {
+  int fret = fclose(file);
+  if (fret != 0) {
     LOG_ERROR("Failed to close file: ", total_xs_filename);
+    return 1;
+  }
+
+  um2::String const scattering_ratio_filename("scattering_ratio.txt");
+  file = fopen(scattering_ratio_filename.data(), "w");
+  if (file == nullptr) {
+    std::cerr << "Could not open file " << scattering_ratio_filename.data() << std::endl;
+    return 1;
+  }
+
+  // Write the scattering ratio for each group to a file
+  for (auto const & group_ratio : group_scattering_ratio) {
+    for (auto const ratio : group_ratio) {
+      int const ret = fprintf(file, "%.16f\n", ratio);
+      if (ret < 0) {
+        LOG_ERROR("Failed to write to file: ", scattering_ratio_filename);
+        return 1;
+      }
+    }
+  }
+
+  fret = fclose(file);
+  if (fret != 0) {
+    LOG_ERROR("Failed to close file: ", scattering_ratio_filename);
+    return 1;
+  }
+
+  um2::String const spectral_radius_filename("spectral_radius.txt");
+  file = fopen(spectral_radius_filename.data(), "w");
+  if (file == nullptr) {
+    std::cerr << "Could not open file " << spectral_radius_filename.data() << std::endl;
+    return 1;
+  }
+  
+  // Write the spectral radius for each group to a file
+  for (auto const & group_radius : group_spectral_radius) {
+    for (auto const radius : group_radius) {
+      int const ret = fprintf(file, "%.16f\n", radius);
+      if (ret < 0) {
+        LOG_ERROR("Failed to write to file: ", spectral_radius_filename);
+        return 1;
+      }
+    }
+  }
+
+  fret = fclose(file);
+  if (fret != 0) {
+    LOG_ERROR("Failed to close file: ", spectral_radius_filename);
     return 1;
   }
 
