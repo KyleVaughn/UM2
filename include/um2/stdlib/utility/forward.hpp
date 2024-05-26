@@ -17,7 +17,7 @@ forward(std::remove_reference_t<T> & t) noexcept -> T &&
 
 template <class T>
 HOSTDEV [[nodiscard]] constexpr auto
-// NOLINTNEXTLINE(*-param-not-moved) // False positive.
+// NOLINTNEXTLINE(*-param-not-moved) // OK. False positive.
 forward(std::remove_reference_t<T> && t) noexcept -> T &&
 {
   // Forwards rvalues as rvalues and prohibits forwarding of lvalues.

@@ -12,18 +12,15 @@
 #cmakedefine01 UM2_ENABLE_BMI2
 #cmakedefine01 UM2_ENABLE_FASTMATH
 #cmakedefine01 UM2_ENABLE_FLOAT64
-#cmakedefine01 UM2_ENABLE_INT64
-#cmakedefine01 UM2_ENABLE_NATIVE
 #cmakedefine01 UM2_ENABLE_SIMD_VEC
 
 // External tools/dependencies
 #cmakedefine01 UM2_USE_CUDA
-#cmakedefine01 UM2_USE_GMSH
-#cmakedefine01 UM2_USE_HDF5
+//#cmakedefine01 UM2_USE_GMSH
+//#cmakedefine01 UM2_USE_HDF5
 #cmakedefine01 UM2_USE_OPENMP
-#cmakedefine01 UM2_USE_PUGIXML
-#cmakedefine01 UM2_USE_TBB
-#cmakedefine01 UM2_USE_VALGRIND
+//#cmakedefine01 UM2_USE_PUGIXML
+//#cmakedefine01 UM2_USE_TBB
 
 // Max log level for compile-time filtering of log messages
 // clang-format off
@@ -39,7 +36,7 @@
 // Includes
 //==============================================================================
 
-#include <cstdint> // int32_t, int64_t
+#include <cstdint> // int8_t, int32_t
 
 #if UM2_USE_OPENMP
 #  include <omp.h>
@@ -73,11 +70,7 @@
 #if defined(__clang__)
 #  define ASSUME(expr) __builtin_assume(expr)
 #elif defined(__GNUC__)
-#  define ASSUME(expr)                                                                   \
-    if (expr) {                                                                          \
-    } else {                                                                             \
-      __builtin_unreachable();                                                           \
-    }
+#  define ASSUME(expr) __attribute__((__assume__(expr))) 
 #elif defined(__CUDACC__)
 #  define ASSUME(expr) __assume(expr)
 #else
@@ -126,30 +119,11 @@ using Float = float;
 #endif
 
 // Integer type
-#if UM2_ENABLE_INT64
-using Int = int64_t;
-HOSTDEV consteval auto
-intMax() noexcept -> Int
-{
-  return INT64_MAX;
-}
-#else
 using Int = int32_t;
-HOSTDEV consteval auto
-intMax() noexcept -> Int
-{
-  return INT32_MAX;
-}
-#endif
 
 // Integer type for material IDs.
 // We don't expect more than 127 materials, so we use int8_t to save memory.
 using MatID = int8_t;
-HOSTDEV consteval auto
-matIDMax() noexcept -> MatID
-{
-  return INT8_MAX;
-}
 
 //==============================================================================
 // Misc.

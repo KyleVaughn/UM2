@@ -12,7 +12,7 @@ namespace um2
 //==============================================================================
 // construct_at
 //==============================================================================
-// This cannot be constexpr because it uses placement new. In the C++ stdlib,
+// This cannot be constexpr because it uses placement new. In the C++ stdlib
 // their construct_at IS constexpr because they have cheat codes... :(
 
 template <class T, class... Args>

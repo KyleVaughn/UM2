@@ -42,6 +42,8 @@ struct Counted {
 HOSTDEV
 TEST_CASE(destroy_at)
 {
+  // Want malloc, so we can allocate memory that is not associated with Counted
+  // NOLINTBEGIN(cppcoreguidelines-no-malloc) OK
   void * mem1 = malloc(sizeof(Counted));
   void * mem2 = malloc(sizeof(Counted));
   ASSERT(mem1 != nullptr);
@@ -61,12 +63,7 @@ TEST_CASE(destroy_at)
   ASSERT(count == 0);
   free(mem1);
   free(mem2);
-}
-
-HOSTDEV
-TEST_CASE(destroy_at_constexpr)
-{
-
+  // NOLINTEND(cppcoreguidelines-no-malloc)
 }
 
 //=============================================================================
@@ -112,6 +109,8 @@ TEST_CASE(construct_at)
 HOSTDEV
 TEST_CASE(destroy)
 {
+  // Want malloc, so we can allocate memory that is not associated with Counted
+  // NOLINTBEGIN(cppcoreguidelines-no-malloc) OK
   void * mem = malloc(5 * sizeof(Counted));
   ASSERT(mem != nullptr);
   ASSERT(count == 0);
@@ -130,6 +129,7 @@ TEST_CASE(destroy)
   um2::destroy(ptr_begin, ptr_begin + 2);
   ASSERT(count == 0);
   free(mem);
+  // NOLINTEND(cppcoreguidelines-no-malloc)
 }
 
 MAKE_CUDA_KERNEL(construct_at);

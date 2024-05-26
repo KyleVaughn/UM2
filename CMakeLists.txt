@@ -54,11 +54,6 @@ option(UM2_ENABLE_FASTMATH "Enable fast math optimizations on CPU and GPU" ON)
 # determines the precision of the floating point numbers used in UM2.
 option(UM2_ENABLE_FLOAT64 "Enable 64-bit Float" ON)
 
-# Set the Int type to 64-bit (int64_t) instead of 32-bit (int32_t). This option
-# determines the precision of the integer numbers used in UM2. Note that this
-# influences the index type used by all UM2 classes.
-option(UM2_ENABLE_INT64 "Enable 64-bit Int" OFF)
-
 # Enable native architecture. This option enables the -march=native flag, which
 # optimizes the code for the architecture on which it is built.
 option(UM2_ENABLE_NATIVE "Enable -march=native" ON)
@@ -80,7 +75,6 @@ option(UM2_USE_CLANG_FORMAT "Use clang-format" ON)
 
 # Use clang-tidy for static analysis. Enable clang-tidy on all targets.
 option(UM2_USE_CLANG_TIDY "Use clang-tidy" ON)
-
 
 option(UM2_USE_COVERAGE      "Use coverage" OFF) # Code coverage
 option(UM2_USE_CUDA          "Use CUDA"     OFF) # GPU acceleration
@@ -151,7 +145,6 @@ else()
           "Please use GCC >= ${UM2_MIN_GCC_VERSION} or Clang >= ${UM2_MIN_CLANG_VERSION}")
 endif()
 
-# Check for BMI2 support now that we know the compiler is supported
 if (UM2_ENABLE_BMI2)
   # Check to see if the CPU is one of the AMD architectures that have issues with BMI2
   execute_process(COMMAND bash "${CMAKE_CURRENT_SOURCE_DIR}/cmake/check_bmi2_support.sh"
@@ -162,13 +155,10 @@ if (UM2_ENABLE_BMI2)
   endif()
 endif()
 
-# Warn about Float64 and Int64 when using CUDA
+# Warn about Float64 and when using CUDA
 if (UM2_USE_CUDA)
   if (UM2_ENABLE_FLOAT64)
     message(WARNING "64-bit Float may be slow with CUDA.")
-  endif()
-  if (UM2_ENABLE_INT64)
-    message(WARNING "64-bit Int may be slow with CUDA.")
   endif()
 endif()
 
@@ -203,12 +193,17 @@ macro(um2_add_cxx_compiler_flag FLAG)
   endif()
 endmacro()
 
-# Fast math optimizations
+# Math optimizations
 if (UM2_ENABLE_FASTMATH)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math")
   if (UM2_USE_CUDA)
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --use_fast_math")
   endif()
+else()
+  um2_add_cxx_compiler_flag("-fno-math-errno")
+  um2_add_cxx_compiler_flag("-fno-trapping-math")
+  um2_add_cxx_compiler_flag("-fno-signed-zeros")
+  um2_add_cxx_compiler_flag("-fno-signaling-nans")
 endif()
 
 # Native architecture
@@ -218,9 +213,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 if (!UM2_USE_CUDA)
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,undefined")
 endif()
-
-# Disable math-errno, since we don't use it and it can slow down math operations
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-math-errno")
 
 # Set general warning flags
 um2_add_cxx_compiler_flag("-Wall")
@@ -280,8 +272,9 @@ endif()
 # Sources
 set(UM2_SOURCES
     "src/common/settings.cpp"    
-    "src/common/logger.cpp"
-    "src/um2.cpp")
+    #"src/common/logger.cpp"
+    #"src/um2.cpp"
+    )
 
 if (UM2_BUILD_SHARED_LIB)
   if (UM2_USE_CUDA)
@@ -314,7 +307,6 @@ if (UM2_USE_CLANG_FORMAT)
   set(FORMAT_PATTERNS
     src/*.cpp
     include/*.hpp
-    include/*.h
     cmake/*.hpp.in
     benchmarks/*.hpp
     benchmarks/*.cpp
@@ -362,7 +354,7 @@ if (UM2_USE_CLANG_TIDY)
   macro(set_clang_tidy_properties TIDY_TARGET)
     set_target_properties(${TIDY_TARGET} PROPERTIES
             CXX_CLANG_TIDY
-            "clang-tidy;--extra-arg=-Wno-unknown-warning-option")
+            "clang-tidy;--extra-arg=-Wno-unknown-warning-option;--extra-arg=-Wno-ignored-optimization-argument")
   endmacro()
   set_clang_tidy_properties(um2)
 endif()

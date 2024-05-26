@@ -7,7 +7,7 @@
 struct A {
   int i;
 
-  // NOLINTNEXTLINE(google-runtime-operator) we are testing operator&
+  // NOLINTNEXTLINE(google-runtime-operator) OK, we are testing operator&
   auto
   operator&() const -> int
   {

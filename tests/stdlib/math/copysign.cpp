@@ -4,7 +4,7 @@
 #include "../../test_macros.hpp"
 
 // We want true floating point equality here
-// NOLINTBEGIN(clang-diagnostic-float-equal)
+// NOLINTBEGIN(clang-diagnostic-float-equal) OK
 #pragma GCC diagnostic push // OK
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 
