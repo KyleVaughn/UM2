@@ -183,17 +183,18 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
   }
 
   // Check that the names match
-  std::vector<int8_t> found(num_materials, 0);
-  for (auto const & material_name : material_names) {
-    for (size_t i = 0; i < num_materials; ++i) {
-      if (material_name == material_group_names[i]) {
-        found[i] = 1;
+  std::vector<size_t> index_of_material_in_gmsh(num_materials, 10000);
+  for (size_t imat = 0; imat < num_materials; ++imat) {
+    auto const & material_name = material_names[imat];
+    for (size_t igmsh = 0; igmsh < num_materials; ++igmsh) {
+      if (material_name == material_group_names[igmsh]) {
+        index_of_material_in_gmsh[imat] = igmsh;
         break;
       }
     }
   }
   for (size_t i = 0; i < num_materials; ++i) {
-    if (found[i] == 0) {
+    if (index_of_material_in_gmsh[i] == 10000) {
       LOG_ERROR(materials[static_cast<Int>(i)].getName(), " does not exist as a physical group");
       return -1;
     }
@@ -235,6 +236,8 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
     if (materials[static_cast<Int>(i)].xsec().isFissile()) {
       is_fissile[i] = 1;
     }
+    auto const & material_name = materials[static_cast<Int>(i)].getName();
+    LOG_INFO("Material ", material_name, ": lc = ", lcs[i], " cm, sigma_t = ", sigma_t, " cm^-1");
   }
 
   // Create the base fields, which are constant in each material
@@ -247,7 +250,7 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
     // Populate each of the fields with the entities in the
     // physical group
     std::vector<int> ent_tags;
-    gmsh::model::getEntitiesForPhysicalGroup(dim, material_group_tags[i], ent_tags);
+    gmsh::model::getEntitiesForPhysicalGroup(dim, material_group_tags[index_of_material_in_gmsh[i]], ent_tags);
     ASSERT(!ent_tags.empty());
     std::vector<double> const double_ent_tags(ent_tags.begin(), ent_tags.end());
     switch (dim) {
@@ -273,6 +276,7 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
   // the characteristic length by the distance to the nearest fuel material,
   // after some threshold MFPs
   if (mfp_threshold >= 0.0) {
+    LOG_INFO("Using MFP threshold: ", mfp_threshold, " and MFP scale: ", mfp_scale);
     ASSERT(mfp_scale >= 1.0);
     ASSERT(is_fissile.size() == num_materials);
     // ASSERT that there is at least one fuel material
@@ -285,7 +289,7 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
     for (size_t i = 0; i < num_materials; ++i) {
       if (is_fissile[i] == 1) {
         std::vector<int> ent_tags;
-        gmsh::model::getEntitiesForPhysicalGroup(dim, material_group_tags[i], ent_tags);
+        gmsh::model::getEntitiesForPhysicalGroup(dim, material_group_tags[index_of_material_in_gmsh[i]], ent_tags);
         fuel_ent_tags.insert(fuel_ent_tags.end(), ent_tags.begin(), ent_tags.end());
       }
     }
