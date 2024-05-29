@@ -147,8 +147,10 @@ generateMesh(MeshType const mesh_type, int const smooth_iters)
 auto
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & materials,
-                              double const kn_target, double const mfp_threshold,
-                              double const mfp_scale) -> int
+                              double const kn_target, double const fuel_mfp_threshold,
+                              double const fuel_mfp_scale,
+                              double const abs_mfp_threshold,
+                              double const abs_mfp_scale) -> int
 {
   //-----------------------------------------------------------------------
   // Check that each material exists as a physical group
@@ -218,10 +220,13 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
   std::vector<double> lcs(num_materials, 0.0);
   std::vector<double> sigmas_t(num_materials, 0.0);
   std::vector<int> is_fissile(num_materials, 0);
+  std::vector<int> is_absorber(num_materials, 0);
   for (size_t i = 0; i < num_materials; ++i) {
     XSec const xs_avg_1g = materials[static_cast<Int>(i)].xsec().collapseTo1GroupAvg();
     ASSERT(xs_avg_1g.t(0) > 0);
     double const sigma_t = xs_avg_1g.t(0);
+    double const sigma_s = xs_avg_1g.s()[0];
+    double const c = sigma_s / sigma_t;
     // The mean chord length of an equilateral triangle with side length l:
     // s = pi * A / 3l = pi * (sqrt(3) * l^2 / 4) / (3l) = pi * sqrt(3) * l / 12
     //
@@ -234,7 +239,13 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
     lcs[i] = 12.0 / (um2::pi<double> * um2::sqrt(3.0) * kn_target * sigma_t);
     sigmas_t[i] = sigma_t;
     if (materials[static_cast<Int>(i)].xsec().isFissile()) {
+      LOG_INFO("Material ", materials[static_cast<Int>(i)].getName(), " is fissile");
       is_fissile[i] = 1;
+    }
+    // If c < 0.2, and sigma_t > 0.9, classify as absorber
+    if (c < 0.2 && sigma_t > 0.9) {
+      LOG_INFO("Material ", materials[static_cast<Int>(i)].getName(), " is an absorber");
+      is_absorber[i] = 1;
     }
     auto const & material_name = materials[static_cast<Int>(i)].getName();
     LOG_INFO("Material ", material_name, ": lc = ", lcs[i], " cm, sigma_t = ", sigma_t, " cm^-1");
@@ -272,12 +283,12 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
   }   // for (size_t i = 0; i < num_materials; ++i)
 
   // We now have the target characteristic length for each material. If
-  // mfp_threshold >= 0.0, then for non-fuel materials, we wish to scale
+  // fuel_mfp_threshold >= 0.0, then for non-fuel, non-absorber materials, we wish to scale
   // the characteristic length by the distance to the nearest fuel material,
   // after some threshold MFPs
-  if (mfp_threshold >= 0.0) {
-    LOG_INFO("Using MFP threshold: ", mfp_threshold, " and MFP scale: ", mfp_scale);
-    ASSERT(mfp_scale >= 1.0);
+  if (fuel_mfp_threshold >= 0.0) {
+    LOG_INFO("Using fuel MFP threshold: ", fuel_mfp_threshold, " and MFP scale: ", fuel_mfp_scale);
+    ASSERT(fuel_mfp_scale >= 1.0);
     ASSERT(is_fissile.size() == num_materials);
     // ASSERT that there is at least one fuel material
     if (std::all_of(is_fissile.begin(), is_fissile.end(), [](int const x) { return x == 0; })) {
@@ -338,18 +349,18 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
     // |  /  |
     // | /   |
     // |-----x-----------------> sigma_t * d_fuel (mfps)
-    // 0   mfp_threshold
+    // 0   fuel_mfp_threshold
     //
-    // lc_linear = lc * sigma_t * mfp_scale * d_fuel +  
-    //    lc * (1 - mfp_threshold * mfp_scale) 
+    // lc_linear = lc * sigma_t * fuel_mfp_scale * d_fuel +  
+    //    lc * (1 - fuel_mfp_threshold * fuel_mfp_scale) 
     // Then, create a field which takes the max(lc, lc_linear)
     for (size_t i = 0; i < num_materials; ++i) {
-      if (is_fissile[i] == 0) {
+      if (is_fissile[i] == 0 && is_absorber[i] == 0) {
         // Create a field that multiplies the base field by the distance to the fuel
         // material
         int const fid = gmsh::model::mesh::field::add("MathEval");
-        double const scale = lcs[i] * sigmas_t[i] * mfp_scale;
-        double const offset = lcs[i] * (1.0 - mfp_threshold * mfp_scale);
+        double const scale = lcs[i] * sigmas_t[i] * fuel_mfp_scale;
+        double const offset = lcs[i] * (1.0 - fuel_mfp_threshold * fuel_mfp_scale);
         std::string math_expr = fuel_distance_name + " * " + std::to_string(scale);
         if (offset >= 0.0) {
           math_expr += " + " + std::to_string(offset);
@@ -366,7 +377,100 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
         field_ids[i] = max_fid;
       }
     }
-  } // if (mfp_threshold > 0.0)
+  } // if (fuel_mfp_threshold > 0.0)
+
+  // If abs_mfp_threshold >= 0.0, then for absorber materials, we wish to scale
+  // the characteristic length by the distance to the boundary of the absorber
+  // after some threshold MFPs
+  if (abs_mfp_threshold >= 0.0) {
+    LOG_INFO("Using abs MFP threshold: ", abs_mfp_threshold, " and MFP scale: ", abs_mfp_scale);
+    ASSERT(abs_mfp_scale >= 1.0);
+    ASSERT(is_absorber.size() == num_materials);
+    // ASSERT that there is at least one absorber material
+    if (std::all_of(is_absorber.begin(), is_absorber.end(), [](int const x) { return x == 0; })) {
+      LOG_ERROR("No absorber materials found");
+      return -1;
+    }
+
+    std::vector<int> abs_ent_tags;
+    std::vector<int> abs_ent_tags_d1;
+    std::vector<int> upward;
+    std::vector<int> downward;
+    for (size_t i = 0; i < num_materials; ++i) {
+      if (is_absorber[i] == 1) {
+        abs_ent_tags.resize(0);
+        gmsh::model::getEntitiesForPhysicalGroup(dim, material_group_tags[index_of_material_in_gmsh[i]], abs_ent_tags);
+
+        abs_ent_tags_d1.resize(0);
+        // For each entity in abs_ent_tags
+        for (auto const & abs_ent_tag : abs_ent_tags) {
+          // Get the D-1 entities
+          upward.resize(0);
+          downward.resize(0);
+          gmsh::model::getAdjacencies(dim, abs_ent_tag, upward, downward);
+          ASSERT(!downward.empty());
+          std::sort(downward.begin(), downward.end());
+          // Ensure there are no duplicates
+          for (size_t ient = 0; ient < downward.size() - 1; ++ient) {
+            if (downward[ient] == downward[ient + 1]) {
+              LOG_ERROR("Duplicate downward entity tag");
+              return -1;
+            }
+          }
+          // Insert the downward entities into abs_ent_tags_d1
+          for (auto const & d1 : downward) {
+            if (std::find(abs_ent_tags_d1.begin(), abs_ent_tags_d1.end(), d1) == abs_ent_tags_d1.end()) {
+              abs_ent_tags_d1.push_back(d1);
+            }
+          }
+        } // for (auto const & abs_ent_tag : abs_ent_tags)
+        std::sort(abs_ent_tags_d1.begin(), abs_ent_tags_d1.end());
+        std::vector<double> const boundary_tags(abs_ent_tags_d1.begin(), abs_ent_tags_d1.end());
+
+        // Create the abs distance field
+        int const abs_distance_fid = gmsh::model::mesh::field::add("Distance");
+        switch (dim - 1) {
+        case 0:
+          gmsh::model::mesh::field::setNumbers(abs_distance_fid, "PointsList",
+                                               boundary_tags);
+          break;
+        case 1:
+          gmsh::model::mesh::field::setNumbers(abs_distance_fid, "CurvesList",
+                                               boundary_tags);
+          break;
+        case 2:
+          gmsh::model::mesh::field::setNumbers(abs_distance_fid, "SurfacesList",
+                                                boundary_tags);
+          break;
+        default:
+          LOG_ERROR("Invalid dimension");
+          return -1;
+        } // dim switch
+
+        std::string const abs_distance_name = 'F' + std::to_string(abs_distance_fid);
+        
+        // Create a field that multiplies the base field by the distance to the abs
+        // material boundary
+        int const fid = gmsh::model::mesh::field::add("MathEval");
+        double const scale = lcs[i] * sigmas_t[i] * abs_mfp_scale;
+        double const offset = lcs[i] * (1.0 - abs_mfp_threshold * abs_mfp_scale);
+        std::string math_expr = abs_distance_name + " * " + std::to_string(scale);
+        if (offset >= 0.0) {
+          math_expr += " + " + std::to_string(offset);
+        } else {
+          math_expr += " - " + std::to_string(-offset);
+        }
+        LOG_INFO("Creating linear field for ", materials[static_cast<Int>(i)].getName(), ": ", math_expr.c_str());
+        gmsh::model::mesh::field::setString(fid, "F", math_expr);
+        int const max_fid = gmsh::model::mesh::field::add("Max");
+        std::vector<double> const field_ids_d = {static_cast<double>(field_ids[i]),
+                                                 static_cast<double>(fid)};
+        gmsh::model::mesh::field::setNumbers(max_fid, "FieldsList", field_ids_d);
+        // Replace the base field with the max field
+        field_ids[i] = max_fid;
+      } // if (is_absorber[i] == 1)
+    } // for (size_t i = 0; i < num_materials; ++i)
+  } // if (abs_mfp_threshold > 0.0)
 
   // Create a field that takes the min of each and set as background mesh
   int const fid = gmsh::model::mesh::field::add("Min");

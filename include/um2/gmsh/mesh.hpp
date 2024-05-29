@@ -24,7 +24,8 @@ generateMesh(MeshType mesh_type, int smooth_iters = 100);
 auto
 setMeshFieldFromKnudsenNumber(
     int dim, um2::Vector<Material> const & materials, double kn_target,
-    double mfp_threshold = -1.0, double mfp_scale = -1.0) -> int;
+    double fuel_mfp_threshold = -1.0, double fuel_mfp_scale = -1.0,
+    double abs_mfp_threshold = -1.0, double abs_mfp_scale = -1.0) -> int;
 
 
 } // namespace um2::gmsh::model::mesh
