@@ -15,15 +15,15 @@ namespace um2::cmfd
 
 // NOLINTBEGIN(readability-identifier-naming)
 
-// Equation 5
-PURE auto
+// Equation 5. No memory allocation
+CONST auto
 beta_n(Float const h, Float const mu_n) -> Float
 {
   Float const z = h / (2 * mu_n);
   return 1 / um2::tanh(z) - 1 / z;
 }
 
-// Equation 51
+// Equation 51. No memory allocation
 void
 set_An(Matrix<ComplexF> & An, CMFDCellParams const & params, Float const mu_n, Float const alpha)
 {
@@ -51,7 +51,7 @@ set_An(Matrix<ComplexF> & An, CMFDCellParams const & params, Float const mu_n, F
   }
 }
 
-// Equation 52
+// Equation 52. No memory allocation
 void
 set_Bn(Matrix<ComplexF> & Bn, Matrix<ComplexF> const & An,
     CMFDCellParams const & params, Float const mu_n, Float const alpha)
@@ -82,16 +82,23 @@ set_Bn(Matrix<ComplexF> & Bn, Matrix<ComplexF> const & An,
   Bn += An;
 }
 
-// Equation 54
+// Equation 54. No memory allocation
 void
 set_U(Matrix<ComplexF> & U, Matrix<ComplexF> & An, Matrix<ComplexF> & Bn,
-    CMFDCellParams const & params, Float const alpha)
+    CMFDCellParams const & params, Float const alpha, Matrix<ComplexF> & I,
+    Vector<Int> & ipiv)
 {
   // ASSUMPTIONS:
-  // - An and Bn are already set
+  // - An, Bn, and I are p by p matrices
 
   ASSERT(U.rows() == params.p);
   ASSERT(U.cols() == params.p);
+  ASSERT(An.rows() == params.p);
+  ASSERT(An.cols() == params.p);
+  ASSERT(Bn.rows() == params.p);
+  ASSERT(Bn.cols() == params.p);
+  ASSERT(I.rows() == params.p);
+  ASSERT(I.cols() == params.p);
 
   // Zero out U
   U.zero();
@@ -172,16 +179,21 @@ set_U(Matrix<ComplexF> & U, Matrix<ComplexF> & An, Matrix<ComplexF> & Bn,
 
   // Find X such that Bn * X = I
   Int const p = params.p;
-  Matrix<ComplexF> I(p, p); // Identity matrix
-  I.zero();
-  for (Int i = 0; i < p; ++i) {
-    I(i, i) = ComplexF(1, 0);
-  }
   for (Int n = 0; n < um2::CMFDCellParams::N; ++n) {
+    I.zero();
+    for (Int i = 0; i < p; ++i) {
+      I(i, i) = ComplexF(1, 0);
+    }
     set_An(An, params, mu[n], alpha);
+    Bn.zero();
     set_Bn(Bn, An, params, mu[n], alpha);
-    auto const B_inv = linearSolve(Bn, I);
-    auto const X = An * B_inv;
+    // auto const B_inv = linearSolve(Bn, I);
+    // auto const X = An * B_inv;
+    linearSolve(Bn, I, ipiv);
+    // I is now Bn⁻¹
+    auto const & B_inv = I;
+    matmul(Bn, An, B_inv);
+    auto const & X = Bn;
     auto const w_n = w[n];
     // U = U + wₙ * X
     for (Int i = 0; i < p * p; ++i) {
@@ -191,7 +203,7 @@ set_U(Matrix<ComplexF> & U, Matrix<ComplexF> & An, Matrix<ComplexF> & Bn,
   U *= params.c / 2;
 }
 
-// Equation 56
+// Equation 56. No memory allocation
 PURE auto
 getF(CMFDCellParams const & params, Float alpha) -> Float
 {
@@ -203,40 +215,49 @@ getF(CMFDCellParams const & params, Float alpha) -> Float
   return numerator / (denominator_l + denominator_r);
 }
 
-// Equation 57 (just constructing the matrix)
+// Equation 57 (just constructing the matrix). No memory allocation
 void
 set_omega(Matrix<ComplexF> & omega, Matrix<ComplexF> & An, Matrix<ComplexF> & Bn,
-    Matrix<ComplexF> & U, Matrix<ComplexF> const & J, CMFDCellParams const & params, Float alpha)
+    Matrix<ComplexF> & U, Matrix<ComplexF> const & J, CMFDCellParams const & params, Float alpha,
+    Matrix<ComplexF> & I, Vector<Int> & ipiv)
 {
   // ASSUMPTIONS:
   //  - Aₙ and Bₙ are zero everywhere except the locations we will set
   //  - J is a matrix of ones
-
-  set_U(U, An, Bn, params, alpha);
-  auto const F = getF(params, alpha);
-  auto const s = params.s;
   Int const p = params.p;
+  set_U(U, An, Bn, params, alpha, I, ipiv);
+  auto const F = getF(params, alpha); // This is a scalar
+  auto const s = params.s;
+  ASSERT(s == 1);
 
   // ω = (U^σ + F * J * (U^σ - U^(σ - 1)))
   // ω = (U + F * J * (U - I)) * U^(σ - 1)
 
-  Matrix<ComplexF> I(p, p); // Identity matrix
-  I.zero();
+
+  ComplexF const one(1, 0);
+  // U' = U - I
   for (Int i = 0; i < p; ++i) {
-    I(i, i) = ComplexF(1, 0);
+    U(i, i) -= one;
+  } 
+  // ω = J * U' = (J * (U - I))
+  matmul(omega, J, U);
+  // ω = F * (J * (U - I))
+  omega *= F;
+  // ω = (U - I) + F * (J * (U - I))
+  omega += U;
+  // ω = U + F * (J * (U - I))
+  for (Int i = 0; i < p; ++i) {
+    omega(i, i) += one;
   }
 
-  auto JUI = J * (U - I);
-  JUI *= F;
-  omega = U + JUI;
-  if (s > 1) {
-    Matrix<ComplexF> U_s1 = U; // U^1
-    // Don't have M^pow yet
-    for (Int i = 0; i < s - 2; ++i) {
-      U_s1 = U_s1 * U;
-    }
-    omega = omega * U_s1;
-  }
+  //if (s > 1) {
+  //  Matrix<ComplexF> U_s1 = U; // U^1
+  //  // Don't have M^pow yet
+  //  for (Int i = 0; i < s - 2; ++i) {
+  //    U_s1 = U_s1 * U;
+  //  }
+  //  omega = omega * U_s1;
+  //}
 }
 
 } // namespace um2::cmfd
@@ -252,13 +273,6 @@ spectral_radius(CMFDCellParams const & params) -> ComplexF
   Int const num_alpha = CMFDCellParams::num_alpha;
   Float const alpha_max = um2::pi<Float> / params.delta;
   Float const d_alpha = alpha_max / (CMFDCellParams::num_alpha - 1);
-  Vector<Float> alpha(num_alpha);
-  for (Int i = 0; i < num_alpha; ++i) {
-    alpha[i] = i * d_alpha;
-  }
-
-  ASSERT_NEAR(alpha[0], 0, 1e-6);
-  ASSERT_NEAR(alpha[num_alpha - 1], alpha_max, 1e-6);
 
   // Set up matrices
   Int const p = params.p;
@@ -276,11 +290,15 @@ spectral_radius(CMFDCellParams const & params) -> ComplexF
   Matrix<ComplexF> J(p, p);
   um2::fill(J.begin(), J.end(), ComplexF(1.0, 0.0));
 
+  // These don't need to be initialized
+  Matrix<ComplexF> I(p, p); // Identity matrix
+  Vector<Int> ipiv(p);
+
   ComplexF r(0, 0);
   Float r_abs = 0;
   for (Int i = 0; i < num_alpha; ++i) {
-    auto const a = alpha[i];
-    cmfd::set_omega(omega, An, Bn, U, J, params, a);
+    auto const a = i * d_alpha;
+    cmfd::set_omega(omega, An, Bn, U, J, params, a, I, ipiv);
     auto const eigs = eigvals(omega);
     // get the maximum eigenvalue
     for (auto const & eig : eigs) {

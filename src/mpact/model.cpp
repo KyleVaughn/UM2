@@ -1968,7 +1968,7 @@ getNXbyNY(pugi::xml_node const & xgrid, Int & nx, Int & ny)
 // 7    | 8     | (1, 0)
 // 8    | 9     | (2, 0)
 // Map a flat lattice: flat_idx to 2D lattice: (i, j)
-static auto
+PURE static auto
 mapFlatIndexToLattice2D(Int const flat_idx, Int const nx, Int const ny) -> Vec2I
 {
   ASSERT(nx > 0);

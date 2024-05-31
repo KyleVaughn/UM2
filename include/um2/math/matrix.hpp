@@ -135,12 +135,26 @@ template <typename T>
 PURE auto
 operator*(Matrix<T> const & a, Matrix<T> const & b) -> Matrix<T>;
 
+// Non-allocating matrix-matrix multiplication. C = A * B.
+template <typename T>
+void
+matmul(Matrix<T> & c, Matrix<T> const & a, Matrix<T> const & b);
+
 // Solver
 //------------------------------------------------------------------------------
-// Solve A X = B for X. X = A \ B
+// Solve A * X = B for X. X = A \ B
 template <typename T>
 PURE auto
 linearSolve(Matrix<T> const & a, Matrix<T> const & b) -> Matrix<T>;
+
+// On exit: 
+// - A is overwritten with its LU decomposition.
+// - B is overwritten with the solution X.
+//
+// 
+template <typename T>
+void
+linearSolve(Matrix<T> & a, Matrix<T> & b, Vector<Int> & ipiv);
 
 // Eigenvalues
 //------------------------------------------------------------------------------

@@ -48,7 +48,7 @@ struct CMFDCellParams
   Float D;     // Equation 27, diffusion coefficient
 
   static Int constexpr N = 32; // Polar quadrature order, θ ∈ (0, 2π), hence μ ∈ (-1, 1)
-  static Int constexpr num_alpha = 1000; // Number of α values to test
+  static Int constexpr num_alpha = 256; // Number of α values to test
 
   // Constructor
   inline
@@ -80,7 +80,7 @@ namespace um2::cmfd
 {
 
 
-PURE auto
+CONST auto
 beta_n(Float h, Float mu_n) -> Float;
 
 void
@@ -92,14 +92,16 @@ set_Bn(Matrix<ComplexF> & Bn, Matrix<ComplexF> const & An,
 
 void
 set_U(Matrix<ComplexF> & U, Matrix<ComplexF> & An, Matrix<ComplexF> & Bn,
-    CMFDCellParams const & params, Float alpha);
+    CMFDCellParams const & params, Float alpha, Matrix<ComplexF> & I,
+    Vector<Int> & ipiv);
 
 PURE auto
 getF(CMFDCellParams const & params, Float alpha) -> Float;
 
 void
 set_omega(Matrix<ComplexF> & omega, Matrix<ComplexF> & An, Matrix<ComplexF> & Bn,
-    Matrix<ComplexF> & U, Matrix<ComplexF> const & J, CMFDCellParams const & params, Float alpha); 
+    Matrix<ComplexF> & U, Matrix<ComplexF> const & J, CMFDCellParams const & params, Float alpha,
+    Matrix<ComplexF> & I, Vector<Int> & ipiv); 
 
 } // namespace um2::cmfd
 

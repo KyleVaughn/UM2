@@ -5,8 +5,6 @@
 
 #include "../test_macros.hpp"
 
-#include <iostream>
-
 // NOLINTBEGIN(readability-identifier-naming)
 
 TEST_CASE(beta_n)
@@ -100,7 +98,9 @@ TEST_CASE(set_U)
   Bn.zero();
 
   um2::Matrix<ComplexF> U(p, p);
-  um2::cmfd::set_U(U, An, Bn, params, alpha);
+  um2::Matrix<ComplexF> I(p, p);
+  um2::Vector<Int> ipiv(p);
+  um2::cmfd::set_U(U, An, Bn, params, alpha, I, ipiv);
 
   auto constexpr eps = castIfNot<Float>(1e-6);
 
@@ -147,6 +147,8 @@ TEST_CASE(set_omega)
   um2::Matrix<ComplexF> U(p, p);
   um2::Matrix<ComplexF> J(p, p);
   um2::Matrix<ComplexF> omega(p, p);
+  um2::Matrix<ComplexF> I(p, p);
+  um2::Vector<Int> ipiv(p);
   An.zero();
   Bn.zero();
   U.zero();
@@ -154,7 +156,7 @@ TEST_CASE(set_omega)
   omega.zero();
   // set J to ones
   um2::fill(J.data(), J.data() + static_cast<ptrdiff_t>(p * p), ComplexF(1.0, 0.0));
-  um2::cmfd::set_omega(omega, An, Bn, U, J, params, alpha);
+  um2::cmfd::set_omega(omega, An, Bn, U, J, params, alpha, I, ipiv);
   auto constexpr eps = castIfNot<Float>(1e-6);
   ASSERT_NEAR(omega(0, 0).real(), 0.2747858969852661, eps); 
   ASSERT_NEAR(omega(0, 0).imag(), 0, eps);
@@ -166,7 +168,7 @@ TEST_CASE(set_omega)
   ASSERT_NEAR(omega(1, 0).imag(), 0, eps);
 
   alpha = 0.012241906156957803;
-  um2::cmfd::set_omega(omega, An, Bn, U, J, params, alpha);
+  um2::cmfd::set_omega(omega, An, Bn, U, J, params, alpha, I, ipiv);
 }
 
 TEST_CASE(spectral_radius)
@@ -180,7 +182,8 @@ TEST_CASE(spectral_radius)
 
   um2::CMFDCellParams const params(w, p, Sigma_t, c, s, eta);
   auto const rho = spectral_radius(params);
-  std::cout << "rho = " << rho << std::endl; 
+  ASSERT_NEAR(rho.real(), 0.276474, 1e-5);
+  ASSERT_NEAR(rho.imag(), 0, 1e-5);
 }
 
 TEST_SUITE(cmfd)

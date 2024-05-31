@@ -34,7 +34,7 @@ generateMesh(MeshType const mesh_type, int const smooth_iters)
   case MeshType::Tri:
     LOG_INFO("Generating triangle mesh");
     // Delaunay (5) handles large element size gradients better. Maybe use that?
-    gmsh::option::setNumber("Mesh.Algorithm", 6);
+    gmsh::option::setNumber("Mesh.Algorithm", 5);
     gmsh::model::mesh::generate(2);
     break;
   case MeshType::Quad:
@@ -47,7 +47,9 @@ generateMesh(MeshType const mesh_type, int const smooth_iters)
     break;
   case MeshType::QuadraticTri:
     LOG_INFO("Generating quadratic triangle mesh");
-    gmsh::option::setNumber("Mesh.Algorithm", 6);
+    gmsh::option::setNumber("Mesh.Algorithm", 5);
+    gmsh::option::setNumber("Mesh.MeshSizeFromCurvature", 20);
+    LOG_WARN("Setting mesh size from curvature to 20");
     gmsh::model::mesh::generate(2);
     gmsh::option::setNumber("Mesh.HighOrderOptimize", 2); // elastic + opt
     gmsh::model::mesh::setOrder(2);

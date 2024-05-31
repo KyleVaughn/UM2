@@ -122,6 +122,7 @@ operator*(Matrix<std::complex<double>> const & a, Vector<std::complex<double>> c
   return y;
 }
 
+
 //==============================================================================
 // Matrix-Matrix Multiplication
 //==============================================================================
@@ -242,6 +243,122 @@ operator*(Matrix<std::complex<double>> const & a, Matrix<std::complex<double>> c
   return c;
 }
 
+template<>
+void
+matmul(Matrix<float> & c, Matrix<float> const & a, Matrix<float> const & b)
+{
+  ASSERT(a.cols() == b.rows());
+  ASSERT(c.rows() == a.rows());
+  ASSERT(c.cols() == b.cols());
+
+  // Use BLAS's sgemm function to perform the matrix-matrix multiplication 
+  // C = alpha * A * B + beta * C
+  cblas_sgemm(
+      CblasColMajor, // Matrix is stored in column-major order
+      CblasNoTrans,  // Do not transpose the matrix A
+      CblasNoTrans,  // Do not transpose the matrix B
+      a.rows(),      // Number of rows in A
+      b.cols(),      // Number of columns in B
+      a.cols(),      // Number of columns in A
+      1.0F,          // alpha
+      a.data(),      // Matrix A data
+      a.rows(),      // Leading dimension of A
+      b.data(),      // Matrix B data
+      b.rows(),      // Leading dimension of B
+      0.0F,          // beta
+      c.data(),      // Output matrix
+      c.rows());     // Leading dimension of C
+}
+
+template<>
+void
+matmul(Matrix<double> & c, Matrix<double> const & a, Matrix<double> const & b)
+{
+  ASSERT(a.cols() == b.rows());
+  ASSERT(c.rows() == a.rows());
+  ASSERT(c.cols() == b.cols());
+
+  // Use BLAS's dgemm function to perform the matrix-matrix multiplication 
+  // C = alpha * A * B + beta * C
+  cblas_dgemm(
+      CblasColMajor, // Matrix is stored in column-major order
+      CblasNoTrans,  // Do not transpose the matrix A
+      CblasNoTrans,  // Do not transpose the matrix B
+      a.rows(),      // Number of rows in A
+      b.cols(),      // Number of columns in B
+      a.cols(),      // Number of columns in A
+      1.0,           // alpha
+      a.data(),      // Matrix A data
+      a.rows(),      // Leading dimension of A
+      b.data(),      // Matrix B data
+      b.rows(),      // Leading dimension of B
+      0.0,           // beta
+      c.data(),      // Output matrix
+      c.rows());     // Leading dimension of C
+}
+
+template<>
+void
+matmul(Matrix<std::complex<float>> & c, Matrix<std::complex<float>> const & a, Matrix<std::complex<float>> const & b)
+{
+  using Complex32 = std::complex<float>;
+  ASSERT(a.cols() == b.rows());
+  ASSERT(c.rows() == a.rows());
+  ASSERT(c.cols() == b.cols());
+
+  Complex32 const alpha(1.0F);
+  Complex32 const beta(0.0F);
+
+  // Use BLAS's cgemm function to perform the matrix-matrix multiplication 
+  // C = alpha * A * B + beta * C
+  cblas_cgemm(
+      CblasColMajor, // Matrix is stored in column-major order
+      CblasNoTrans,  // Do not transpose the matrix A
+      CblasNoTrans,  // Do not transpose the matrix B
+      a.rows(),      // Number of rows in A
+      b.cols(),      // Number of columns in B
+      a.cols(),      // Number of columns in A
+      &alpha,        // alpha
+      a.data(),      // Matrix A data
+      a.rows(),      // Leading dimension of A
+      b.data(),      // Matrix B data
+      b.rows(),      // Leading dimension of B
+      &beta,         // beta
+      c.data(),      // Output matrix
+      c.rows());     // Leading dimension of C
+}
+
+template<>
+void
+matmul(Matrix<std::complex<double>> & c, Matrix<std::complex<double>> const & a, Matrix<std::complex<double>> const & b)
+{
+  using Complex64 = std::complex<double>;
+  ASSERT(a.cols() == b.rows());
+  ASSERT(c.rows() == a.rows());
+  ASSERT(c.cols() == b.cols());
+
+  Complex64 const alpha(1.0);
+  Complex64 const beta(0.0);
+
+  // Use BLAS's zgemm function to perform the matrix-matrix multiplication 
+  // C = alpha * A * B + beta * C
+  cblas_zgemm(
+      CblasColMajor, // Matrix is stored in column-major order
+      CblasNoTrans,  // Do not transpose the matrix A
+      CblasNoTrans,  // Do not transpose the matrix B
+      a.rows(),      // Number of rows in A
+      b.cols(),      // Number of columns in B
+      a.cols(),      // Number of columns in A
+      &alpha,        // alpha
+      a.data(),      // Matrix A data
+      a.rows(),      // Leading dimension of A
+      b.data(),      // Matrix B data
+      b.rows(),      // Leading dimension of B
+      &beta,         // beta
+      c.data(),      // Output matrix
+      c.rows());     // Leading dimension of C
+}
+
 //==============================================================================
 // Solve Linear System
 //==============================================================================
@@ -357,6 +474,100 @@ linearSolve(Matrix<std::complex<double>> const & a, Matrix<std::complex<double>>
   ASSERT(info == 0);
   delete[] ipiv;
   return b_copy;
+}
+
+template <>
+void
+linearSolve(Matrix<float> & a, Matrix<float> & b, Vector<Int> & ipiv)
+{
+  ASSERT(a.rows() == a.cols()); // A must be square
+  ASSERT(a.rows() == b.rows());
+  ASSERT(a.rows() == ipiv.size());
+
+  // Solve the linear system using LAPACK's sgesv function
+  // It is important to note that sgesv overwrites:
+  //  - the input matrix A with the LU decomposition of A
+  //  - the input matrix B with the solution matrix X
+  //
+  Int const n = a.rows();     // Number of rows in A
+  Int const nrhs = b.cols();  // Number of columns in B
+  Int const lda = a.rows();   // Leading dimension of A
+  Int const ldb = b.rows();   // Leading dimension of B
+  Int const info = LAPACKE_sgesv(LAPACK_COL_MAJOR, n, nrhs, a.data(), lda, ipiv.data(), b.data(), ldb);
+  ASSERT(info == 0);
+}
+
+template <>
+void
+linearSolve(Matrix<double> & a, Matrix<double> & b, Vector<Int> & ipiv)
+{
+  ASSERT(a.rows() == a.cols()); // A must be square
+  ASSERT(a.rows() == b.rows());
+  ASSERT(a.rows() == ipiv.size());
+
+  // Solve the linear system using LAPACK's sgesv function
+  // It is important to note that sgesv overwrites:
+  //  - the input matrix A with the LU decomposition of A
+  //  - the input matrix B with the solution matrix X
+  //
+  Int const n = a.rows();     // Number of rows in A
+  Int const nrhs = b.cols();  // Number of columns in B
+  Int const lda = a.rows();   // Leading dimension of A
+  Int const ldb = b.rows();   // Leading dimension of B
+  Int const info = LAPACKE_dgesv(LAPACK_COL_MAJOR, n, nrhs, a.data(), lda, ipiv.data(), b.data(), ldb);
+  ASSERT(info == 0);
+}
+
+template <>
+void
+linearSolve(Matrix<std::complex<float>> & a, Matrix<std::complex<float>> & b,
+    Vector<Int> & ipiv)
+{
+  ASSERT(a.rows() == a.cols()); // A must be square
+  ASSERT(a.rows() == b.rows());
+  ASSERT(a.rows() == ipiv.size());
+
+  // Solve the linear system using LAPACK's cgesv function
+  // It is important to note that cgesv overwrites:
+  //  - the input matrix A with the LU decomposition of A
+  //  - the input matrix B with the solution matrix X
+  //
+  // Therefore we allocate a copy of A and a copy of B for the function to overwrite
+  Int const n = a.rows();     // Number of rows in A
+  Int const nrhs = b.cols();  // Number of columns in B
+  lapack_complex_float * a_data = reinterpret_cast<lapack_complex_float*>(a.data()); 
+  Int const lda = a.rows();   // Leading dimension of A
+  lapack_complex_float * b_data = reinterpret_cast<lapack_complex_float*>(b.data());
+  Int const ldb = b.rows();   // Leading dimension of B
+  Int const info = LAPACKE_cgesv(LAPACK_COL_MAJOR, n, nrhs, 
+      a_data, lda, ipiv.data(), b_data, ldb);
+  ASSERT(info == 0);
+}
+
+template <>
+void
+linearSolve(Matrix<std::complex<double>> & a, Matrix<std::complex<double>> & b,
+    Vector<Int> & ipiv)
+{
+  ASSERT(a.rows() == a.cols()); // A must be square
+  ASSERT(a.rows() == b.rows());
+  ASSERT(a.rows() == ipiv.size());
+
+  // Solve the linear system using LAPACK's zgesv function
+  // It is important to note that zgesv overwrites:
+  //  - the input matrix A with the LU decomposition of A
+  //  - the input matrix B with the solution matrix X
+  //
+  // Therefore we allocate a copy of A and a copy of B for the function to overwrite
+  Int const n = a.rows();     // Number of rows in A
+  Int const nrhs = b.cols();  // Number of columns in B
+  lapack_complex_double * a_data = reinterpret_cast<lapack_complex_double*>(a.data()); 
+  Int const lda = a.rows();   // Leading dimension of A
+  lapack_complex_double * b_data = reinterpret_cast<lapack_complex_double*>(b.data());
+  Int const ldb = b.rows();   // Leading dimension of B
+  Int const info = LAPACKE_zgesv(LAPACK_COL_MAJOR, n, nrhs, 
+      a_data, lda, ipiv.data(), b_data, ldb);
+  ASSERT(info == 0);
 }
 
 //==============================================================================

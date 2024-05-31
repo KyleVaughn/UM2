@@ -158,7 +158,26 @@ TEST_CASE(mat_mul_float)
   b(7) = 1;
   b(8) = 2;
 
-  auto const ab = a * b;
+  auto ab = a * b;
+  ASSERT(ab.rows() == 4);
+  ASSERT(ab.cols() == 3);
+  ASSERT_NEAR(ab(0), 5, eps);
+  ASSERT_NEAR(ab(1), 8, eps);
+  ASSERT_NEAR(ab(2), 6, eps);
+  ASSERT_NEAR(ab(3), 11, eps);
+  
+  ASSERT_NEAR(ab(4), 4, eps);
+  ASSERT_NEAR(ab(5), 9, eps);
+  ASSERT_NEAR(ab(6), 5, eps);
+  ASSERT_NEAR(ab(7), 9, eps);
+
+  ASSERT_NEAR(ab(8), 3, eps);
+  ASSERT_NEAR(ab(9), 5, eps);
+  ASSERT_NEAR(ab(10), 3, eps);
+  ASSERT_NEAR(ab(11), 6, eps);
+
+  ab.zero();
+  matmul(ab, a, b);
   ASSERT(ab.rows() == 4);
   ASSERT(ab.cols() == 3);
   ASSERT_NEAR(ab(0), 5, eps);
@@ -250,7 +269,7 @@ TEST_CASE(lin_solve_float)
   //      1.32  -0.10   5.36
   //      0.57   0.11   4.04
 
-  auto const x = linearSolve(a, b); 
+  auto x = linearSolve(a, b); 
   ASSERT(x.rows() == 5);
   ASSERT(x.cols() == 3);
 
@@ -272,6 +291,28 @@ TEST_CASE(lin_solve_float)
   ASSERT_NEAR(x(3, 2), 5.36F, eps);
   ASSERT_NEAR(x(4, 2), 4.04F, eps);
 
+  um2::Vector<Int> ipiv(5);
+  linearSolve(a, b, ipiv);
+  ASSERT(b.rows() == 5);
+  ASSERT(b.cols() == 3);
+
+  ASSERT_NEAR(b(0, 0), -0.80F, eps);
+  ASSERT_NEAR(b(1, 0), -0.70F, eps);
+  ASSERT_NEAR(b(2, 0), 0.59F, eps);
+  ASSERT_NEAR(b(3, 0), 1.32F, eps);
+  ASSERT_NEAR(b(4, 0), 0.57F, eps);
+
+  ASSERT_NEAR(b(0, 1), -0.39F, eps);
+  ASSERT_NEAR(b(1, 1), -0.55F, eps);
+  ASSERT_NEAR(b(2, 1), 0.84F, eps);
+  ASSERT_NEAR(b(3, 1), -0.10F, eps);
+  ASSERT_NEAR(b(4, 1), 0.11F, eps);
+
+  ASSERT_NEAR(b(0, 2), 0.96F, eps);
+  ASSERT_NEAR(b(1, 2), 0.22F, eps);
+  ASSERT_NEAR(b(2, 2), 1.90F, eps);
+  ASSERT_NEAR(b(3, 2), 5.36F, eps);
+  ASSERT_NEAR(b(4, 2), 4.04F, eps);
 }
 
 TEST_CASE(eigvals_float)
@@ -513,7 +554,26 @@ TEST_CASE(mat_mul_double)
   b(7) = 1;
   b(8) = 2;
 
-  auto const ab = a * b;
+  auto ab = a * b;
+  ASSERT(ab.rows() == 4);
+  ASSERT(ab.cols() == 3);
+  ASSERT_NEAR(ab(0), 5, eps);
+  ASSERT_NEAR(ab(1), 8, eps);
+  ASSERT_NEAR(ab(2), 6, eps);
+  ASSERT_NEAR(ab(3), 11, eps);
+  
+  ASSERT_NEAR(ab(4), 4, eps);
+  ASSERT_NEAR(ab(5), 9, eps);
+  ASSERT_NEAR(ab(6), 5, eps);
+  ASSERT_NEAR(ab(7), 9, eps);
+
+  ASSERT_NEAR(ab(8), 3, eps);
+  ASSERT_NEAR(ab(9), 5, eps);
+  ASSERT_NEAR(ab(10), 3, eps);
+  ASSERT_NEAR(ab(11), 6, eps);
+
+  ab.zero();
+  matmul(ab, a, b);
   ASSERT(ab.rows() == 4);
   ASSERT(ab.cols() == 3);
   ASSERT_NEAR(ab(0), 5, eps);
@@ -627,6 +687,29 @@ TEST_CASE(lin_solve_double)
   ASSERT_NEAR(x(3, 2), 5.36, eps);
   ASSERT_NEAR(x(4, 2), 4.04, eps);
 
+  um2::Vector<Int> ipiv(5);
+  linearSolve(a, b, ipiv);
+
+  ASSERT(b.rows() == 5);
+  ASSERT(b.cols() == 3);
+                                    
+  ASSERT_NEAR(b(0, 0), -0.80, eps);
+  ASSERT_NEAR(b(1, 0), -0.70, eps);
+  ASSERT_NEAR(b(2, 0), 0.59, eps);
+  ASSERT_NEAR(b(3, 0), 1.32, eps);
+  ASSERT_NEAR(b(4, 0), 0.57, eps);
+                                    
+  ASSERT_NEAR(b(0, 1), -0.39, eps);
+  ASSERT_NEAR(b(1, 1), -0.55, eps);
+  ASSERT_NEAR(b(2, 1), 0.84, eps);
+  ASSERT_NEAR(b(3, 1), -0.10, eps);
+  ASSERT_NEAR(b(4, 1), 0.11, eps);
+                                    
+  ASSERT_NEAR(b(0, 2), 0.96, eps);
+  ASSERT_NEAR(b(1, 2), 0.22, eps);
+  ASSERT_NEAR(b(2, 2), 1.90, eps);
+  ASSERT_NEAR(b(3, 2), 5.36, eps);
+  ASSERT_NEAR(b(4, 2), 4.04, eps);
 }
 
 TEST_CASE(eigvals_double)
@@ -819,7 +902,30 @@ TEST_CASE(mat_mul_Complex32)
   b(7) = T(1, 0);
   b(8) = T(2, 0);
 
-  auto const ab = a * b;
+  auto ab = a * b;
+  ASSERT(ab.rows() == 4);
+  ASSERT(ab.cols() == 3);
+  ASSERT_NEAR(ab(0).real(), 5, eps);
+  ASSERT_NEAR(ab(1).real(), 8, eps);
+  ASSERT_NEAR(ab(2).real(), 6, eps);
+  ASSERT_NEAR(ab(3).real(), 11, eps);
+
+  ASSERT_NEAR(ab(4).real(), 4, eps);
+  ASSERT_NEAR(ab(5).real(), 9, eps);
+  ASSERT_NEAR(ab(6).real(), 5, eps);
+  ASSERT_NEAR(ab(7).real(), 9, eps);
+
+  ASSERT_NEAR(ab(8).real(), 3, eps);
+  ASSERT_NEAR(ab(9).real(), 5, eps);
+  ASSERT_NEAR(ab(10).real(), 3, eps);
+  ASSERT_NEAR(ab(11).real(), 6, eps);
+
+  for (Int i = 0; i < 12; ++i) {
+    ASSERT_NEAR(ab(i).imag(), 0, eps);
+  }
+
+  ab.zero();
+  matmul(ab, a, b);
   ASSERT(ab.rows() == 4);
   ASSERT(ab.cols() == 3);
   ASSERT_NEAR(ab(0).real(), 5, eps);
@@ -936,6 +1042,30 @@ TEST_CASE(lin_solve_Complex32)
   ASSERT_NEAR(x(2, 2).real(), 1.90F, eps);
   ASSERT_NEAR(x(3, 2).real(), 5.36F, eps);
   ASSERT_NEAR(x(4, 2).real(), 4.04F, eps);
+
+  um2::Vector<Int> ipiv(5);
+  linearSolve(a, b, ipiv);
+
+  ASSERT(b.rows() == 5);
+  ASSERT(b.cols() == 3);
+
+  ASSERT_NEAR(b(0, 0).real(), -0.80F, eps);
+  ASSERT_NEAR(b(1, 0).real(), -0.70F, eps);
+  ASSERT_NEAR(b(2, 0).real(), 0.59F, eps);
+  ASSERT_NEAR(b(3, 0).real(), 1.32F, eps);
+  ASSERT_NEAR(b(4, 0).real(), 0.57F, eps);
+
+  ASSERT_NEAR(b(0, 1).real(), -0.39F, eps);
+  ASSERT_NEAR(b(1, 1).real(), -0.55F, eps);
+  ASSERT_NEAR(b(2, 1).real(), 0.84F, eps);
+  ASSERT_NEAR(b(3, 1).real(), -0.10F, eps);
+  ASSERT_NEAR(b(4, 1).real(), 0.11F, eps);
+
+  ASSERT_NEAR(b(0, 2).real(), 0.96F, eps);
+  ASSERT_NEAR(b(1, 2).real(), 0.22F, eps);
+  ASSERT_NEAR(b(2, 2).real(), 1.90F, eps);
+  ASSERT_NEAR(b(3, 2).real(), 5.36F, eps);
+  ASSERT_NEAR(b(4, 2).real(), 4.04F, eps);
 }
 
 TEST_CASE(eigvals_Complex32)
@@ -1156,7 +1286,30 @@ TEST_CASE(mat_mul_Complex64)
   b(7) = T(1, 0);
   b(8) = T(2, 0);
 
-  auto const ab = a * b;
+  auto ab = a * b;
+  ASSERT(ab.rows() == 4);
+  ASSERT(ab.cols() == 3);
+  ASSERT_NEAR(ab(0).real(), 5, eps);
+  ASSERT_NEAR(ab(1).real(), 8, eps);
+  ASSERT_NEAR(ab(2).real(), 6, eps);
+  ASSERT_NEAR(ab(3).real(), 11, eps);
+
+  ASSERT_NEAR(ab(4).real(), 4, eps);
+  ASSERT_NEAR(ab(5).real(), 9, eps);
+  ASSERT_NEAR(ab(6).real(), 5, eps);
+  ASSERT_NEAR(ab(7).real(), 9, eps);
+
+  ASSERT_NEAR(ab(8).real(), 3, eps);
+  ASSERT_NEAR(ab(9).real(), 5, eps);
+  ASSERT_NEAR(ab(10).real(), 3, eps);
+  ASSERT_NEAR(ab(11).real(), 6, eps);
+
+  for (Int i = 0; i < 12; ++i) {
+    ASSERT_NEAR(ab(i).imag(), 0, eps);
+  }
+
+  ab.zero();
+  matmul(ab, a, b);
   ASSERT(ab.rows() == 4);
   ASSERT(ab.cols() == 3);
   ASSERT_NEAR(ab(0).real(), 5, eps);
@@ -1273,6 +1426,29 @@ TEST_CASE(lin_solve_Complex64)
   ASSERT_NEAR(x(2, 2).real(), 1.90, eps);
   ASSERT_NEAR(x(3, 2).real(), 5.36, eps);
   ASSERT_NEAR(x(4, 2).real(), 4.04, eps);
+
+  um2::Vector<Int> ipiv(5);
+  linearSolve(a, b, ipiv);
+  ASSERT(b.rows() == 5);
+  ASSERT(b.cols() == 3);
+
+  ASSERT_NEAR(b(0, 0).real(), -0.80, eps);
+  ASSERT_NEAR(b(1, 0).real(), -0.70, eps);
+  ASSERT_NEAR(b(2, 0).real(), 0.59, eps);
+  ASSERT_NEAR(b(3, 0).real(), 1.32, eps);
+  ASSERT_NEAR(b(4, 0).real(), 0.57, eps);
+
+  ASSERT_NEAR(b(0, 1).real(), -0.39, eps);
+  ASSERT_NEAR(b(1, 1).real(), -0.55, eps);
+  ASSERT_NEAR(b(2, 1).real(), 0.84, eps);
+  ASSERT_NEAR(b(3, 1).real(), -0.10, eps);
+  ASSERT_NEAR(b(4, 1).real(), 0.11, eps);
+
+  ASSERT_NEAR(b(0, 2).real(), 0.96, eps);
+  ASSERT_NEAR(b(1, 2).real(), 0.22, eps);
+  ASSERT_NEAR(b(2, 2).real(), 1.90, eps);
+  ASSERT_NEAR(b(3, 2).real(), 5.36, eps);
+  ASSERT_NEAR(b(4, 2).real(), 4.04, eps);
 }
 
 TEST_CASE(eigvals_Complex64)
