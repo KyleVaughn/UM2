@@ -170,6 +170,9 @@ public:
   void
   addNuclide(String const & symbol, Float num_density) noexcept;
 
+  void
+  addNuclideWt(String const & symbol, Float wt_percent) noexcept;
+
   [[nodiscard]] constexpr auto
   hasXSec() const noexcept -> bool
   {

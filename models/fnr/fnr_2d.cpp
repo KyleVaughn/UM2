@@ -1,27 +1,26 @@
 // Model references:
-// (1) Kerr, William, et al. 
-//     The Ford Nuclear Reactor demonstration project for the evaluation and 
-//     analysis of low enrichment fuel. 
+// (1) Kerr, William, et al.
+//     The Ford Nuclear Reactor demonstration project for the evaluation and
+//     analysis of low enrichment fuel.
 //     No. ANL/RERTR/TM--17. Argonne National Lab., 1991.
 //
 // (2) Kerr, William, et al.
 //     The Ford Nuclear Reactor description and operation.
 //     Rev 1, 4-62 (April 1965)
 //     (Note this is the Red book)
-//
 
 //----------------------------------------------------------------------------
 // ASSUMPTIONS
 //----------------------------------------------------------------------------
-// - The fuel plates are manufactured curved, and therefore the clad thickness 
+// - The fuel plates are manufactured curved, and therefore the clad thickness
 //   is the same on each side of the fuel meat. If the plates are manufactured
-//   flat and then curved to fit into the fuel elements, then the clad thickness 
+//   flat and then curved to fit into the fuel elements, then the clad thickness
 //   will need to be adjusted to conserve volume.
 //
-//   To see this: flat_width * flat_thickness = area = (theta / 2) * (R^2 - r^2) 
-//   where theta is the angle of the circular arc, R is outer radius, and r is inner 
+//   To see this: flat_width * flat_thickness = area = (theta / 2) * (R^2 - r^2)
+//   where theta is the angle of the circular arc, R is outer radius, and r is inner
 //   radius. Let R = r + t, where t is the clad thickness. Then the area becomes
-//   theta * t * (r + t/2). If theta is fixed (boundaries of fuel and clad align), 
+//   theta * t * (r + t/2). If theta is fixed (boundaries of fuel and clad align),
 //   then A_inner = A_outer and r_inner != r_outer implies t_inner != t_outer.
 //
 // - The bottom fuel plate in an assembly is offset by water_gap / 2 from the bottom
@@ -29,10 +28,34 @@
 //   inches long. Assuming they maintain their curvature into the side plates, we
 //   see that the plates must be shifted up by some amount.
 //
-// - The core is configures according to (1) Figure B-7 on page 354.
-//  
+// - The core is configured according to (1) Figure B-7 on page 354.
+
+//----------------------------------------------------------------------------
+// ISSUES
+//----------------------------------------------------------------------------
+// - I have no reference for the exact length of the fuel plates. Therefore the
+//   indents in the side plates of empty elements are not modeled, since it is 
+//   assumed that this is not vital to the neutronics.
+//
+// - I have no reference for what an empty element looks like. Since in some core
+//   configurations, the empty spaces are filled with full fuel elements, I am
+//   going to assume that only the side plates are present in the empty elements.
+//
+// - I have no reference for the exact location of the guide plates. They are simply
+//   places at what seems to be a reasonable location.
+//
+// - We approximate the control rods for no reason other than convenience. All that
+//   needs to be done is to completely round the corners of the rod. The current
+//   approximation stops just short of fully rounding the corners.
+//
+// - I have no reference for the tank size. I am using Riley's OpenMC model as a
+//   reference for the tank size.
+//
 
 #include <um2.hpp>
+#include <um2/stdlib/utility/pair.hpp>
+
+#include <vector>
 #include <iostream>
 
 //----------------------------------------------------------------------------
@@ -40,6 +63,17 @@
 //----------------------------------------------------------------------------
 Float constexpr in_to_cm = 2.54;
 Float constexpr fuel_curvature_radius = 5.5 * in_to_cm; // (1), pg. 347
+Float constexpr elem_x_pitch = 3.031 * in_to_cm; // (1), pg. 348
+Float constexpr elem_y_pitch = 3.189 * in_to_cm; // (1), pg. 348
+
+//----------------------------------------------------------------------------
+// Global variables
+//----------------------------------------------------------------------------
+std::vector<int> fuel_tags;
+std::vector<int> clad_tags;
+std::vector<int> borated_steel_tags;
+std::vector<int> steel_tags;
+std::vector<int> heavy_water_tags;
 
 //----------------------------------------------------------------------------
 // getCircleCenter
@@ -95,10 +129,10 @@ makeFuelPlateLEURegular(Float const x0, Float const y0) -> um2::Vec2I
   // arc_length = r * angle
   Float constexpr fuel_angle = fuel_meat_width / fuel_curvature_radius;
 
-  // First create the the plate boundary curves. Note line0 and line1 are 
+  // First create the the plate boundary curves. Note line0 and line1 are
   // straight up and down, since the side plate truncates the fuel plate
   // arc.
-  //  
+  //
   //                            arc1
   //                        ..........
   //              ..........          .........
@@ -177,7 +211,7 @@ makeFuelPlateLEURegular(Float const x0, Float const y0) -> um2::Vec2I
   um2::Point2 const c2 = getCircleCenter(p4, p5, fuel_curvature_radius);
   auto const c2_tag = um2::gmsh::model::occ::addPoint(c2[0], c2[1], 0);
   auto const arc2_tag = um2::gmsh::model::occ::addCircleArc(p4_tag, c2_tag, p5_tag);
-  
+
   // Add the line between p5--p6 (line2)
   auto const line2_tag = um2::gmsh::model::occ::addLine(p5_tag, p6_tag);
 
@@ -204,7 +238,7 @@ makeFuelPlateLEURegular(Float const x0, Float const y0) -> um2::Vec2I
 // makeFuelElementLEURegular
 //----------------------------------------------------------------------------
 // Create an LEU Regular fuel element given the x, y coordinates of the bottom left corner
-// of the side plate 
+// of the element
 void
 makeFuelElementLEURegular(Float const x0, Float const y0)
 {
@@ -217,22 +251,213 @@ makeFuelElementLEURegular(Float const x0, Float const y0)
   Float constexpr unit_cell_thickness = 0.177 * in_to_cm; // (1), pg. 347
   Int constexpr num_plates = 18; // (1), pg. 347
 
-  um2::Vector<int> fuel_tags(18);
-  um2::Vector<int> clad_tags(20); 
+  // The x and y extents of the fuel element
+  Float constexpr x_extent = plate_to_plate + 2 * side_plate_thickness;
+  Float constexpr y_extent = side_plate_width;
+
+  // Therefore, to center plates in the element we need to shift the geometry by:
+  Float constexpr x_shift = (elem_x_pitch - x_extent) / 2;
+  Float constexpr y_shift = (elem_y_pitch - y_extent) / 2;
+
   for (Int i = 0; i < num_plates; ++i) {
-    Float const x = x0 + side_plate_thickness;
-    Float const y = y0 + i * unit_cell_thickness + water_gap / 2;
+    Float const x = x0 + side_plate_thickness + x_shift;
+    Float const y = y0 + i * unit_cell_thickness + water_gap / 2 + y_shift;
     auto const tags = makeFuelPlateLEURegular(x, y);
-    fuel_tags[i] = tags[0];
-    clad_tags[i] = tags[1];
+    fuel_tags.push_back(tags[0]);
+    clad_tags.push_back(tags[1]);
   }
-  clad_tags[18] =
-    um2::gmsh::model::occ::addRectangle(x0, y0, 0, side_plate_thickness, side_plate_width); 
-  clad_tags[19] =
-    um2::gmsh::model::occ::addRectangle(x0 + plate_to_plate + side_plate_thickness, 
-        y0, 0, side_plate_thickness, side_plate_width);
+  Float x = x0 + x_shift;
+  Float y = y0 + y_shift;
+  clad_tags.push_back(
+    um2::gmsh::model::occ::addRectangle(x, y, 0, side_plate_thickness, side_plate_width)
+  );
+  x = x0 + plate_to_plate + side_plate_thickness + x_shift;
+  y = y0 + y_shift;
+  clad_tags.push_back(
+    um2::gmsh::model::occ::addRectangle(x, y, 0, side_plate_thickness, side_plate_width)
+  );
 }
 
+//----------------------------------------------------------------------------
+// makeFuelElementEmpty
+//----------------------------------------------------------------------------
+// Create an empty fuel element given the x, y coordinates of the bottom left corner
+// of the element
+void
+makeFuelElementEmpty(Float const x0, Float const y0)
+{
+  // Given parameters
+  //------------------
+  Float constexpr side_plate_width = 3.15 * in_to_cm; // (1), pg. 347
+  Float constexpr side_plate_thickness = 0.189 * in_to_cm; // (1), pg. 347
+  Float constexpr plate_to_plate = 2.564 * in_to_cm; // (1), pg. 347
+
+  // The x and y extents of the fuel element
+  Float constexpr x_extent = plate_to_plate + 2 * side_plate_thickness;
+  Float constexpr y_extent = side_plate_width;
+
+  // Therefore, to center plates in the element we need to shift the geometry by:
+  Float constexpr x_shift = (elem_x_pitch - x_extent) / 2;
+  Float constexpr y_shift = (elem_y_pitch - y_extent) / 2;
+
+  Float x = x0 + x_shift;
+  Float y = y0 + y_shift;
+  clad_tags.push_back(
+    um2::gmsh::model::occ::addRectangle(x, y, 0, side_plate_thickness, side_plate_width)
+  );
+  x = x0 + plate_to_plate + side_plate_thickness + x_shift;
+  y = y0 + y_shift;
+  clad_tags.push_back(
+    um2::gmsh::model::occ::addRectangle(x, y, 0, side_plate_thickness, side_plate_width)
+  );
+}
+
+//----------------------------------------------------------------------------
+// makeControlRod
+//----------------------------------------------------------------------------
+// Create a control rod given the x, y of the center of the rod and a vector
+// of tags which will be used to tag the rod
+void
+makeControlRod(Float const x0, Float const y0, std::vector<int> & rod_tags)
+{
+  // Given parameters
+  //------------------
+  // These values are converted from mm to cm
+  Float constexpr rod_thickness = 2.198; // (1), pg. 346
+  Float constexpr rod_width = 5.668; // (1), pg. 346
+  Float constexpr rod_radius = rod_thickness / 2; // (1), pg. 346 perfectly rounded corners
+
+  Float const x = x0 - rod_width / 2;
+  Float const y = y0 - rod_thickness / 2;
+  rod_tags.push_back(
+    um2::gmsh::model::occ::addRectangle(x, y, 0, rod_width, rod_thickness, -1, rod_radius * 0.999)
+  );
+}
+
+//----------------------------------------------------------------------------
+// makeFuelElementLEUSpecial
+//----------------------------------------------------------------------------
+// Create an LEU Special fuel element given the x, y coordinates of the bottom left corner
+// of the element
+void
+makeFuelElementLEUSpecial(Float const x0, Float const y0, std::vector<int> & rod_tags)
+{
+  // Given parameters
+  //------------------
+  Float constexpr side_plate_width = 3.15 * in_to_cm; // (1), pg. 347
+  Float constexpr side_plate_thickness = 0.189 * in_to_cm; // (1), pg. 347
+  Float constexpr plate_to_plate = 2.564 * in_to_cm; // (1), pg. 347
+  Float constexpr water_gap = 0.115 * in_to_cm; // (1), pg. 347
+  Float constexpr unit_cell_thickness = 0.177 * in_to_cm; // (1), pg. 347
+  // This is num plates in the regular assembly. Actual num plates here is 9
+  // (from same source and page)
+  Int constexpr num_plates = 18; // (1), pg. 347 
+  Float constexpr guide_plate_width = 2.564 * in_to_cm; // (1), pg. 347
+  Float constexpr guide_plate_thickness = 0.125 * in_to_cm; // (1), pg. 347
+
+  // The x and y extents of the fuel element
+  Float constexpr x_extent = plate_to_plate + 2 * side_plate_thickness;
+  Float constexpr y_extent = side_plate_width;
+
+  // Therefore, to center plates in the element we need to shift the geometry by:
+  Float constexpr x_shift = (elem_x_pitch - x_extent) / 2;
+  Float constexpr y_shift = (elem_y_pitch - y_extent) / 2;
+
+  for (Int i = 0; i < 5; ++i) {
+    Float const x = x0 + side_plate_thickness + x_shift;
+    Float const y = y0 + i * unit_cell_thickness + water_gap / 2 + y_shift;
+    auto const tags = makeFuelPlateLEURegular(x, y);
+    fuel_tags.push_back(tags[0]);
+    clad_tags.push_back(tags[1]);
+  }
+  // The middle 9 plates are skipped
+  for (Int i = 14; i < num_plates; ++i) {
+    Float const x = x0 + side_plate_thickness + x_shift;
+    Float const y = y0 + i * unit_cell_thickness + water_gap / 2 + y_shift;
+    auto const tags = makeFuelPlateLEURegular(x, y);
+    fuel_tags.push_back(tags[0]);
+    clad_tags.push_back(tags[1]);
+  }
+
+  // Side plates
+  Float x = x0 + x_shift;
+  Float y = y0 + y_shift;
+  clad_tags.push_back(
+    um2::gmsh::model::occ::addRectangle(x, y, 0, side_plate_thickness, side_plate_width)
+  );
+  x = x0 + plate_to_plate + side_plate_thickness + x_shift;
+  y = y0 + y_shift;
+  clad_tags.push_back(
+    um2::gmsh::model::occ::addRectangle(x, y, 0, side_plate_thickness, side_plate_width)
+  );
+
+  // Guide plates
+  x = x0 + side_plate_thickness + x_shift;
+  y = y0 + 6 * unit_cell_thickness + water_gap / 2 + y_shift;
+  clad_tags.push_back(
+    um2::gmsh::model::occ::addRectangle(x, y, 0, guide_plate_width, guide_plate_thickness) 
+  );
+  y = y0 + 13 * unit_cell_thickness + water_gap / 2 + y_shift;
+  clad_tags.push_back(
+    um2::gmsh::model::occ::addRectangle(x, y, 0, guide_plate_width, guide_plate_thickness) 
+  );
+
+  // Control rod
+  x += guide_plate_width / 2;
+  // Evenly space between the guide plates
+  Float const ybot = y0 + 6 * unit_cell_thickness + water_gap / 2 + y_shift + guide_plate_thickness; 
+  Float const ytop = y0 + 13 * unit_cell_thickness + water_gap / 2 + y_shift;
+  y = (ybot + ytop) / 2;
+  makeControlRod(x, y, rod_tags); 
+}
+
+//----------------------------------------------------------------------------
+// makeD2OTank
+//----------------------------------------------------------------------------
+// Given the lower left corener of the tank, create the D2O tank
+void
+makeD2OTank(Float const x0, Float const y0)
+{
+  // These values are from Riley's OpenMC model. Need to find the source.
+  Float constexpr tank_thickness = 2.54 / 2;
+  Float constexpr tank_outer_height = 64.80084;
+  Float constexpr tank_outer_width = 30.8356;
+
+  // Create the outer then inner points, lines, loops, and surfaces
+  // Outer points
+  auto const p0_tag = um2::gmsh::model::occ::addPoint(x0, y0, 0);
+  auto const p1_tag = um2::gmsh::model::occ::addPoint(x0 + tank_outer_width, y0, 0);
+  auto const p2_tag = um2::gmsh::model::occ::addPoint(x0 + tank_outer_width, y0 + tank_outer_height, 0); 
+  auto const p3_tag = um2::gmsh::model::occ::addPoint(x0, y0 + tank_outer_height, 0);
+  // Inner points
+  auto const p4_tag = um2::gmsh::model::occ::addPoint(x0 + tank_thickness, y0 + tank_thickness, 0);
+  auto const p5_tag = um2::gmsh::model::occ::addPoint(x0 + tank_outer_width - tank_thickness, y0 + tank_thickness, 0);
+  auto const p6_tag = um2::gmsh::model::occ::addPoint(x0 + tank_outer_width - tank_thickness, y0 + tank_outer_height - tank_thickness, 0);
+  auto const p7_tag = um2::gmsh::model::occ::addPoint(x0 + tank_thickness, y0 + tank_outer_height - tank_thickness, 0);
+
+  // Outer lines
+  auto const line0_tag = um2::gmsh::model::occ::addLine(p0_tag, p1_tag);
+  auto const line1_tag = um2::gmsh::model::occ::addLine(p1_tag, p2_tag);
+  auto const line2_tag = um2::gmsh::model::occ::addLine(p2_tag, p3_tag);
+  auto const line3_tag = um2::gmsh::model::occ::addLine(p3_tag, p0_tag);
+  // Inner lines
+  auto const line4_tag = um2::gmsh::model::occ::addLine(p4_tag, p5_tag);
+  auto const line5_tag = um2::gmsh::model::occ::addLine(p5_tag, p6_tag);
+  auto const line6_tag = um2::gmsh::model::occ::addLine(p6_tag, p7_tag);
+  auto const line7_tag = um2::gmsh::model::occ::addLine(p7_tag, p4_tag);
+
+  // Outer loop
+  auto const outer_loop_tag = um2::gmsh::model::occ::addCurveLoop({line0_tag, line1_tag, line2_tag, line3_tag});
+  // Inner loop
+  auto const inner_loop_tag = um2::gmsh::model::occ::addCurveLoop({line4_tag, line5_tag, line6_tag, line7_tag});
+
+  // Outer surface
+  auto const outer_surface_tag = um2::gmsh::model::occ::addPlaneSurface({outer_loop_tag, inner_loop_tag});
+  auto const inner_surface_tag = um2::gmsh::model::occ::addPlaneSurface({inner_loop_tag});
+
+  clad_tags.push_back(outer_surface_tag);
+  heavy_water_tags.push_back(inner_surface_tag);
+}
 
 auto
 //main(int argc, char** argv) -> int
@@ -240,11 +465,48 @@ main() -> int
 {
   um2::initialize();
 
-  // TODO: Shim. Control. Tank. Empty. Special
-
   //============================================================================
   // Materials
   //============================================================================
+
+  // Nuclides and number densities from table P4-3 (pg. 54)    
+    
+  um2::XSLibrary const xslib(um2::settings::xs::library_path + "/" + um2::mpact::XSLIB_51G);    
+//  um2::Vector<um2::Pair<Int, Float>> zaid_mass;
+//  for (auto const & nuclide : xslib.nuclides()) {    
+//    zaid_mass.push_back({nuclide.zaid(), nuclide.mass()});
+//  }
+//  std::sort(zaid_mass.begin(), zaid_mass.end());
+//  for (auto const & zaid : zaid_mass) {    
+//    std::cout << zaid.first << " " << zaid.second << std::endl;
+//  }
+    
+//  // LEU fuel
+//  //---------------------------------------------------------------------------    
+//  um2::Material fuel;    
+//  fuel_2110.setName("Fuel");    
+//  fuel_2110.setDensity(10.257); // g/cm^3, Table P4-1 (pg. 50)    
+//  fuel_2110.setTemperature(300.0);
+//  fuel_2110.setColor(um2::red); // Match Fig. P4-2 (pg. 53)    
+//  // Number densities in atoms/b-cm from Table P4-3 (pg. 54)    
+//  fuel_2110.addNuclide("O16", 4.57591e-02);    
+//  fuel_2110.addNuclide("U234", 4.04814e-06);    
+//  fuel_2110.addNuclide("U235", 4.88801e-04);    
+//  fuel_2110.addNuclide("U236", 2.23756e-06);    
+//  fuel_2110.addNuclide("U238", 2.23844e-02);    
+//  fuel_2110.populateXSec(xslib);   
+
+
+
+
+
+
+
+
+
+
+
+  // Aluminum, fuel, heavy water, and stainless steel, borated steel
 
   // Moderator
   //---------------------------------------------------------------------------
@@ -253,13 +515,53 @@ main() -> int
   // Geometry
   //============================================================================
 
-  // LEU Regular elements
-  //---------------------------------------------------------------------------
-//  Float const asy_width = 3.031 * in_to_cm; // (1), pg. 348
-//  Float const asy_height = 3.189 * in_to_cm; // (1), pg. 348
-  
-  makeFuelElementLEURegular(0, 0);
+  // Element ID | Description
+  // -----------|------------
+  // 0          | Empty
+  // 1          | Regular LEU
+  // 2          | Special LEU / Shim rod
+  // 3          | Special LEU / Control rod
+
+  um2::Vec2F constexpr core_offset(0, 0);
+
+  //(1) Figure B-7 on page 354
+  um2::Vector<um2::Vector<Int>> const core_layout = um2::stringToLattice<Int>(R"(
+      0 0 0 1 1 0
+      0 0 1 1 1 1
+      0 1 1 1 1 1
+      0 1 2 1 2 1
+      0 1 1 1 1 1
+      0 1 3 1 2 1
+      0 1 1 1 1 1
+      0 0 0 1 1 0
+    )");
+
+  // Place each fuel element
+  for (Int i = core_layout.size() - 1; i >= 0; --i) { 
+    Float const y = core_offset[1] + (core_layout.size() - i - 1) * elem_y_pitch;
+    for (Int j = 0; j < core_layout[i].size(); ++j) {
+      Float const x = core_offset[0] + j * elem_x_pitch;
+      if (core_layout[i][j] == 0) {
+        makeFuelElementEmpty(x, y);
+      } else if (core_layout[i][j] == 1) {
+        makeFuelElementLEURegular(x, y);
+      } else if (core_layout[i][j] == 2) {
+        makeFuelElementLEUSpecial(x, y, borated_steel_tags);
+      } else if (core_layout[i][j] == 3) {
+        makeFuelElementLEUSpecial(x, y, steel_tags);
+      }
+    }
+  }
+  // Place the D2O tank
+  makeD2OTank(core_offset[0] + 6 * elem_x_pitch, core_offset[1]);
   um2::gmsh::model::occ::synchronize();
+
+  // Add the physical groups
+  um2::gmsh::model::addPhysicalGroup(2, fuel_tags, -1, "Material_Fuel"); 
+  um2::gmsh::model::addPhysicalGroup(2, clad_tags, -1, "Material_Al");
+  um2::gmsh::model::addPhysicalGroup(2, borated_steel_tags, -1, "Material_BoratedSteel");
+  um2::gmsh::model::addPhysicalGroup(2, steel_tags, -1, "Material_Steel");
+  um2::gmsh::model::addPhysicalGroup(2, heavy_water_tags, -1, "Material_HeavyWater");
   um2::gmsh::fltk::run();
 
 //  // Fuel
@@ -317,27 +619,6 @@ main() -> int
 //    fuel_radii, gt_radii, it_radii, fuel_radii, pyrex_radii, aic_radii
 //  };
 //  um2::Vector<um2::Vec2F> const xy_extents(6, pin_size);
-//
-//  // Lattice layout (Fig. 3, pg. 5)
-//  um2::Vector<um2::Vector<Int>> const fuel_2110_lattice = um2::stringToLattice<Int>(R"(
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 0 0 0 1 0 0 1 0 0 1 0 0 0 0 0
-//      0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 1 0 0 1 0 0 2 0 0 1 0 0 1 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0
-//      0 0 0 0 0 1 0 0 1 0 0 1 0 0 0 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//    )");
 //
 //  um2::Vector<um2::Vector<Int>> const fuel_2619_lattice = um2::stringToLattice<Int>(R"(
 //      3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
