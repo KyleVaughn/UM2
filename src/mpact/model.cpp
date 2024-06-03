@@ -3069,12 +3069,25 @@ Model::writeCMFDInfo(String const & filename) const
 #endif
   }
 
+
+  Int constexpr p = 4;
+  Matrix<ComplexF> An(p, p);
+  Matrix<ComplexF> Bn(p, p);
+  An.zero();
+  Bn.zero();
+  Matrix<ComplexF> U(p, p);
+  Matrix<ComplexF> omega(p, p);
+  Matrix<ComplexF> J(p, p);
+  um2::fill(J.begin(), J.end(), ComplexF(1.0, 0.0));
+  Matrix<ComplexF> I(p, p); // Identity matrix
+  Vector<Int> ipiv(p);
+
   // Construct the group g 1D CMFD spectral radius
   for (Int ig = 0; ig < num_groups; ++ig) {
     um2::fill(data.begin(), data.end(), -inf_distance);
     String const elset_name = "1D_odCMFD_Spectral_Radius_Group_" + getASCIINumber(ig);
     for (Int icc = 0; icc < num_coarse_cells; ++icc) {
-      LOG_INFO("Computing spectral radius for coarse cell ", icc, " group ", ig);
+      //LOG_INFO("Computing spectral radius for coarse cell ", icc, " group ", ig);
       auto const sigma_t = coarse_cell_xsecs[icc].t(ig);
       auto const sigma_s = coarse_cell_xsecs[icc].s()[ig];
       auto const c = sigma_s / sigma_t;
@@ -3085,7 +3098,6 @@ Model::writeCMFDInfo(String const & filename) const
       auto const & xy_extents = cc.xy_extents;
       auto const w = (xy_extents[0] + xy_extents[1]) / 2;
       // Fix number of cells at 4
-      Int const p = 4;
       Int const s = 1; // number of sweeps
       Float const eta = 0.25; // odcmfd
 
@@ -3094,7 +3106,15 @@ Model::writeCMFDInfo(String const & filename) const
         LOG_WARN("Scattering ratio is greater than 1 for coarse cell ", icc, " group ", ig, ". Setting rho to -1.");
       } else {
         CMFDCellParams const params(w, p, sigma_t, c, s, eta);
-        rho = spectral_radius(params);
+//        rho = spectral_radius(params);
+        rho = spectral_radius(params,
+                An,
+                Bn,
+                U,
+                omega,
+                J,
+                I,
+                ipiv);
       }
       auto const & face_ids = coarse_cell_face_ids[icc];
       for (auto const & face_id : face_ids) {

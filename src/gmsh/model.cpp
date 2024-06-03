@@ -88,8 +88,8 @@ getMaterials(std::vector<Material> & materials)
 namespace occ
 {
 
-namespace
-{
+
+
 
 //=============================================================================
 // colorMaterialPhysicalGroupEntities
@@ -148,6 +148,8 @@ colorMaterialPhysicalGroupEntities(std::vector<Material> const & materials)
   }
 }
 
+namespace
+{
 //=============================================================================
 // groupPreservingInputChecking
 //=============================================================================

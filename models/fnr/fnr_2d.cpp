@@ -34,7 +34,7 @@
 // ISSUES
 //----------------------------------------------------------------------------
 // - I have no reference for the exact length of the fuel plates. Therefore the
-//   indents in the side plates of empty elements are not modeled, since it is 
+//   indents in the side plates of empty elements are not modeled, since it is
 //   assumed that this is not vital to the neutronics.
 //
 // - I have no reference for what an empty element looks like. Since in some core
@@ -56,7 +56,6 @@
 #include <um2/stdlib/utility/pair.hpp>
 
 #include <vector>
-#include <iostream>
 
 //----------------------------------------------------------------------------
 // Global geometry parameters
@@ -351,7 +350,7 @@ makeFuelElementLEUSpecial(Float const x0, Float const y0, std::vector<int> & rod
   Float constexpr unit_cell_thickness = 0.177 * in_to_cm; // (1), pg. 347
   // This is num plates in the regular assembly. Actual num plates here is 9
   // (from same source and page)
-  Int constexpr num_plates = 18; // (1), pg. 347 
+  Int constexpr num_plates = 18; // (1), pg. 347
   Float constexpr guide_plate_width = 2.564 * in_to_cm; // (1), pg. 347
   Float constexpr guide_plate_thickness = 0.125 * in_to_cm; // (1), pg. 347
 
@@ -395,20 +394,20 @@ makeFuelElementLEUSpecial(Float const x0, Float const y0, std::vector<int> & rod
   x = x0 + side_plate_thickness + x_shift;
   y = y0 + 6 * unit_cell_thickness + water_gap / 2 + y_shift;
   clad_tags.push_back(
-    um2::gmsh::model::occ::addRectangle(x, y, 0, guide_plate_width, guide_plate_thickness) 
+    um2::gmsh::model::occ::addRectangle(x, y, 0, guide_plate_width, guide_plate_thickness)
   );
   y = y0 + 13 * unit_cell_thickness + water_gap / 2 + y_shift;
   clad_tags.push_back(
-    um2::gmsh::model::occ::addRectangle(x, y, 0, guide_plate_width, guide_plate_thickness) 
+    um2::gmsh::model::occ::addRectangle(x, y, 0, guide_plate_width, guide_plate_thickness)
   );
 
   // Control rod
   x += guide_plate_width / 2;
   // Evenly space between the guide plates
-  Float const ybot = y0 + 6 * unit_cell_thickness + water_gap / 2 + y_shift + guide_plate_thickness; 
+  Float const ybot = y0 + 6 * unit_cell_thickness + water_gap / 2 + y_shift + guide_plate_thickness;
   Float const ytop = y0 + 13 * unit_cell_thickness + water_gap / 2 + y_shift;
   y = (ybot + ytop) / 2;
-  makeControlRod(x, y, rod_tags); 
+  makeControlRod(x, y, rod_tags);
 }
 
 //----------------------------------------------------------------------------
@@ -427,7 +426,7 @@ makeD2OTank(Float const x0, Float const y0)
   // Outer points
   auto const p0_tag = um2::gmsh::model::occ::addPoint(x0, y0, 0);
   auto const p1_tag = um2::gmsh::model::occ::addPoint(x0 + tank_outer_width, y0, 0);
-  auto const p2_tag = um2::gmsh::model::occ::addPoint(x0 + tank_outer_width, y0 + tank_outer_height, 0); 
+  auto const p2_tag = um2::gmsh::model::occ::addPoint(x0 + tank_outer_width, y0 + tank_outer_height, 0);
   auto const p3_tag = um2::gmsh::model::occ::addPoint(x0, y0 + tank_outer_height, 0);
   // Inner points
   auto const p4_tag = um2::gmsh::model::occ::addPoint(x0 + tank_thickness, y0 + tank_thickness, 0);
@@ -460,56 +459,134 @@ makeD2OTank(Float const x0, Float const y0)
 }
 
 auto
-//main(int argc, char** argv) -> int
-main() -> int
+main(int argc, char** argv) -> int
 {
   um2::initialize();
+
+  // Check the number of arguments    
+  if (argc != 2) {    
+    um2::logger::error("Usage: ./4_2d num_coarse_cells");    
+    return 1;    
+  }
+
+  //===========================================================================    
+  // Parametric study parameters    
+  //===========================================================================    
+    
+  char * end = nullptr;    
+  Int const num_coarse_cells = um2::strto<Int>(argv[1], &end);    
+  ASSERT(end != nullptr);    
+  ASSERT(num_coarse_cells > 0);
 
   //============================================================================
   // Materials
   //============================================================================
+  // From Riley's OpenMC model
+  um2::XSLibrary const xslib(um2::settings::xs::library_path + "/" + um2::mpact::XSLIB_51G);
 
-  // Nuclides and number densities from table P4-3 (pg. 54)    
-    
-  um2::XSLibrary const xslib(um2::settings::xs::library_path + "/" + um2::mpact::XSLIB_51G);    
-//  um2::Vector<um2::Pair<Int, Float>> zaid_mass;
-//  for (auto const & nuclide : xslib.nuclides()) {    
-//    zaid_mass.push_back({nuclide.zaid(), nuclide.mass()});
-//  }
-//  std::sort(zaid_mass.begin(), zaid_mass.end());
-//  for (auto const & zaid : zaid_mass) {    
-//    std::cout << zaid.first << " " << zaid.second << std::endl;
-//  }
-    
-//  // LEU fuel
-//  //---------------------------------------------------------------------------    
-//  um2::Material fuel;    
-//  fuel_2110.setName("Fuel");    
-//  fuel_2110.setDensity(10.257); // g/cm^3, Table P4-1 (pg. 50)    
-//  fuel_2110.setTemperature(300.0);
-//  fuel_2110.setColor(um2::red); // Match Fig. P4-2 (pg. 53)    
-//  // Number densities in atoms/b-cm from Table P4-3 (pg. 54)    
-//  fuel_2110.addNuclide("O16", 4.57591e-02);    
-//  fuel_2110.addNuclide("U234", 4.04814e-06);    
-//  fuel_2110.addNuclide("U235", 4.88801e-04);    
-//  fuel_2110.addNuclide("U236", 2.23756e-06);    
-//  fuel_2110.addNuclide("U238", 2.23844e-02);    
-//  fuel_2110.populateXSec(xslib);   
-
-
-
-
-
-
-
-
-
-
-
-  // Aluminum, fuel, heavy water, and stainless steel, borated steel
-
-  // Moderator
+  // Aluminum
   //---------------------------------------------------------------------------
+  um2::Material aluminum;
+  aluminum.setName("Aluminum");
+  aluminum.setDensity(2.7); // g/cm^3
+  aluminum.setTemperature(300.0);
+  aluminum.setColor(um2::gray);
+  aluminum.addNuclideWt("Al27", 0.9725);
+  aluminum.addNuclideWt("Mg00", 0.01);
+  aluminum.addNuclideWt("Si00", 0.006);
+  aluminum.addNuclideWt("Fe00", 0.0035);
+  aluminum.addNuclideWt("Cu63", 0.00205437585615717);
+  aluminum.addNuclideWt("Cu65", 0.00094562414384283);
+  aluminum.addNuclideWt("Cr00", 0.003);
+  // No Zinc
+  aluminum.addNuclideWt("Ti00", 0.0005); 
+  aluminum.addNuclideWt("Mn55", 0.0005);
+  aluminum.populateXSec(xslib);
+
+  // Water
+  //---------------------------------------------------------------------------
+  um2::Material h2o;
+  h2o.setName("Water");
+  h2o.setDensity(0.99821); // g/cm^3
+  h2o.setTemperature(300.0);
+  h2o.setColor(um2::blue);
+  h2o.addNuclideWt("H1", 0.11191545404473821);
+  h2o.addNuclideWt("O16", 0.8880845459552619);
+  h2o.populateXSec(xslib);
+
+  // Heavy water
+  //---------------------------------------------------------------------------
+  um2::Material d2o;
+  d2o.setName("HeavyWater");
+  d2o.setDensity(1.11); // g/cm^3
+  d2o.setTemperature(300.0);
+  d2o.setColor(um2::darkblue);
+  Float const h1_ao = 0.005;
+  Float const h2_ao = 1.995;
+  Float const o16_ao = 1;
+  Float const h1_wt = 1.00783;
+  Float const h2_wt = 2.0141;
+  Float const o16_wt = 15.9949;
+  Float const d20_wt = h1_ao * h1_wt + h2_ao * h2_wt + o16_ao * o16_wt;
+  d2o.addNuclideWt("H1", h1_ao * h1_wt / d20_wt);
+  d2o.addNuclideWt("H2", h2_ao * h2_wt / d20_wt);
+  d2o.addNuclideWt("O16", o16_ao * o16_wt / d20_wt);
+  d2o.populateXSec(xslib);
+
+  // LEU fuel
+  //---------------------------------------------------------------------------
+  um2::Material fuel;
+  fuel.setName("Fuel");
+  fuel.setDensity(3.8450273309879424);
+  fuel.setTemperature(300.0);
+  fuel.setColor(um2::red);
+  // Weights from (1), pg. 347
+  Float const u235_wt = 167.3;
+  Float const u238_wt = 691;
+  Float const aluminum_wt = 1180;
+  Float const iron_wt = 8.2;
+  Float const leu_wt = u235_wt + u238_wt + aluminum_wt + iron_wt;
+  fuel.addNuclideWt("U235", u235_wt / leu_wt); 
+  fuel.addNuclideWt("U238", u238_wt / leu_wt);
+  fuel.addNuclideWt("Al27", 0.9725 * aluminum_wt / leu_wt);
+  fuel.addNuclideWt("Mg00", 0.01 * aluminum_wt / leu_wt);
+  fuel.addNuclideWt("Si00", 0.006 * aluminum_wt / leu_wt);
+  fuel.addNuclideWt("Cu63", 0.00205437585615717 * aluminum_wt / leu_wt);
+  fuel.addNuclideWt("Cu65", 0.00094562414384283 * aluminum_wt / leu_wt);
+  fuel.addNuclideWt("Cr00", 0.003 * aluminum_wt / leu_wt);
+  // No Zinc
+  fuel.addNuclideWt("Ti00", 0.0005 * aluminum_wt / leu_wt); 
+  fuel.addNuclideWt("Mn55", 0.0005 * aluminum_wt / leu_wt);
+  fuel.addNuclideWt("Fe00", iron_wt / leu_wt + 0.0035 * aluminum_wt / leu_wt);
+  fuel.populateXSec(xslib);
+
+  // Borated steel
+  //---------------------------------------------------------------------------
+  um2::Material borated_steel;
+  borated_steel.setName("BoratedSteel");
+  borated_steel.setDensity(8.0369);
+  borated_steel.setTemperature(300.0);
+  borated_steel.setColor(um2::black);
+  // From (1), pg. 346
+  borated_steel.addNuclide("B10", 0.001108);
+  borated_steel.addNuclide("B11", 0.005184);
+  borated_steel.addNuclide("Fe00", 0.05644);
+  borated_steel.addNuclide("Ni00", 0.0113);
+  borated_steel.addNuclide("Cr00", 0.0164);
+  borated_steel.populateXSec(xslib);
+
+  // Steel
+  //---------------------------------------------------------------------------
+  um2::Material steel;
+  steel.setName("Steel");
+  steel.setDensity(7.85);
+  steel.setTemperature(300.0);
+  steel.setColor(um2::darkgray);
+  // Same as above without boron
+  steel.addNuclide("Fe00", 0.05644);
+  steel.addNuclide("Ni00", 0.0113);
+  steel.addNuclide("Cr00", 0.0164);
+  steel.populateXSec(xslib);
 
   //============================================================================
   // Geometry
@@ -522,7 +599,11 @@ main() -> int
   // 2          | Special LEU / Shim rod
   // 3          | Special LEU / Control rod
 
-  um2::Vec2F constexpr core_offset(0, 0);
+  um2::Vec2F const domain_extents(100, 100); // Bounding box of the domain
+  um2::Vec2F const core_bounds(77.02904, 64.80084); // Bounding box of the core
+  um2::Vec2F const core_offset = (domain_extents - core_bounds) / 2; 
+  ASSERT(core_offset[0] > 0);
+  ASSERT(core_offset[1] > 0);
 
   //(1) Figure B-7 on page 354
   um2::Vector<um2::Vector<Int>> const core_layout = um2::stringToLattice<Int>(R"(
@@ -537,7 +618,7 @@ main() -> int
     )");
 
   // Place each fuel element
-  for (Int i = core_layout.size() - 1; i >= 0; --i) { 
+  for (Int i = core_layout.size() - 1; i >= 0; --i) {
     Float const y = core_offset[1] + (core_layout.size() - i - 1) * elem_y_pitch;
     for (Int j = 0; j < core_layout[i].size(); ++j) {
       Float const x = core_offset[0] + j * elem_x_pitch;
@@ -557,182 +638,51 @@ main() -> int
   um2::gmsh::model::occ::synchronize();
 
   // Add the physical groups
-  um2::gmsh::model::addPhysicalGroup(2, fuel_tags, -1, "Material_Fuel"); 
-  um2::gmsh::model::addPhysicalGroup(2, clad_tags, -1, "Material_Al");
+  um2::gmsh::model::addPhysicalGroup(2, clad_tags, -1, "Material_Aluminum");
+  um2::gmsh::model::addPhysicalGroup(2, heavy_water_tags, -1, "Material_HeavyWater");
+  um2::gmsh::model::addPhysicalGroup(2, fuel_tags, -1, "Material_Fuel");
   um2::gmsh::model::addPhysicalGroup(2, borated_steel_tags, -1, "Material_BoratedSteel");
   um2::gmsh::model::addPhysicalGroup(2, steel_tags, -1, "Material_Steel");
-  um2::gmsh::model::addPhysicalGroup(2, heavy_water_tags, -1, "Material_HeavyWater");
-  um2::gmsh::fltk::run();
 
-//  // Fuel
-//  //---------------------------------------------------------------------------
-//  //um2::Vector<Float> const fuel_radii = {r_fuel, r_gap, r_clad};
-//  //um2::Vector<um2::Material> const fuel_2110_materials = {fuel_2110, gap, clad};
-//  //um2::Vector<um2::Material> const fuel_2619_materials = {fuel_2619, gap, clad};
-//  um2::Vector<Float> const fuel_radii = {r_fuel, r_clad};
-//  um2::Vector<um2::Material> const fuel_2110_materials = {fuel_2110, clad};
-//  um2::Vector<um2::Material> const fuel_2619_materials = {fuel_2619, clad};
-//
-//  // Empty guide tube
-//  //---------------------------------------------------------------------------
-//  um2::Vector<Float> const gt_radii = {r_gt_inner, r_gt_outer};
-//  um2::Vector<um2::Material> const gt_materials = {moderator, clad};
-//
-//  // Empty instrument tube
-//  //---------------------------------------------------------------------------
-//  um2::Vector<Float> const it_radii = {r_it_inner, r_it_outer};
-//  um2::Vector<um2::Material> const it_materials = {moderator, clad};
-//
-//  // Pyrex
-//  //---------------------------------------------------------------------------
-//  // um2::Vector<Float> const pyrex_radii = {
-//  //   r_pyrex_it_inner, r_pyrex_it_outer, r_pyrex_inner, r_pyrex_outer, r_pyrex_clad_inner,
-//  //   r_pyrex_clad_outer, r_it_inner, r_it_outer
-//  // };
-//  // um2::Vector<um2::Material> const pyrex_materials = {
-//  //   gap, ss304, gap, pyrex, gap, ss304, moderator, clad
-//  // };
-//  // Extend the ss304 to touch the pyrex (eliminate the gap)
-//  um2::Vector<Float> const pyrex_radii = {
-//    r_pyrex_it_inner, r_pyrex_inner, r_pyrex_outer,
-//    r_pyrex_clad_outer, r_it_inner, r_it_outer
-//  };
-//  um2::Vector<um2::Material> const pyrex_materials = {
-//    gap, ss304, pyrex, ss304, moderator, clad
-//  };
-//
-//  // AIC
-//  //---------------------------------------------------------------------------
-//  //um2::Vector<Float> const aic_radii = {r_aic, r_aic_inner, r_aic_outer};
-//  //um2::Vector<um2::Material> const aic_materials = {aic, gap, ss304};
-//
-//  um2::Vector<Float> const aic_radii = {r_aic, r_aic_outer};
-//  um2::Vector<um2::Material> const aic_materials = {aic, ss304};
-//
-//  // Materials, radii, and xy_extents for each pin
-//  //---------------------------------------------------------------------------
-//  um2::Vector<um2::Vector<um2::Material>> const materials = {
-//    fuel_2110_materials, gt_materials, it_materials, fuel_2619_materials, pyrex_materials,
-//    aic_materials
-//  };
-//  um2::Vector<um2::Vector<Float>> const radii = {
-//    fuel_radii, gt_radii, it_radii, fuel_radii, pyrex_radii, aic_radii
-//  };
-//  um2::Vector<um2::Vec2F> const xy_extents(6, pin_size);
-//
-//  um2::Vector<um2::Vector<Int>> const fuel_2619_lattice = um2::stringToLattice<Int>(R"(
-//      3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
-//      3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
-//      3 3 3 3 3 4 3 3 4 3 3 4 3 3 3 3 3
-//      3 3 3 4 3 3 3 3 3 3 3 3 3 4 3 3 3
-//      3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
-//      3 3 4 3 3 4 3 3 4 3 3 4 3 3 4 3 3
-//      3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
-//      3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
-//      3 3 4 3 3 4 3 3 2 3 3 4 3 3 4 3 3
-//      3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
-//      3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
-//      3 3 4 3 3 4 3 3 4 3 3 4 3 3 4 3 3
-//      3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
-//      3 3 3 4 3 3 3 3 3 3 3 3 3 4 3 3 3
-//      3 3 3 3 3 4 3 3 4 3 3 4 3 3 3 3 3
-//      3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
-//      3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
-//    )");
-//
-//  um2::Vector<um2::Vector<Int>> const fuel_2110_aic_lattice = um2::stringToLattice<Int>(R"(
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 0 0 0 5 0 0 5 0 0 5 0 0 0 0 0
-//      0 0 0 5 0 0 0 0 0 0 0 0 0 5 0 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 5 0 0 5 0 0 5 0 0 5 0 0 5 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 5 0 0 5 0 0 2 0 0 5 0 0 5 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 5 0 0 5 0 0 5 0 0 5 0 0 5 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 0 5 0 0 0 0 0 0 0 0 0 5 0 0 0
-//      0 0 0 0 0 5 0 0 5 0 0 5 0 0 0 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-//    )");
-//
-//  ASSERT(fuel_2110_lattice.size() == 17);
-//  ASSERT(fuel_2110_lattice[0].size() == 17);
-//  ASSERT(fuel_2619_lattice.size() == 17);
-//  ASSERT(fuel_2619_lattice[0].size() == 17);
-//
-//  // Make the calls a bit more readable using an alias
-//  namespace factory = um2::gmsh::model::occ;
-//
-//  // Create lattices
-//  factory::addCylindricalPinLattice2D(
-//      fuel_2110_lattice,
-//      xy_extents,
-//      radii,
-//      materials,
-//      /*offset=*/{assembly_pitch / 2 + inter_assembly_gap, inter_assembly_gap});
-//
-//  factory::addCylindricalPinLattice2D(
-//      fuel_2619_lattice,
-//      xy_extents,
-//      radii,
-//      materials,
-//      /*offset=*/{-assembly_pitch / 2 + inter_assembly_gap, inter_assembly_gap});
-//
-//  factory::addCylindricalPinLattice2D(
-//      fuel_2619_lattice,
-//      xy_extents,
-//      radii,
-//      materials,
-//      /*offset=*/{assembly_pitch / 2 + inter_assembly_gap, assembly_pitch + inter_assembly_gap});
-//
-//  factory::addCylindricalPinLattice2D(
-//      fuel_2110_aic_lattice,
-//      xy_extents,
-//      radii,
-//      materials,
-//      /*offset=*/{-assembly_pitch / 2 + inter_assembly_gap, assembly_pitch + inter_assembly_gap});
-//
-//  //===========================================================================
-//  // Overlay CMFD mesh
-//  //===========================================================================
-//
-//  // Construct the MPACT model
-//  um2::mpact::Model model;
-//  model.addMaterial(fuel_2110);
-//  model.addMaterial(fuel_2619);
-//  model.addMaterial(gap);
-//  model.addMaterial(clad);
-//  model.addMaterial(moderator);
-//  model.addMaterial(pyrex);
-//  model.addMaterial(ss304);
-//  model.addMaterial(aic);
-//
-//   // Add a coarse grid that evenly subdivides the domain (quarter core)
-//  um2::Vec2F const domain_extents(1.5 * assembly_pitch, 1.5 * assembly_pitch);
-//  um2::Vec2I const num_cells(num_coarse_cells, num_coarse_cells);
-//  model.addCoarseGrid(domain_extents, num_cells);
-//  um2::gmsh::model::occ::overlayCoarseGrid(model, moderator);
-//
-//  //===========================================================================
-//  // Generate the mesh
-//  //===========================================================================
-//
-//  um2::gmsh::model::mesh::setGlobalMeshSize(pitch / 12);
-//  um2::gmsh::model::mesh::generateMesh(um2::MeshType::Tri);
-//  um2::gmsh::write("4_2d.inp");
-//
-//  //===========================================================================
-//  // Complete the MPACT model and write the mesh
-//  //===========================================================================
-//
-//  model.importCoarseCellMeshes("4_2d.inp");
-//  model.writeCMFDInfo("4_2d_cmfd_info.xdmf");
-//  model.write("4_2d.xdmf", /*write_knudsen_data=*/true, /*write_xsec_data=*/true);
+  // Color the physical groups
+  std::vector<um2::Material> const materials = {aluminum, d2o, fuel, borated_steel, steel};
+  um2::gmsh::model::occ::colorMaterialPhysicalGroupEntities(materials);
+
+  //===========================================================================
+  // Overlay CMFD mesh
+  //===========================================================================
+
+  // Construct the MPACT model
+  um2::mpact::Model model;
+  model.addMaterial(aluminum);
+  model.addMaterial(h2o);
+  model.addMaterial(d2o);
+  model.addMaterial(fuel);
+  model.addMaterial(borated_steel);
+  model.addMaterial(steel);
+
+   // Add a coarse grid that evenly subdivides the domain (quarter core)
+  um2::Vec2I const num_cells(num_coarse_cells, num_coarse_cells);
+  model.addCoarseGrid(domain_extents, num_cells);
+  um2::gmsh::model::occ::overlayCoarseGrid(model, h2o);
+//  um2::gmsh::fltk::run();
+
+  //===========================================================================
+  // Generate the mesh
+  //===========================================================================
+
+  um2::gmsh::model::mesh::setGlobalMeshSize(0.30);
+  um2::gmsh::model::mesh::generateMesh(um2::MeshType::Tri);
+//  um2::gmsh::fltk::run();
+  um2::gmsh::write("fnr_2d.inp");
+
+  //===========================================================================
+  // Complete the MPACT model and write the mesh
+  //===========================================================================
+
+  model.importCoarseCellMeshes("fnr_2d.inp");
+  model.write("fnr_2d.xdmf", /*write_knudsen_data=*/true);
+  model.writeCMFDInfo("fnr_2d_cmfd_info.xdmf");
   um2::finalize();
   return 0;
 }

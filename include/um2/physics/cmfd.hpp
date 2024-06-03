@@ -112,6 +112,17 @@ namespace um2
 PURE auto
 spectral_radius(CMFDCellParams const & params) -> ComplexF; 
 
+auto    
+spectral_radius(CMFDCellParams const & params,    
+                Matrix<ComplexF> & An,    
+                Matrix<ComplexF> & Bn,    
+                Matrix<ComplexF> & U,    
+                Matrix<ComplexF> & omega,    
+                Matrix<ComplexF> & J,    
+                Matrix<ComplexF> & I,    
+                Vector<Int> & ipiv    
+    ) -> ComplexF;
+
 } // namespace um2
 
 // NOLINTEND(readability-identifier-naming)

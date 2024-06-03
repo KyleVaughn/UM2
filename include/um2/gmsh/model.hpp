@@ -20,6 +20,9 @@ getMaterials(std::vector<Material> & materials);
 namespace occ
 {
 
+void
+colorMaterialPhysicalGroupEntities(std::vector<Material> const & materials);
+
 // A gmsh::model::occ::fragment that preserves the model's D-dimensional physical       
 // groups when fragmenting D-dimensional entities. All other physical groups are       
 // destroyed.       

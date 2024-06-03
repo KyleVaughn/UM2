@@ -201,7 +201,6 @@ toZAID(String const & str) -> Int
   char * end = nullptr;
   Int const a = strto<Int>(mass.data(), &end);
   ASSERT(end != nullptr);
-  ASSERT(a > 0);
 
   return 1000 * z + a;
 }

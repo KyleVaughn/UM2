@@ -312,6 +312,47 @@ spectral_radius(CMFDCellParams const & params) -> ComplexF
   return r;
 }
 
+auto
+spectral_radius(CMFDCellParams const & params,
+                Matrix<ComplexF> & An,
+                Matrix<ComplexF> & Bn,
+                Matrix<ComplexF> & U,
+                Matrix<ComplexF> & omega,
+                Matrix<ComplexF> & J,
+                Matrix<ComplexF> & I,
+                Vector<Int> & ipiv
+    ) -> ComplexF
+{
+
+  // Set up α samples. We sample α ∈ [0, π/Δ] (Equation 58)
+  Int const num_alpha = CMFDCellParams::num_alpha;
+  Float const alpha_max = um2::pi<Float> / params.delta;
+  Float const d_alpha = alpha_max / (CMFDCellParams::num_alpha - 1);
+
+  // Set up matrices
+  An.zero();
+  Bn.zero();
+
+  um2::fill(J.begin(), J.end(), ComplexF(1.0, 0.0));
+
+  ComplexF r(0, 0);
+  Float r_abs = 0;
+  for (Int i = 0; i < num_alpha; ++i) {
+    auto const a = i * d_alpha;
+    cmfd::set_omega(omega, An, Bn, U, J, params, a, I, ipiv);
+    auto const eigs = eigvals(omega);
+    // get the maximum eigenvalue
+    for (auto const & eig : eigs) {
+      Float const eig_abs = std::abs(eig);
+      if (eig_abs > r_abs) {
+        r = eig;
+        r_abs = eig_abs;
+      }
+    }
+  }
+  return r;
+}
+
 } // namespace um2
 
 // NOLINTEND(readability-identifier-naming)
