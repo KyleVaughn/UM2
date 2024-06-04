@@ -55,6 +55,7 @@
 #include <um2.hpp>
 #include <um2/stdlib/utility/pair.hpp>
 
+#include <iostream>
 #include <vector>
 
 //----------------------------------------------------------------------------
@@ -339,7 +340,7 @@ makeControlRod(Float const x0, Float const y0, std::vector<int> & rod_tags)
 // Create an LEU Special fuel element given the x, y coordinates of the bottom left corner
 // of the element
 void
-makeFuelElementLEUSpecial(Float const x0, Float const y0, std::vector<int> & rod_tags)
+makeFuelElementLEUSpecial(Float const x0, Float const y0, bool make_ctrl, std::vector<int> & rod_tags)
 {
   // Given parameters
   //------------------
@@ -402,12 +403,14 @@ makeFuelElementLEUSpecial(Float const x0, Float const y0, std::vector<int> & rod
   );
 
   // Control rod
-  x += guide_plate_width / 2;
-  // Evenly space between the guide plates
-  Float const ybot = y0 + 6 * unit_cell_thickness + water_gap / 2 + y_shift + guide_plate_thickness;
-  Float const ytop = y0 + 13 * unit_cell_thickness + water_gap / 2 + y_shift;
-  y = (ybot + ytop) / 2;
-  makeControlRod(x, y, rod_tags);
+  if (make_ctrl) {
+    x += guide_plate_width / 2;
+    // Evenly space between the guide plates
+    Float const ybot = y0 + 6 * unit_cell_thickness + water_gap / 2 + y_shift + guide_plate_thickness;
+    Float const ytop = y0 + 13 * unit_cell_thickness + water_gap / 2 + y_shift;
+    y = (ybot + ytop) / 2;
+    makeControlRod(x, y, rod_tags);
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -502,6 +505,13 @@ main(int argc, char** argv) -> int
   aluminum.addNuclideWt("Ti00", 0.0005); 
   aluminum.addNuclideWt("Mn55", 0.0005);
   aluminum.populateXSec(xslib);
+  // Print zaid and number density
+  std::cout << "Aluminum:" << std::endl;
+  for (Int i = 0; i < aluminum.numNuclides(); ++i) {
+    std::cout << aluminum.zaid(i) << " " << aluminum.numDensity(i) << std::endl; 
+  }
+  std::cout << std::endl;
+
 
   // Water
   //---------------------------------------------------------------------------
@@ -513,6 +523,11 @@ main(int argc, char** argv) -> int
   h2o.addNuclideWt("H1", 0.11191545404473821);
   h2o.addNuclideWt("O16", 0.8880845459552619);
   h2o.populateXSec(xslib);
+  // Print zaid and number density
+  std::cout << "Water:" << std::endl;
+  for (Int i = 0; i < h2o.numNuclides(); ++i) {
+    std::cout << h2o.zaid(i) << " " << h2o.numDensity(i) << std::endl; 
+  }
 
   // Heavy water
   //---------------------------------------------------------------------------
@@ -532,6 +547,11 @@ main(int argc, char** argv) -> int
   d2o.addNuclideWt("H2", h2_ao * h2_wt / d20_wt);
   d2o.addNuclideWt("O16", o16_ao * o16_wt / d20_wt);
   d2o.populateXSec(xslib);
+  // Print zaid and number density
+  std::cout << "HeavyWater:" << std::endl;
+  for (Int i = 0; i < d2o.numNuclides(); ++i) {
+    std::cout << d2o.zaid(i) << " " << d2o.numDensity(i) << std::endl; 
+  }
 
   // LEU fuel
   //---------------------------------------------------------------------------
@@ -559,6 +579,11 @@ main(int argc, char** argv) -> int
   fuel.addNuclideWt("Mn55", 0.0005 * aluminum_wt / leu_wt);
   fuel.addNuclideWt("Fe00", iron_wt / leu_wt + 0.0035 * aluminum_wt / leu_wt);
   fuel.populateXSec(xslib);
+  // Print zaid and number density
+  std::cout << "Fuel:" << std::endl;
+  for (Int i = 0; i < fuel.numNuclides(); ++i) {
+    std::cout << fuel.zaid(i) << " " << fuel.numDensity(i) << std::endl; 
+  }
 
   // Borated steel
   //---------------------------------------------------------------------------
@@ -574,6 +599,11 @@ main(int argc, char** argv) -> int
   borated_steel.addNuclide("Ni00", 0.0113);
   borated_steel.addNuclide("Cr00", 0.0164);
   borated_steel.populateXSec(xslib);
+  // Print zaid and number density
+  std::cout << "BoratedSteel:" << std::endl;
+  for (Int i = 0; i < borated_steel.numNuclides(); ++i) {
+    std::cout << borated_steel.zaid(i) << " " << borated_steel.numDensity(i) << std::endl; 
+  }
 
   // Steel
   //---------------------------------------------------------------------------
@@ -587,6 +617,11 @@ main(int argc, char** argv) -> int
   steel.addNuclide("Ni00", 0.0113);
   steel.addNuclide("Cr00", 0.0164);
   steel.populateXSec(xslib);
+  // Print zaid and number density
+  std::cout << "Steel:" << std::endl;
+  for (Int i = 0; i < steel.numNuclides(); ++i) {
+    std::cout << steel.zaid(i) << " " << steel.numDensity(i) << std::endl; 
+  }
 
   //============================================================================
   // Geometry
@@ -627,9 +662,9 @@ main(int argc, char** argv) -> int
       } else if (core_layout[i][j] == 1) {
         makeFuelElementLEURegular(x, y);
       } else if (core_layout[i][j] == 2) {
-        makeFuelElementLEUSpecial(x, y, borated_steel_tags);
+        makeFuelElementLEUSpecial(x, y, false, borated_steel_tags);
       } else if (core_layout[i][j] == 3) {
-        makeFuelElementLEUSpecial(x, y, steel_tags);
+        makeFuelElementLEUSpecial(x, y, false, steel_tags);
       }
     }
   }
@@ -641,11 +676,12 @@ main(int argc, char** argv) -> int
   um2::gmsh::model::addPhysicalGroup(2, clad_tags, -1, "Material_Aluminum");
   um2::gmsh::model::addPhysicalGroup(2, heavy_water_tags, -1, "Material_HeavyWater");
   um2::gmsh::model::addPhysicalGroup(2, fuel_tags, -1, "Material_Fuel");
-  um2::gmsh::model::addPhysicalGroup(2, borated_steel_tags, -1, "Material_BoratedSteel");
-  um2::gmsh::model::addPhysicalGroup(2, steel_tags, -1, "Material_Steel");
+//  um2::gmsh::model::addPhysicalGroup(2, borated_steel_tags, -1, "Material_BoratedSteel");
+//  um2::gmsh::model::addPhysicalGroup(2, steel_tags, -1, "Material_Steel");
 
   // Color the physical groups
-  std::vector<um2::Material> const materials = {aluminum, d2o, fuel, borated_steel, steel};
+//  std::vector<um2::Material> const materials = {aluminum, d2o, fuel, borated_steel, steel};
+  std::vector<um2::Material> const materials = {aluminum, d2o, fuel};
   um2::gmsh::model::occ::colorMaterialPhysicalGroupEntities(materials);
 
   //===========================================================================
@@ -658,8 +694,8 @@ main(int argc, char** argv) -> int
   model.addMaterial(h2o);
   model.addMaterial(d2o);
   model.addMaterial(fuel);
-  model.addMaterial(borated_steel);
-  model.addMaterial(steel);
+//  model.addMaterial(borated_steel);
+//  model.addMaterial(steel);
 
    // Add a coarse grid that evenly subdivides the domain (quarter core)
   um2::Vec2I const num_cells(num_coarse_cells, num_coarse_cells);
@@ -682,7 +718,7 @@ main(int argc, char** argv) -> int
 
   model.importCoarseCellMeshes("fnr_2d.inp");
   model.write("fnr_2d.xdmf", /*write_knudsen_data=*/true);
-  model.writeCMFDInfo("fnr_2d_cmfd_info.xdmf");
+//  model.writeCMFDInfo("fnr_2d_cmfd_info.xdmf");
   um2::finalize();
   return 0;
 }
