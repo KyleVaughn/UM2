@@ -10,21 +10,33 @@ auto
 main(int argc, char** argv) -> int
 {
   um2::initialize();
-    
+
   // Check the number of arguments
-  if (argc != 2) {
-    um2::logger::error("Usage: ./crocus_2d num_coarse_cells");
+  if (argc != 4) {
+    um2::logger::error("Usage: ./crocus_2d_kn_study target_kn mfp_threshold mfp_scale");
     return 1;
   }
-  
+
   //===========================================================================
   // Parametric study parameters
   //===========================================================================
-  
+
   char * end = nullptr;
-  Int const num_coarse_cells = um2::strto<Int>(argv[1], &end);
+  Float const target_kn = um2::strto<Float>(argv[1], &end);
   ASSERT(end != nullptr);
-  ASSERT(num_coarse_cells > 0);
+  ASSERT(target_kn > 0);
+  um2::logger::info("Target Knudsen number: ", target_kn);
+
+  Float const mfp_threshold = um2::strto<Float>(argv[2], &end);
+  ASSERT(end != nullptr);
+  end = nullptr;
+
+  Float const mfp_scale = um2::strto<Float>(argv[3], &end);
+  ASSERT(end != nullptr);
+
+  um2::logger::info("Target Knudsen number: ", target_kn);
+  um2::logger::info("MFP threshold: ", mfp_threshold);
+  um2::logger::info("MFP scale: ", mfp_scale);
 
   //============================================================================
   // Materials
@@ -83,15 +95,15 @@ main(int argc, char** argv) -> int
   //---------------------------------------------------------------------------
   um2::Material water;
   water.setName("Water");
-  water.setDensity(0.9983); // pg. 743 Table 1 
+  water.setDensity(0.9983); // pg. 743 Table 1
   water.setTemperature(temp);
   water.setColor(um2::blue);
   water.addNuclide(1001, 6.67578e-02);
   water.addNuclide(8016, 3.33789e-02);
   water.populateXSec(xslib);
 
-  //============================================================================    
-  // Geometry    
+  //============================================================================
+  // Geometry
   //============================================================================
 
   // Given Parameters
@@ -214,6 +226,7 @@ main(int argc, char** argv) -> int
   model.addMaterial(water);
 
   // Add a coarse grid that evenly subdivides the domain
+  Int constexpr num_coarse_cells = 64;
   um2::Vec2F const domain_extents(2 * center, 2 * center);
   um2::Vec2I const num_cells(num_coarse_cells, num_coarse_cells);
   model.addCoarseGrid(domain_extents, num_cells);
@@ -223,7 +236,9 @@ main(int argc, char** argv) -> int
   // Generate the mesh
   //===========================================================================
 
-  um2::gmsh::model::mesh::setGlobalMeshSize(uo2_pitch / 8);
+  //um2::gmsh::model::mesh::setGlobalMeshSize(uo2_pitch / target_kn); 
+  um2::gmsh::model::mesh::setMeshFieldFromKnudsenNumber(
+      2, model.materials(), target_kn, mfp_threshold, mfp_scale);
   um2::gmsh::model::mesh::generateMesh(um2::MeshType::QuadraticTri);
   um2::gmsh::write("crocus_2d.inp");
 
@@ -232,7 +247,7 @@ main(int argc, char** argv) -> int
   //===========================================================================
 
   model.importCoarseCellMeshes("crocus_2d.inp");
-  model.writeCMFDInfo("crocus_2d_cmfd_info.xdmf");
+  //model.writeCMFDInfo("crocus_2d_cmfd_info.xdmf");
   model.write("crocus_2d.xdmf", /*write_knudsen_data=*/true);
   um2::finalize();
   return 0;
