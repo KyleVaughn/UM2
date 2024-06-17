@@ -22,4 +22,3 @@ sudo apt install -y \
     clang-format \
     clang-tidy \
     valgrind
-

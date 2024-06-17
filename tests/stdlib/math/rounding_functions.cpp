@@ -22,7 +22,6 @@ TEST_CASE(floor_float)
 MAKE_CUDA_KERNEL(floor_float);
 
 TEST_SUITE(ceil_suite) { TEST_HOSTDEV(ceil_float); }
-
 TEST_SUITE(floor_suite) { TEST_HOSTDEV(floor_float); }
 
 auto

@@ -3,8 +3,8 @@
 #include <um2/config.hpp>
 #include <um2/stdlib/utility/move.hpp>
 
-#include <cstdlib> // std::size_t
-#include <type_traits> // std::is_trivially_move_constructible_v, 
+#include <cstdlib>     // std::size_t
+#include <type_traits> // std::is_trivially_move_constructible_v,
                        // std::is_trivially_move_assignable_v
 
 namespace um2

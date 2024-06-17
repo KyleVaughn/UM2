@@ -27,6 +27,7 @@ TEST_CASE(swap_array)
 }
 MAKE_CUDA_KERNEL(swap_array);
 
+HOSTDEV
 auto constexpr foo()
 {
   int a = 1;
@@ -37,12 +38,13 @@ auto constexpr foo()
 
 HOSTDEV
 TEST_CASE(swap_constexpr) { static_assert(foo() == 1); }
+MAKE_CUDA_KERNEL(swap_constexpr);
 
 TEST_SUITE(swap)
 {
-  TEST(swap_int);
-  TEST(swap_array);
-  TEST(swap_constexpr);
+  TEST_HOSTDEV(swap_int);
+  TEST_HOSTDEV(swap_array);
+  TEST_HOSTDEV(swap_constexpr);
 }
 
 auto

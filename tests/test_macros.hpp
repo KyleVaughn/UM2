@@ -61,10 +61,7 @@
 
 #define TEST_SUITE(name) void name()
 
-#define TEST(name)                                                                       \
-  printf("Running test case '%s'\n", #name);                                             \
-  name();                                                                                \
-  printf("Test case '%s' passed\n", #name);
+#define TEST(name) name()
 
 #if UM2_USE_CUDA
 
@@ -98,34 +95,26 @@
 
 #  define TEST_CUDA_KERNEL_1_ARGS(host_test)                                             \
     {                                                                                    \
-      printf("Running CUDA test case '%s'\n", #host_test);                               \
       host_test##_cuda_kernel<<<1, 1>>>();                                               \
       CUDA_KERNEL_POST_TEST                                                              \
-      printf("CUDA test case '%s' finished\n", #host_test);                              \
     }
 
 #  define TEST_CUDA_KERNEL_2_ARGS(host_test, T)                                          \
     {                                                                                    \
-      printf("Running CUDA test case '%s<%s>'", #host_test, #T);                         \
       host_test##_cuda_kernel<T><<<1, 1>>>();                                            \
       CUDA_KERNEL_POST_TEST                                                              \
-      printf("CUDA test case '%s<%s>' finished\n", #host_test, #T);                      \
     }
 
 #  define TEST_CUDA_KERNEL_3_ARGS(host_test, T, U)                                       \
     {                                                                                    \
-      printf("Running CUDA test case '%s<%s, %s>'", #host_test, #T, #U);                 \
       host_test##_cuda_kernel<T, U><<<1, 1>>>();                                         \
       CUDA_KERNEL_POST_TEST                                                              \
-      printf("CUDA test case '%s<%s, %s>' finished\n", #host_test, #T, #U);              \
     }
 
 #  define TEST_CUDA_KERNEL_4_ARGS(host_test, T, U, V)                                    \
     {                                                                                    \
-      printf("Running CUDA test case '%s<%s, %s, %s>'", #host_test, #T, #U, #V);         \
       host_test##_cuda_kernel<T, U, V><<<1, 1>>>();                                      \
       CUDA_KERNEL_POST_TEST                                                              \
-      printf("CUDA test case '%s<%s, %s, %s>' finished\n", #host_test, #T, #U, #V);      \
     }
 
 #  define TEST_CUDA_KERNEL_GET_MACRO(_1, _2, _3, _4, NAME, ...) NAME

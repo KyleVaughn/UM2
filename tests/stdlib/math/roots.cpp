@@ -31,7 +31,6 @@ TEST_CASE(sqrt_float)
 MAKE_CUDA_KERNEL(sqrt_float);
 
 TEST_SUITE(cbrt_suite) { TEST_HOSTDEV(cbrt_float); }
-
 TEST_SUITE(sqrt_suite) { TEST_HOSTDEV(sqrt_float); }
 
 auto

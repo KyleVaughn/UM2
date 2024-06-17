@@ -28,13 +28,10 @@ TEST_CASE(sin_float)
   ASSERT_NEAR(um2::sin(um2::pi<float>), 0.0F, 1e-6F);
 }
 
-#if UM2_USE_CUDA
 MAKE_CUDA_KERNEL(cos_float);
 MAKE_CUDA_KERNEL(sin_float);
-#endif
 
 TEST_SUITE(cos_suite) { TEST_HOSTDEV(cos_float); }
-
 TEST_SUITE(sin_suite) { TEST_HOSTDEV(sin_float); }
 
 auto

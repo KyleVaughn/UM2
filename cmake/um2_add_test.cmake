@@ -21,7 +21,11 @@ macro(um2_add_test FILENAME)
     set_clang_tidy_properties(${TESTNAME})    
   endif()
 
-   if (UM2_USE_VALGRIND)
+  if (UM2_USE_CUDA)
+    set_cuda_properties(${TESTNAME} ${FILENAME})
+  endif()
+
+  if (UM2_USE_VALGRIND)
     add_test(NAME valgrind_${TESTNAME}
       COMMAND valgrind
         --error-exitcode=1

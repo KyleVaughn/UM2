@@ -19,6 +19,7 @@ TEST_CASE(asin_float)
   ASSERT_NEAR(um2::asin(0.5F), 0.5235987755982988F, 1e-6F); // pi/6
   ASSERT_NEAR(um2::asin(1.0F), 1.5707963267948966F, 1e-6F); // pi/2
 }
+MAKE_CUDA_KERNEL(asin_float);
 
 HOSTDEV
 TEST_CASE(atan_float)
@@ -27,6 +28,7 @@ TEST_CASE(atan_float)
   ASSERT_NEAR(um2::atan(1.0F), 0.7853981633974483F, 1e-6F);   // pi/4
   ASSERT_NEAR(um2::atan(-1.0F), -0.7853981633974483F, 1e-6F); // -pi/4
 }
+MAKE_CUDA_KERNEL(atan_float);
 
 TEST_SUITE(acos_suite) { TEST_HOSTDEV(acos_float); }
 TEST_SUITE(asin_suite) { TEST_HOSTDEV(asin_float); }

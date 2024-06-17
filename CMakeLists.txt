@@ -48,23 +48,23 @@ option(UM2_ENABLE_BMI2 "Enable BMI2 instruction set" ON)
 # Enable fast math optimizations. This option enables fast math optimizations
 # -ffast-math on the CPU and --use_fast_math on the GPU. Note that this may
 # result in a loss of precision.
-option(UM2_ENABLE_FASTMATH "Enable fast math optimizations on CPU and GPU" ON)
+option(UM2_ENABLE_FASTMATH "Enable fast math optimizations on CPU and GPU" OFF)
 
-# Set the Float type to 64-bit (double) instead of 32-bit (float). This option
-# determines the precision of the floating point numbers used in UM2.
-option(UM2_ENABLE_FLOAT64 "Enable 64-bit Float" ON)
+## Set the Float type to 64-bit (double) instead of 32-bit (float). This option
+## determines the precision of the floating point numbers used in UM2.
+#option(UM2_ENABLE_FLOAT64 "Enable 64-bit Float" ON)
 
 # Enable native architecture. This option enables the -march=native flag, which
 # optimizes the code for the architecture on which it is built.
 option(UM2_ENABLE_NATIVE "Enable -march=native" ON)
 
-# Enable GCC vector extensions for the Vec class. Vec<D, T> uses T[D] as the 
-# underlying storage type by default. When ON, if D is a power of 2 and T is 
-# an arithmetic type, Vec<D, T> will use GCC vector extensions instead to store
-# a SIMD vector of D elements of type T. Despite aligned T[D] being functionally
-# the same as the SIMD vector, the compiler tends to generate better code with 
-# the vector extensions.
-option(UM2_ENABLE_SIMD_VEC "Enable GCC vector extensions for the Vec class" ON)
+## Enable GCC vector extensions for the Vec class. Vec<D, T> uses T[D] as the 
+## underlying storage type by default. When ON, if D is a power of 2 and T is 
+## an arithmetic type, Vec<D, T> will use GCC vector extensions instead to store
+## a SIMD vector of D elements of type T. Despite aligned T[D] being functionally
+## the same as the SIMD vector, the compiler tends to generate better code with 
+## the vector extensions.
+#option(UM2_ENABLE_SIMD_VEC "Enable GCC vector extensions for the Vec class" ON)
 
 # External tools/dependencies
 #-----------------------------------------------------------------------------
@@ -77,7 +77,10 @@ option(UM2_USE_CLANG_FORMAT "Use clang-format" ON)
 option(UM2_USE_CLANG_TIDY "Use clang-tidy" ON)
 
 option(UM2_USE_COVERAGE      "Use coverage" OFF) # Code coverage
-option(UM2_USE_CUDA          "Use CUDA"     OFF) # GPU acceleration
+
+# Use CUDA for GPU acceleration.
+option(UM2_USE_CUDA          "Use CUDA"     OFF)
+
 option(UM2_USE_GMSH          "Use Gmsh"     OFF)  # CAD geometry and meshing
 option(UM2_USE_HDF5          "Use HDF5"     OFF)  # Binary data I/O (Mesh I/O)
 option(UM2_USE_OPENMP        "Use OpenMP"   OFF) # Multi-threading
@@ -155,11 +158,22 @@ if (UM2_ENABLE_BMI2)
   endif()
 endif()
 
-# Warn about Float64 and when using CUDA
+# Check for a CUDA compiler/CUDA toolkit if CUDA is enabled
 if (UM2_USE_CUDA)
-  if (UM2_ENABLE_FLOAT64)
-    message(WARNING "64-bit Float may be slow with CUDA.")
+  include(CheckLanguage)
+  check_language(CUDA)
+  
+  # nvcc will default to gcc and g++ if the host compiler is not set using CUDAHOSTCXX.
+  # To prevent unintentional version/compiler mismatches, we set the host compiler to the
+  # same compiler used to build the project.
+  if (NOT DEFINED ENV{CUDAHOSTCXX})
+    message(STATUS "Setting CMAKE_CUDA_HOST_COMPILER to ${CMAKE_CXX_COMPILER}."
+            " Consider setting the CUDAHOSTCXX environment variable if this is not desired.")
+    set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
   endif()
+  
+  find_package(CUDAToolkit REQUIRED)
+  enable_language(CUDA)
 endif()
 
 # Max log level for compile-time filtering of log messages
@@ -180,6 +194,11 @@ if (NOT MPACT_DATA)
   set(MPACT_DATA "${CMAKE_CURRENT_SOURCE_DIR}/MPACT_Extras/xslibs")
 endif()
 message(STATUS "MPACT_DATA: ${MPACT_DATA}")
+# Check to see if the directory exists
+if (NOT EXISTS "${MPACT_DATA}")
+  # Warn if the directory does not exist
+  message(WARNING "MPACT_DATA directory does not exist: ${MPACT_DATA}")
+endif()
 
 #===============================================================================
 # Flags
@@ -217,7 +236,6 @@ endif()
 # Set general warning flags
 um2_add_cxx_compiler_flag("-Wall")
 um2_add_cxx_compiler_flag("-Wextra")
-um2_add_cxx_compiler_flag("-Werror")
 um2_add_cxx_compiler_flag("-Wcast-align")
 um2_add_cxx_compiler_flag("-Wcast-qual")
 um2_add_cxx_compiler_flag("-Wconversion")
@@ -226,7 +244,6 @@ um2_add_cxx_compiler_flag("-Wfloat-equal")
 um2_add_cxx_compiler_flag("-Wimplicit-fallthrough")
 um2_add_cxx_compiler_flag("-Wmissing-noreturn")
 um2_add_cxx_compiler_flag("-Wnon-virtual-dtor")
-um2_add_cxx_compiler_flag("-Wold-style-cast")
 um2_add_cxx_compiler_flag("-Wshadow")
 um2_add_cxx_compiler_flag("-Wunused")
 um2_add_cxx_compiler_flag("-Wvla")
@@ -250,11 +267,18 @@ um2_add_cxx_compiler_flag("-Wunaligned-access")
 um2_add_cxx_compiler_flag("-Wunneeded-member-function")
 um2_add_cxx_compiler_flag("-Wundef")
 um2_add_cxx_compiler_flag("-Wvector-conversion")
-um2_add_cxx_compiler_flag("-pedantic")
+
+# Options that will cause issues if CUDA is enabled
+if (NOT UM2_USE_CUDA)
+  um2_add_cxx_compiler_flag("-Werror")
+  um2_add_cxx_compiler_flag("-Wold-style-cast")
+  um2_add_cxx_compiler_flag("-pedantic")
+endif()
 
 # If CUDA is enabled, pass the CXX flags via -Xcompiler
 if (UM2_USE_CUDA)
-  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler \"${CMAKE_CXX_FLAGS}\"")
+  set(CMAKE_CUDA_FLAGS 
+    "${CMAKE_CUDA_FLAGS} -Xcompiler \"${CMAKE_CXX_FLAGS}\"")
   set(CMAKE_CUDA_FLAGS_RELEASE
     "${CMAKE_CUDA_FLAGS_RELEASE} -Xcompiler \"${CMAKE_CXX_FLAGS_RELEASE}\"")
   set(CMAKE_CUDA_FLAGS_DEBUG
@@ -263,6 +287,8 @@ if (UM2_USE_CUDA)
   if (UM2_USE_OPENMP)
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -fopenmp")
   endif()
+
+  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --Werror all-warnings")
 endif()
 
 #===============================================================================
@@ -271,9 +297,9 @@ endif()
 
 # Sources
 set(UM2_SOURCES
-    "src/common/settings.cpp"    
+    #"src/common/settings.cpp"    
     #"src/common/logger.cpp"
-    #"src/um2.cpp"
+    "src/um2.cpp"
     )
 
 if (UM2_BUILD_SHARED_LIB)
@@ -365,6 +391,25 @@ if (UM2_USE_COVERAGE)
   target_link_libraries(um2 PRIVATE gcov)
 endif()
 
+# CUDA
+if (UM2_USE_CUDA)
+  # Set CUDA standard to the same as the C++ standard
+  set(UM2_CUDA_STANDARD ${UM2_CXX_STANDARD})
+
+  # Macro for treating the given target as CUDA code
+  macro(set_cuda_properties CUDA_TARGET)
+    set_target_properties(${CUDA_TARGET} PROPERTIES CUDA_STANDARD ${UM2_CUDA_STANDARD})
+    set_target_properties(${CUDA_TARGET} PROPERTIES CUDA_STANDARD_REQUIRED ON)
+    #set_target_properties(${CUDA_TARGET} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+    set_target_properties(${CUDA_TARGET} PROPERTIES CUDA_ARCHITECTURES native)
+    set_source_files_properties(${ARGN} PROPERTIES LANGUAGE CUDA)
+  endmacro()
+
+  set_cuda_properties(um2 ${UM2_SOURCES})
+
+  target_include_directories(um2 SYSTEM PUBLIC "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}")
+endif()
+
 # HDF5
 if (UM2_USE_HDF5)
   find_package(HDF5 REQUIRED COMPONENTS CXX)
@@ -410,41 +455,7 @@ endif()
 ##  find_package(TBB REQUIRED)
 ##  target_link_libraries(um2 PUBLIC TBB::tbb)
 ##endif()
-##
-### CUDA
-##if (UM2_USE_CUDA)
-##  include(CheckLanguage)
-##  check_language(CUDA)
-##
-##  # nvcc will default to gcc and g++ if the host compiler is not set using CUDAHOSTCXX.
-##  # To prevent unintentional version/compiler mismatches, we set the host compiler to the
-##  # same compiler used to build the project.
-##  if (NOT DEFINED ENV{CUDAHOSTCXX})
-##    message(STATUS "Setting CMAKE_CUDA_HOST_COMPILER to ${CMAKE_CXX_COMPILER}."
-##            " Consider setting the CUDAHOSTCXX environment variable if this is not desired.")
-##    set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
-##  endif()
-##
-##  find_package(CUDAToolkit REQUIRED)
-##  enable_language(CUDA)
-##
-##  # Set CUDA standard to the same as the C++ standard
-##  set(UM2_CUDA_STANDARD ${UM2_CXX_STANDARD})
-##
-##  # Macro for treating the given target as CUDA code
-##  macro(set_cuda_properties CUDA_TARGET)
-##    set_target_properties(${CUDA_TARGET} PROPERTIES CUDA_STANDARD ${UM2_CUDA_STANDARD})
-##    set_target_properties(${CUDA_TARGET} PROPERTIES CUDA_STANDARD_REQUIRED ON)
-##    set_target_properties(${CUDA_TARGET} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-##    set_target_properties(${CUDA_TARGET} PROPERTIES CUDA_ARCHITECTURES native)
-##    set_source_files_properties(${ARGN} PROPERTIES LANGUAGE CUDA)
-##  endmacro()
-##
-##  set_cuda_properties(um2 ${UM2_SOURCES})
-##
-##  target_include_directories(um2 SYSTEM PUBLIC "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}")
-##endif()
-##
+
 #===============================================================================
 # Build optional subdirectories
 #===============================================================================

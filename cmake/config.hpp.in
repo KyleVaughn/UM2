@@ -11,16 +11,16 @@
 #cmakedefine01 UM2_ENABLE_ASSERTS
 #cmakedefine01 UM2_ENABLE_BMI2
 #cmakedefine01 UM2_ENABLE_FASTMATH
-#cmakedefine01 UM2_ENABLE_FLOAT64
-#cmakedefine01 UM2_ENABLE_SIMD_VEC
+// #cmakedefine01 UM2_ENABLE_FLOAT64
+// #cmakedefine01 UM2_ENABLE_SIMD_VEC
 
 // External tools/dependencies
 #cmakedefine01 UM2_USE_CUDA
-//#cmakedefine01 UM2_USE_GMSH
-//#cmakedefine01 UM2_USE_HDF5
+// #cmakedefine01 UM2_USE_GMSH
+// #cmakedefine01 UM2_USE_HDF5
 #cmakedefine01 UM2_USE_OPENMP
-//#cmakedefine01 UM2_USE_PUGIXML
-//#cmakedefine01 UM2_USE_TBB
+// #cmakedefine01 UM2_USE_PUGIXML
+// #cmakedefine01 UM2_USE_TBB
 
 // Max log level for compile-time filtering of log messages
 // clang-format off
@@ -63,14 +63,21 @@
 // TODO(kcvaughn): Once C++23 is supported, we can use [[assume(expr)]] instead.
 // https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1774r8.pdf
 // https://github.com/KyleVaughn/UM2/issues/142
-// For now, each compiler has its own assume implementation (GCC's being the worst).
 #ifdef ASSUME
 #  error "ASSUME already defined"
 #endif
 #if defined(__clang__)
 #  define ASSUME(expr) __builtin_assume(expr)
 #elif defined(__GNUC__)
-#  define ASSUME(expr) __attribute__((__assume__(expr))) 
+#  if (__GNUC__ >= 13)
+#    define ASSUME(expr) __attribute__((__assume__(expr)))
+#  else
+#    define ASSUME(expr)                                                                 \
+      if (expr) {                                                                        \
+      } else {                                                                           \
+        __builtin_unreachable();                                                         \
+      }
+#  endif
 #elif defined(__CUDACC__)
 #  define ASSUME(expr) __assume(expr)
 #else
@@ -112,11 +119,11 @@
 //==============================================================================
 
 // Floating point type
-#if UM2_ENABLE_FLOAT64
-using Float = double;
-#else
-using Float = float;
-#endif
+// #if UM2_ENABLE_FLOAT64
+// using Float = double;
+// #else
+// using Float = float;
+// #endif
 
 // Integer type
 using Int = int32_t;

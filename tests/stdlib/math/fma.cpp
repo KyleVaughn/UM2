@@ -23,6 +23,7 @@ TEST_CASE(fma_double)
   double const result = um2::fma(a, b, c);
   ASSERT_NEAR(result, 17.0, 1e-6);
 }
+MAKE_CUDA_KERNEL(fma_double);
 
 TEST_SUITE(fma_suite)
 {
