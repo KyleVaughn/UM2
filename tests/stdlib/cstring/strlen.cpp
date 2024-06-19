@@ -11,7 +11,6 @@ TEST_CASE(test_strlen)
   static_assert(um2::strlen("ab") == 2);
   static_assert(um2::strlen("abc") == 3);
 }
-
 MAKE_CUDA_KERNEL(test_strlen);
 
 TEST_SUITE(strlen_suite) { TEST_HOSTDEV(test_strlen); }

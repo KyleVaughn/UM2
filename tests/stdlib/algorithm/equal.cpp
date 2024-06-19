@@ -15,6 +15,7 @@ TEST_CASE(test_equal)
   static_assert(um2::equal(a, a, c));
 }
 
+HOSTDEV
 constexpr auto
 foo() -> bool
 {

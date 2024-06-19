@@ -24,7 +24,7 @@ namespace um2
 // sum
 //=============================================================================
 // For small n, computes the naive sum of the values. For large n, uses
-// pairwise summation to floating point error.
+// pairwise summation to minimize floating point error.
 
 namespace sum_detail
 {
@@ -41,13 +41,13 @@ naiveSum(T const * begin, T const * end) noexcept -> T
 }
 
 template <class T>
-PURE HOSTDEV constexpr auto
+PURE constexpr auto
 // NOLINTNEXTLINE(misc-no-recursion) OK
 pairwiseSum(T const * begin, T const * end) noexcept -> T
 {
   auto const n = end - begin;
   ASSERT_ASSUME(n > 0);
-  if (n <= 1024) {
+  if (n <= 128) {
     return naiveSum(begin, end);
   }
   auto const m = n / 2;
@@ -60,7 +60,11 @@ template <class T>
 PURE HOSTDEV constexpr auto
 sum(T const * begin, T const * end) noexcept -> T
 {
+#if defined(__CUDA_ARCH__)
+  return sum_detail::naiveSum(begin, end);
+#else
   return sum_detail::pairwiseSum(begin, end);
+#endif
 }
 
 //=============================================================================
@@ -84,7 +88,7 @@ mean(T const * begin, T const * end) noexcept -> T
 // Computes the median of the values in the range [begin, end).
 // The range must be sorted.
 
-template <std::floating_point T>
+template <class T>
 PURE HOSTDEV constexpr auto
 median(T const * begin, T const * end) noexcept -> T
 {
@@ -106,19 +110,19 @@ median(T const * begin, T const * end) noexcept -> T
 // Computes the variance of the values in the range [begin, end).
 
 // Use Welford's algorithm to compute the variance.
-template <std::floating_point T>
+template <class T>
 PURE HOSTDEV constexpr auto
 variance(T const * begin, T const * end) noexcept -> T
 {
   ASSERT_ASSUME(begin != end);
   Int n = 0;
-  Float mean = 0;
-  Float m2 = 0;
+  T mean = 0;
+  T m2 = 0;
 
   while (begin != end) {
     ++n;
-    Float const delta = *begin - mean;
-    mean += delta / static_cast<Float>(n);
+    T const delta = *begin - mean;
+    mean += delta / static_cast<T>(n);
     m2 += delta * (*begin - mean);
     ++begin;
   }
@@ -131,7 +135,7 @@ variance(T const * begin, T const * end) noexcept -> T
 //=============================================================================
 // Computes the standard deviation of the values in the range [begin, end).
 
-template <std::floating_point T>
+template <class T>
 PURE HOSTDEV auto
 stdDev(T const * begin, T const * end) noexcept -> T
 {

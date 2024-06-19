@@ -35,9 +35,7 @@ HOSTDEV constexpr void
 destroy_at(T * loc) noexcept
 {
   ASSERT_ASSUME(loc != nullptr);
-  if constexpr (std::is_array_v<T>) {
-    static_assert(always_false<T>, "destroy_at does not support arrays");
-  }
+  static_assert(!std::is_array_v<T>, "destroy_at does not support arrays");
   loc->~T();
 }
 

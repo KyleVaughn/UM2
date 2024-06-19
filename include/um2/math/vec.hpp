@@ -11,7 +11,7 @@
 
 #include <concepts>
 
-// We alias Vec<D, Float> to Point<D> for D-dimensional points. Hence, we need to
+// We alias Vec<D> to Point<D> for D-dimensional points. Hence, we need to
 // define some constants for points in this file.
 
 //==============================================================================
@@ -33,9 +33,26 @@ namespace um2
 
 // NOTE: If you change these 3 values, you had better find every instance
 // of them in the code and tests and make sure the values are appropriate.
-constexpr Float eps_distance = castIfNot<Float>(1e-6); // 0.1 micron
-constexpr Float eps_distance2 = castIfNot<Float>(1e-12);
-constexpr Float inf_distance = castIfNot<Float>(1e8); // 1000 km
+
+#ifndef __CUDA_ARCH__
+template <class T>
+inline constexpr T eps_distance = castIfNot<T>(1e-7); // 1 nm
+
+template <class T>
+inline constexpr T eps_distance2 = castIfNot<T>(1e-14); // 1 nm^2
+
+template <class T>
+inline constexpr T inf_distance = castIfNot<T>(1e8); // 1000 km
+#else
+template <class T>
+DEVICE constexpr T eps_distance = castIfNot<T>(1e-7); // 1 nm
+
+template <class T>
+DEVICE constexpr T eps_distance2 = castIfNot<T>(1e-14); // 1 nm^2
+
+template <class T>
+DEVICE constexpr T inf_distance = castIfNot<T>(1e8); // 1000 km
+#endif
 
 } // namespace um2
 
@@ -43,19 +60,15 @@ constexpr Float inf_distance = castIfNot<Float>(1e8); // 1000 km
 // VEC
 //==============================================================================
 // A D-dimensional vector with data of type T.
-//
-// if UM2_ENABLE_SIMD_VEC, then if D is a power of 2 and T is an arithmetic type,
-// we use GCC's vector extensions to store the data. This allows for automatic
-// vectorization of operations.
-//
-// NOTE: Many functions are declared constexpr. However, if UM2_ENABLE_SIMD_VEC is
-// enabled, some functions may not be constexpr, since the vector extensions are
-// not constexpr-friendly
 
 namespace um2
 {
 
-#if UM2_ENABLE_SIMD_VEC
+#ifndef __CUDA_ARCH__
+static constexpr bool gcc_vec_ext_enabled = (UM2_ENABLE_SIMD_VEC == 1);
+#else
+static constexpr bool gcc_vec_ext_enabled = false;
+#endif
 
 static consteval auto
 isPowerOf2(Int x) noexcept -> bool
@@ -65,13 +78,6 @@ isPowerOf2(Int x) noexcept -> bool
 
 template <Int D, class T>
 concept is_simd_vec = isPowerOf2(D) && std::is_arithmetic_v<T>;
-
-#else
-
-template <Int D, class T>
-concept is_simd_vec = false;
-
-#endif
 
 template <Int D, class T, bool B = is_simd_vec<D, T>>
 struct VecData;
@@ -83,20 +89,45 @@ struct VecData<D, T, false> {
 
 template <Int D, class T>
 struct VecData<D, T, true> {
-  // If we use "using" we get "ignoring attributes applied to dependent type 'T' without
-  // an associated declaration" warning. So we use typedef instead. Then we silence
-  // clang-tidy trying to tell us to use "using" instead of "typedef".
-  // NOLINTNEXTLINE(modernize-use-using,readability-identifier-naming)
-  typedef T Data __attribute__((vector_size(D * sizeof(T))));
-  //  using Data = T __attribute__((vector_size(D * sizeof(T))));
+#if UM2_ENABLE_SIMD_VEC && !defined(__CUDA_ARCH__)
+  using Data __attribute__((vector_size(D * sizeof(T)))) = T;
+#else
+  using Data = T[D];
+#endif
+};
+
+template <Int D, class T>
+class Vec;
+
+template <class T>
+struct IsSIMDVec {
+  static constexpr bool value = false;
+};
+
+template <Int D, class T>
+struct IsSIMDVec<Vec<D, T>> {
+  static constexpr bool value = is_simd_vec<D, T>;
+};
+
+// Align if power of 2 and arithmetic, or if the data otherwise maps to a SIMD type
+template <Int D, class T>
+static consteval auto
+vecAlignment() noexcept -> Int
+{
+  if constexpr (isPowerOf2(D) && (std::is_arithmetic_v<T> || IsSIMDVec<T>::value)) {
+    return D * alignof(T);
+  } else {
+    return alignof(T);
+  }
 };
 
 template <Int D, class T>
 class Vec
 {
+  static_assert(D > 0);
 
   using Data = typename VecData<D, T>::Data;
-  Data _data;
+  alignas(vecAlignment<D, T>()) Data _data;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getPointer() noexcept -> T *;
@@ -209,9 +240,6 @@ public:
   //==============================================================================
 
   HOSTDEV [[nodiscard]] static constexpr auto
-  isSIMD() noexcept -> bool;
-
-  HOSTDEV [[nodiscard]] static constexpr auto
   zero() noexcept -> Vec<D, T>;
 
   HOSTDEV constexpr void
@@ -252,7 +280,7 @@ public:
   // eps2 is the squared distance below which two points are considered to be
   // equal.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  isApprox(Vec<D, T> const & v, T const & eps2 = eps_distance2) const noexcept -> bool
+  isApprox(Vec<D, T> const & v, T const & eps2 = eps_distance2<T>) const noexcept -> bool
     requires(std::is_floating_point_v<T>);
 
 }; // class Vec
@@ -270,11 +298,11 @@ using Vec3 = Vec<3, T>;
 template <class T>
 using Vec4 = Vec<4, T>;
 
-using Vec2I = Vec2<Int>;
-using Vec3I = Vec3<Int>;
+using Vec2i = Vec2<Int>;
+using Vec3i = Vec3<Int>;
 
-using Vec2F = Vec2<Float>;
-using Vec3F = Vec3<Float>;
+using Vec2f = Vec2<float>;
+using Vec3f = Vec3<float>;
 
 using Vec2d = Vec2<double>;
 using Vec3d = Vec3<double>;
@@ -419,7 +447,7 @@ Vec<D, T>::operator[](Int i) noexcept -> T &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < D);
-  if constexpr (is_simd_vec<D, T>) {
+  if constexpr (is_simd_vec<D, T> && gcc_vec_ext_enabled) {
     return getPointer()[i];
   } else {
     return _data[i];
@@ -432,7 +460,7 @@ Vec<D, T>::operator[](Int i) const noexcept -> T const &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < D);
-  if constexpr (is_simd_vec<D, T>) {
+  if constexpr (is_simd_vec<D, T> && gcc_vec_ext_enabled) {
     return getConstPointer()[i];
   } else {
     return _data[i];
@@ -500,7 +528,7 @@ template <Int D, class T>
 HOSTDEV constexpr auto
 Vec<D, T>::operator-() const noexcept -> Vec<D, T>
 {
-  if constexpr (is_simd_vec<D, T>) {
+  if constexpr (is_simd_vec<D, T> && gcc_vec_ext_enabled) {
     return -_data;
   } else {
     Vec<D, T> result;
@@ -519,7 +547,7 @@ template <Int D, class T>
 HOSTDEV constexpr auto
 Vec<D, T>::operator+=(Vec<D, T> const & v) noexcept -> Vec<D, T> &
 {
-  if constexpr (is_simd_vec<D, T>) {
+  if constexpr (is_simd_vec<D, T> && gcc_vec_ext_enabled) {
     _data += v._data;
   } else {
     for (Int i = 0; i < D; ++i) {
@@ -533,7 +561,7 @@ template <Int D, class T>
 HOSTDEV constexpr auto
 Vec<D, T>::operator-=(Vec<D, T> const & v) noexcept -> Vec<D, T> &
 {
-  if constexpr (is_simd_vec<D, T>) {
+  if constexpr (is_simd_vec<D, T> && gcc_vec_ext_enabled) {
     _data -= v._data;
   } else {
     for (Int i = 0; i < D; ++i) {
@@ -547,7 +575,7 @@ template <Int D, class T>
 HOSTDEV constexpr auto
 Vec<D, T>::operator*=(Vec<D, T> const & v) noexcept -> Vec<D, T> &
 {
-  if constexpr (is_simd_vec<D, T>) {
+  if constexpr (is_simd_vec<D, T> && gcc_vec_ext_enabled) {
     _data *= v._data;
   } else {
     for (Int i = 0; i < D; ++i) {
@@ -561,7 +589,7 @@ template <Int D, class T>
 HOSTDEV constexpr auto
 Vec<D, T>::operator/=(Vec<D, T> const & v) noexcept -> Vec<D, T> &
 {
-  if constexpr (is_simd_vec<D, T>) {
+  if constexpr (is_simd_vec<D, T> && gcc_vec_ext_enabled) {
     _data /= v._data;
   } else {
     for (Int i = 0; i < D; ++i) {
@@ -589,7 +617,7 @@ template <class S>
 HOSTDEV constexpr auto
 Vec<D, T>::operator+=(S const & s) noexcept -> Vec<D, T> &
 {
-  if constexpr (is_simd_vec<D, T>) {
+  if constexpr (is_simd_vec<D, T> && gcc_vec_ext_enabled) {
     _data += static_cast<T>(s);
   } else {
     for (Int i = 0; i < D; ++i) {
@@ -605,7 +633,7 @@ template <class S>
 HOSTDEV constexpr auto
 Vec<D, T>::operator-=(S const & s) noexcept -> Vec<D, T> &
 {
-  if constexpr (is_simd_vec<D, T>) {
+  if constexpr (is_simd_vec<D, T> && gcc_vec_ext_enabled) {
     _data -= static_cast<T>(s);
   } else {
     for (Int i = 0; i < D; ++i) {
@@ -621,7 +649,7 @@ template <class S>
 HOSTDEV constexpr auto
 Vec<D, T>::operator*=(S const & s) noexcept -> Vec<D, T> &
 {
-  if constexpr (is_simd_vec<D, T>) {
+  if constexpr (is_simd_vec<D, T> && gcc_vec_ext_enabled) {
     _data *= static_cast<T>(s);
   } else {
     for (Int i = 0; i < D; ++i) {
@@ -637,7 +665,7 @@ template <class S>
 HOSTDEV constexpr auto
 Vec<D, T>::operator/=(S const & s) noexcept -> Vec<D, T> &
 {
-  if constexpr (is_simd_vec<D, T>) {
+  if constexpr (is_simd_vec<D, T> && gcc_vec_ext_enabled) {
     _data /= static_cast<T>(s);
   } else {
     for (Int i = 0; i < D; ++i) {
@@ -650,13 +678,6 @@ Vec<D, T>::operator/=(S const & s) noexcept -> Vec<D, T> &
 //==============================================================================
 // Other member functions
 //==============================================================================
-
-template <Int D, class T>
-HOSTDEV constexpr auto
-Vec<D, T>::isSIMD() noexcept -> bool
-{
-  return is_simd_vec<D, T>;
-}
 
 template <Int D, class T>
 HOSTDEV [[nodiscard]] constexpr auto

@@ -20,7 +20,6 @@ TEST_CASE(test_memcmp)
   STATIC_ASSERT(um2::memcmp(s1, s3, 2) < 0);
   STATIC_ASSERT(um2::memcmp(s3, s1, 2) > 0);
 }
-
 MAKE_CUDA_KERNEL(test_memcmp);
 
 TEST_SUITE(memcmp_suite) { TEST_HOSTDEV(test_memcmp); }

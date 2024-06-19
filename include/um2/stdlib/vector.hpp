@@ -76,11 +76,11 @@ private:
   destructAtEnd(Ptr new_last) noexcept;
 
   template <class... Args>
-  HOSTDEV inline auto
+  HOSTDEV auto
   emplaceBackSlowPath(Args &&... args) noexcept -> Ptr;
 
   template <class U>
-  HOSTDEV inline auto
+  HOSTDEV auto
   pushBackSlowPath(U && value) noexcept -> Ptr;
 
   // Return the recommended capacity for a vector of size new_size.
@@ -277,7 +277,8 @@ Vector<T>::allocate(Int n) noexcept
   ASSERT(0 < n);
   ASSERT(n < max_size());
   ASSERT(_begin == nullptr);
-  _begin = static_cast<T *>(::operator new(static_cast<size_t>(n) * sizeof(T)));
+  _begin = static_cast<T *>(
+      ::operator new(static_cast<size_t>(n) * sizeof(T), std::align_val_t{alignof(T)}));
   _end = _begin;
   _end_cap = _begin + n;
 }
@@ -330,7 +331,7 @@ Vector<T>::deallocate() noexcept
 {
   if (_begin != nullptr) {
     clear();
-    ::operator delete(_begin);
+    ::operator delete(_begin, std::align_val_t{alignof(T)});
     _begin = nullptr;
     _end = nullptr;
     _end_cap = nullptr;
@@ -351,7 +352,7 @@ Vector<T>::destructAtEnd(Ptr new_last) noexcept
 
 template <class T>
 template <class... Args>
-HOSTDEV inline auto
+HOSTDEV auto
 // NOLINTNEXTLINE(*-param-not-moved,*std-forward) // False positive.
 Vector<T>::emplaceBackSlowPath(Args &&... args) noexcept -> Ptr
 {
@@ -365,7 +366,7 @@ Vector<T>::emplaceBackSlowPath(Args &&... args) noexcept -> Ptr
 
 template <class T>
 template <class U>
-HOSTDEV inline auto
+HOSTDEV auto
 // NOLINTNEXTLINE(*-param-not-moved,*std-forward) // False positive.
 Vector<T>::pushBackSlowPath(U && value) noexcept -> Ptr
 {
@@ -585,7 +586,7 @@ HOSTDEV Vector<T>::~Vector() noexcept
   // If the vector is not empty, destroy the elements and deallocate the buffer
   if (_begin != nullptr) {
     clear();
-    ::operator delete(_begin);
+    ::operator delete(_begin, std::align_val_t{alignof(T)});
   }
 }
 
@@ -722,6 +723,7 @@ Vector<T>::size() const noexcept -> Int
 // Return the maximum number of elements the vector can hold
 template <class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
+// NOLINTNEXTLINE(readability-identifier-naming) match std::vector
 Vector<T>::max_size() noexcept -> Int
 {
   return intMax() / sizeof(T);

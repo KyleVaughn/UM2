@@ -32,7 +32,7 @@ struct CanLowerCopyToMemmove {
 };
 
 template <class InputIt, class OutputIt>
-HOSTDEV constexpr auto
+HOSTDEV inline auto
 copyLoop(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
 {
   while (first != last) {
@@ -44,7 +44,7 @@ copyLoop(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
 }
 
 template <class InputIt, class OutputIt>
-HOSTDEV constexpr auto
+HOSTDEV inline auto
 copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
 {
   using InT = typename std::iterator_traits<InputIt>::value_type;
@@ -55,9 +55,6 @@ copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
     auto const n = static_cast<size_t>(last - first);
     ASSERT(!is_pointer_in_range(first, last, d_first));
     ASSERT(!is_pointer_in_range(first, last, d_first + n));
-    if (std::is_constant_evaluated()) {
-      return copyLoop(first, last, d_first);
-    }
     return static_cast<OutputIt>(memcpy(d_first, first, n * sizeof(InT))) + n;
   } else {
     return copyLoop(first, last, d_first);

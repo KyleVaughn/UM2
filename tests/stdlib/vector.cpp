@@ -158,7 +158,6 @@ TEST_CASE(assign_move)
 }
 
 template <class T>
-HOSTDEV
 TEST_CASE(assign_initializer_list)
 {
   um2::Vector<T> v = {1, 2, 3, 4, 5};
@@ -402,7 +401,10 @@ TEST_CASE(emplace_back)
   ASSERT(v.capacity() == 1);
   ASSERT(v[0].a == 1);
 
-  um2::Vector<int> v2 = {1, 2, 3};
+  um2::Vector<int> v2(3);
+  v2[0] = 1;
+  v2[1] = 2;
+  v2[2] = 3;
   um2::Vector<um2::Vector<int>> v3;
   v3.emplace_back(v2);
   v3.emplace_back(std::move(v2));
@@ -416,75 +418,75 @@ TEST_CASE(emplace_back)
   }
 }
 
-////==============================================================================
-//// CUDA
-////==============================================================================
-//
-// #if UM2_USE_CUDA
-// template <class T>
-// MAKE_CUDA_KERNEL(constructor_Size, T)
-//
-// template <class T>
-// MAKE_CUDA_KERNEL(constructor_Size_value, T)
-//
-// template <class T>
-// MAKE_CUDA_KERNEL(copy_constructor, T)
-//
-// template <class T>
-// MAKE_CUDA_KERNEL(move_constructor, T)
-//
-// template <class T>
-// MAKE_CUDA_KERNEL(constructor_initializer_list, T)
-//
-// template <class T>
-// MAKE_CUDA_KERNEL(operator_copy, T)
-//
-// template <class T>
-// MAKE_CUDA_KERNEL(operator_move, T)
-//
-// template <class T>
-// MAKE_CUDA_KERNEL(resize, T)
-//
-// template <class T>
-// MAKE_CUDA_KERNEL(reserve, T)
-//
-// template <class T>
-// MAKE_CUDA_KERNEL(push_back, T)
-//
-// template <class T>
-// MAKE_CUDA_KERNEL(push_back_rval_ref, T)
-//
-// template <class T>
-// MAKE_CUDA_KERNEL(push_back_n, T)
-//
-// MAKE_CUDA_KERNEL(clear)
-//
-//    MAKE_CUDA_KERNEL(emplace_back)
-// #endif // UM2_USE_CUDA
-//
+//==============================================================================
+// CUDA
+//==============================================================================
+
+#if UM2_USE_CUDA
+
+// Constructors and assignment
+template <class T>
+MAKE_CUDA_KERNEL(constructor_copy, T);
+
+template <class T>
+MAKE_CUDA_KERNEL(constructor_move, T);
+
+template <class T>
+MAKE_CUDA_KERNEL(constructor_size, T);
+
+template <class T>
+MAKE_CUDA_KERNEL(constructor_size_value, T);
+
+template <class T>
+MAKE_CUDA_KERNEL(assign_copy, T);
+
+template <class T>
+MAKE_CUDA_KERNEL(assign_move, T);
+
+// Operators
+MAKE_CUDA_KERNEL(relational_operators);
+
+// Modifiers
+MAKE_CUDA_KERNEL(clear);
+
+template <class T>
+MAKE_CUDA_KERNEL(resize, T);
+
+template <class T>
+MAKE_CUDA_KERNEL(reserve, T);
+
+template <class T>
+MAKE_CUDA_KERNEL(push_back, T);
+
+template <class T>
+MAKE_CUDA_KERNEL(push_back_rval_ref, T);
+
+MAKE_CUDA_KERNEL(emplace_back);
+#endif // UM2_USE_CUDA
+
 template <class T>
 TEST_SUITE(Vector)
 {
   // Constructors and assignment
-  TEST_HOSTDEV(constructor_copy, T)
-  TEST_HOSTDEV(constructor_move, T)
-  TEST_HOSTDEV(constructor_size, T)
-  TEST_HOSTDEV(constructor_size_value, T)
-  TEST(constructor_initializer_list<T>)
-  TEST_HOSTDEV(assign_copy, T)
-  TEST_HOSTDEV(assign_move, T)
-  TEST(assign_initializer_list<T>)
+  TEST_HOSTDEV(constructor_copy, T);
+  TEST_HOSTDEV(constructor_move, T);
+  TEST_HOSTDEV(constructor_size, T);
+  TEST_HOSTDEV(constructor_size_value, T);
+  TEST(constructor_initializer_list<T>);
+  TEST_HOSTDEV(assign_copy, T);
+  TEST_HOSTDEV(assign_move, T);
+  TEST(assign_initializer_list<T>);
 
   // Operators
-  TEST_HOSTDEV(relational_operators)
+  TEST_HOSTDEV(relational_operators);
 
   // Modifiers
-  TEST_HOSTDEV(clear)
-  TEST_HOSTDEV(resize, T)
-  TEST_HOSTDEV(reserve, T)
-  TEST_HOSTDEV(push_back, T)
-  TEST_HOSTDEV(push_back_rval_ref, T)
-  TEST_HOSTDEV(emplace_back)
+  TEST_HOSTDEV(clear);
+  TEST_HOSTDEV(resize, T);
+  TEST_HOSTDEV(reserve, T);
+  TEST_HOSTDEV(push_back, T);
+  TEST_HOSTDEV(push_back_rval_ref, T);
+  TEST_HOSTDEV(emplace_back);
 }
 
 auto

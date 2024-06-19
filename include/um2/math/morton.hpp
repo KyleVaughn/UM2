@@ -28,17 +28,18 @@
 // instruction set for bit manipulation. If this instruction set is not
 // supported (such as on GPU), then we emulate the BMI2 intrinsics using a
 // portable algorithm.
-//
-// NOTE: We cannot use the BMI2 intrinsics when compiling with CUDA because
-// including <immintrin.h> causes compilation errors due to conflicting
-// definitions for 16-bit types
-// See https://github.com/KyleVaughn/UM2/issues/130
 
-#if defined(__BMI2__) && UM2_ENABLE_BMI2 && !UM2_USE_CUDA
+#if defined(__BMI2__) && UM2_ENABLE_BMI2
 #  define BMI2_SUPPORTED 1
 #  include <immintrin.h> // _pdep_u64, _pext_u64, _pdep_u32, _pext_u32
+// Only compile fallbacks for device code
+#  if defined(__CUDA_ARCH__)
+#    define BMI2_HOSTDEV DEVICE
+#  endif
 #else
 #  define BMI2_SUPPORTED 0
+// Compile fallbacks for host and device code
+#  define BMI2_HOSTDEV   HOSTDEV
 #endif
 
 namespace um2
@@ -57,7 +58,7 @@ inline constexpr U max_2d_morton_coord = (static_cast<U>(1) << (4 * sizeof(U))) 
 template <std::unsigned_integral U>
 inline constexpr U max_3d_morton_coord = (static_cast<U>(1) << (8 * sizeof(U) / 3)) - 1;
 
-#if BMI2_SUPPORTED
+#if BMI2_SUPPORTED && !defined(__CUDA_ARCH__)
 
 //==============================================================================
 // BMI2 intrinsics
@@ -154,14 +155,14 @@ mortonDecode(U const morton, U & x, U & y, U & z) noexcept
   z = pext(morton, bmi_3d_z_mask<U>);
 }
 
-#else // BMI2_SUPPORTED
+#else // BMI2_SUPPORTED && !__CUDA_ARCH__
 
 //==============================================================================
 // BMI2 intrinsics emulation
 //==============================================================================
 
 // Emulate pdep_u32(x, 0x55555555) using portable bit manipulation
-CONST HOSTDEV static constexpr auto
+CONST BMI2_HOSTDEV static constexpr auto
 pdep0x55555555(uint32_t x) noexcept -> uint32_t
 {
   ASSERT_ASSUME(x <= max_2d_morton_coord<uint32_t>);
@@ -173,7 +174,7 @@ pdep0x55555555(uint32_t x) noexcept -> uint32_t
 }
 
 // Emulate pdep_u64(x, 0x5555555555555555) using portable bit manipulation
-CONST HOSTDEV static constexpr auto
+CONST BMI2_HOSTDEV static constexpr auto
 pdep0x5555555555555555(uint64_t x) noexcept -> uint64_t
 {
   ASSERT_ASSUME(x <= max_2d_morton_coord<uint64_t>);
@@ -186,7 +187,7 @@ pdep0x5555555555555555(uint64_t x) noexcept -> uint64_t
 }
 
 // Emulate pdep_u32(x, 0x55555555) using portable bit manipulation
-CONST HOSTDEV static constexpr auto
+CONST BMI2_HOSTDEV static constexpr auto
 pext0x55555555(uint32_t x) noexcept -> uint32_t
 {
   x &= 0x55555555;
@@ -198,7 +199,7 @@ pext0x55555555(uint32_t x) noexcept -> uint32_t
 }
 
 // Emulate pext_u64(x, 0x5555555555555555) using portable bit manipulation
-CONST HOSTDEV static constexpr auto
+CONST BMI2_HOSTDEV static constexpr auto
 pext0x5555555555555555(uint64_t x) noexcept -> uint64_t
 {
   x &= 0x5555555555555555;
@@ -211,7 +212,7 @@ pext0x5555555555555555(uint64_t x) noexcept -> uint64_t
 }
 
 // Emulate pdep_u32(x, 0x92492492) using portable bit manipulation
-CONST HOSTDEV static constexpr auto
+CONST BMI2_HOSTDEV static constexpr auto
 pdep0x92492492(uint32_t x) noexcept -> uint32_t
 {
   ASSERT_ASSUME(x <= max_3d_morton_coord<uint32_t>);
@@ -223,7 +224,7 @@ pdep0x92492492(uint32_t x) noexcept -> uint32_t
 }
 
 // Emulate pdep_u64(x, 0x9249249249249249) using portable bit manipulation
-CONST HOSTDEV static constexpr auto
+CONST BMI2_HOSTDEV static constexpr auto
 pdep0x9249249249249249(uint64_t x) noexcept -> uint64_t
 {
   ASSERT_ASSUME(x <= max_3d_morton_coord<uint64_t>);
@@ -236,7 +237,7 @@ pdep0x9249249249249249(uint64_t x) noexcept -> uint64_t
 }
 
 // Emulate pext_u32(x, 0x92492492) using portable bit manipulation
-CONST HOSTDEV static constexpr auto
+CONST BMI2_HOSTDEV static constexpr auto
 pext0x92492492(uint32_t x) noexcept -> uint32_t
 {
   x &= 0x09249249;
@@ -248,7 +249,7 @@ pext0x92492492(uint32_t x) noexcept -> uint32_t
 }
 
 // Emulate pext_u64(x, 0x9249249249249249) using portable bit manipulation
-CONST HOSTDEV static constexpr auto
+CONST BMI2_HOSTDEV static constexpr auto
 pext0x9249249249249249(uint64_t x) noexcept -> uint64_t
 {
   x &= 0x1249249249249249;
@@ -265,21 +266,21 @@ pext0x9249249249249249(uint64_t x) noexcept -> uint64_t
 //==============================================================================
 
 // Encode 2D coordinate to morton code
-CONST HOSTDEV constexpr auto
+CONST BMI2_HOSTDEV constexpr auto
 mortonEncode(uint32_t const x, uint32_t const y) noexcept -> uint32_t
 {
   return pdep0x55555555(x) | (pdep0x55555555(y) << 1);
 }
 
 // Encode 2D coordinate to morton code
-CONST HOSTDEV constexpr auto
+CONST BMI2_HOSTDEV constexpr auto
 mortonEncode(uint64_t const x, uint64_t const y) noexcept -> uint64_t
 {
   return pdep0x5555555555555555(x) | (pdep0x5555555555555555(y) << 1);
 }
 
 // Decode the morton code to 2D coordinates
-HOSTDEV constexpr void
+BMI2_HOSTDEV constexpr void
 mortonDecode(uint32_t const morton, uint32_t & x, uint32_t & y) noexcept
 {
   x = pext0x55555555(morton);
@@ -287,7 +288,7 @@ mortonDecode(uint32_t const morton, uint32_t & x, uint32_t & y) noexcept
 }
 
 // Decode the morton code to 2D coordinates
-HOSTDEV constexpr void
+BMI2_HOSTDEV constexpr void
 mortonDecode(uint64_t const morton, uint64_t & x, uint64_t & y) noexcept
 {
   x = pext0x5555555555555555(morton);
@@ -295,14 +296,14 @@ mortonDecode(uint64_t const morton, uint64_t & x, uint64_t & y) noexcept
 }
 
 // Encode 3D coordinate to morton code
-HOSTDEV CONST constexpr auto
+BMI2_HOSTDEV CONST constexpr auto
 mortonEncode(uint32_t const x, uint32_t const y, uint32_t const z) noexcept -> uint32_t
 {
   return pdep0x92492492(x) | (pdep0x92492492(y) << 1) | (pdep0x92492492(z) << 2);
 }
 
 // Encode 3D coordinate to morton code
-HOSTDEV CONST constexpr auto
+BMI2_HOSTDEV CONST constexpr auto
 mortonEncode(uint64_t const x, uint64_t const y, uint64_t const z) noexcept -> uint64_t
 {
   return pdep0x9249249249249249(x) | (pdep0x9249249249249249(y) << 1) |
@@ -310,7 +311,7 @@ mortonEncode(uint64_t const x, uint64_t const y, uint64_t const z) noexcept -> u
 }
 
 // Decode the morton code to 3D coordinates
-HOSTDEV constexpr void
+BMI2_HOSTDEV constexpr void
 mortonDecode(uint32_t const morton, uint32_t & x, uint32_t & y, uint32_t & z) noexcept
 {
   x = pext0x92492492(morton);
@@ -319,7 +320,7 @@ mortonDecode(uint32_t const morton, uint32_t & x, uint32_t & y, uint32_t & z) no
 }
 
 // Decode the morton code to 3D coordinates
-HOSTDEV constexpr void
+BMI2_HOSTDEV constexpr void
 mortonDecode(uint64_t const morton, uint64_t & x, uint64_t & y, uint64_t & z) noexcept
 {
   x = pext0x9249249249249249(morton);

@@ -4,11 +4,13 @@
 
 #include "../../test_macros.hpp"
 
+#include <cstdint>
+
 template <class T, class U>
 HOSTDEV
 TEST_CASE(test_pair)
 {
-  um2::Pair<T, U> p{1, 2};
+  um2::Pair<T, U> p{static_cast<T>(1), static_cast<U>(2)};
 
   // Copy constructor
   um2::Pair<T, U> const p2{p};
@@ -21,7 +23,7 @@ TEST_CASE(test_pair)
   ASSERT(p3.second == 2);
 
   // Explicit constructor
-  um2::Pair<T, U> p4(1, 2);
+  um2::Pair<T, U> p4(static_cast<T>(1), static_cast<U>(2));
   ASSERT(p4.first == 1);
   ASSERT(p4.second == 2);
 
@@ -55,7 +57,7 @@ template <class T, class U>
 HOSTDEV
 TEST_CASE(test_pair_constexpr)
 {
-  um2::Pair<T, U> constexpr p{1, 2};
+  um2::Pair<T, U> constexpr p{static_cast<T>(1), static_cast<U>(2)};
 
   // Copy constructor
   um2::Pair<T, U> constexpr p2{p};
@@ -63,7 +65,7 @@ TEST_CASE(test_pair_constexpr)
   static_assert(p2.second == 2);
 
   // Explicit constructor
-  um2::Pair<T, U> constexpr p3(1, 3);
+  um2::Pair<T, U> constexpr p3(static_cast<T>(1), static_cast<U>(3));
   static_assert(p3.first == 1);
   static_assert(p3.second == 3);
 

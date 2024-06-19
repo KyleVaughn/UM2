@@ -12,7 +12,7 @@
 #cmakedefine01 UM2_ENABLE_BMI2
 #cmakedefine01 UM2_ENABLE_FASTMATH
 // #cmakedefine01 UM2_ENABLE_FLOAT64
-// #cmakedefine01 UM2_ENABLE_SIMD_VEC
+#cmakedefine01 UM2_ENABLE_SIMD_VEC
 
 // External tools/dependencies
 #cmakedefine01 UM2_USE_CUDA
@@ -127,6 +127,11 @@
 
 // Integer type
 using Int = int32_t;
+HOSTDEV consteval auto
+intMax() noexcept -> Int
+{
+  return INT32_MAX;
+}
 
 // Integer type for material IDs.
 // We don't expect more than 127 materials, so we use int8_t to save memory.

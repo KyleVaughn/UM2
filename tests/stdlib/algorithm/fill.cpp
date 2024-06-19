@@ -18,6 +18,7 @@ TEST_CASE(fill_test)
 }
 MAKE_CUDA_KERNEL(fill_test);
 
+HOSTDEV
 constexpr auto
 foo() -> int
 {
@@ -32,6 +33,7 @@ foo() -> int
 
 HOSTDEV
 TEST_CASE(fill_constexpr_test) { static_assert(foo() == 10); }
+MAKE_CUDA_KERNEL(fill_constexpr_test);
 
 TEST_SUITE(fill)
 {

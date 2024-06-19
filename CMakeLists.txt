@@ -38,7 +38,7 @@ option(UM2_BUILD_TUTORIAL "Build tutorial" OFF)
 # Enable assertions. This option enables UM2_ASSERT*(condition) macros, which
 # are evaluated regardless of the build type, unlike the standard assert macro
 # which is only evaluated if NDEBUG is not defined.
-option(UM2_ENABLE_ASSERTS "Enable assertions" OFF)
+option(UM2_ENABLE_ASSERTS "Enable assertions" ON)
 
 # Enable BMI2 instruction set. This option enables the BMI2 instruction set,
 # if it is supported by the architecture. This is primarily for fast Morton 
@@ -58,13 +58,13 @@ option(UM2_ENABLE_FASTMATH "Enable fast math optimizations on CPU and GPU" OFF)
 # optimizes the code for the architecture on which it is built.
 option(UM2_ENABLE_NATIVE "Enable -march=native" ON)
 
-## Enable GCC vector extensions for the Vec class. Vec<D, T> uses T[D] as the 
-## underlying storage type by default. When ON, if D is a power of 2 and T is 
-## an arithmetic type, Vec<D, T> will use GCC vector extensions instead to store
-## a SIMD vector of D elements of type T. Despite aligned T[D] being functionally
-## the same as the SIMD vector, the compiler tends to generate better code with 
-## the vector extensions.
-#option(UM2_ENABLE_SIMD_VEC "Enable GCC vector extensions for the Vec class" ON)
+# Enable GCC vector extensions for the Vec class. Vec<D, T> uses T[D] as the 
+# underlying storage type by default. When ON, if D is a power of 2 and T is 
+# an arithmetic type, Vec<D, T> will use GCC vector extensions instead to store
+# a SIMD vector of D elements of type T. Despite aligned T[D] being functionally
+# the same as the SIMD vector, the compiler tends to generate better code with 
+# the vector extensions.
+option(UM2_ENABLE_SIMD_VEC "Enable GCC vector extensions for the Vec class" ON)
 
 # External tools/dependencies
 #-----------------------------------------------------------------------------
@@ -297,9 +297,9 @@ endif()
 
 # Sources
 set(UM2_SOURCES
-    #"src/common/settings.cpp"    
-    #"src/common/logger.cpp"
-    "src/um2.cpp"
+    "src/common/settings.cpp"    
+    "src/common/logger.cpp"
+    #"src/um2.cpp"
     )
 
 if (UM2_BUILD_SHARED_LIB)

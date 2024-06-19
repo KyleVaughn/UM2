@@ -16,10 +16,10 @@
 HOSTDEV
 TEST_CASE(constructor_default)
 {
-  um2::String constexpr s;
+  um2::String const s;
   STATIC_ASSERT(sizeof(s) == 24);
-  STATIC_ASSERT(s.empty());
-  STATIC_ASSERT(s.capacity() == 22);
+  ASSERT(s.empty());
+  ASSERT(s.capacity() == 22);
 }
 MAKE_CUDA_KERNEL(constructor_default);
 
@@ -27,12 +27,11 @@ HOSTDEV
 TEST_CASE(constructor_const_char_ptr)
 {
   constexpr const char * input = "Short String";
-  um2::String constexpr s(input);
-  STATIC_ASSERT(s.size() == 12);
-  STATIC_ASSERT(s.capacity() == 22);
-  STATIC_ASSERT(s.data()[0] == 'S');
+  um2::String const s(input);
+  ASSERT(s.size() == 12);
+  ASSERT(s.capacity() == 22);
+  ASSERT(s.data()[0] == 'S');
 
-  // Can't use constexpr because the string is too long
   constexpr const char * input2 =
       "This string will be too long to fit in the small string optimization";
   um2::String const s2(input2);
@@ -45,16 +44,16 @@ MAKE_CUDA_KERNEL(constructor_const_char_ptr);
 HOSTDEV
 TEST_CASE(constructor_copy)
 {
-  um2::String constexpr s0("hello");
+  um2::String const s0("hello");
   // NOLINTNEXTLINE(performance-unnecessary-copy-initialization) OK
-  um2::String constexpr s(s0);
-  STATIC_ASSERT(s.size() == 5);
-  STATIC_ASSERT(s.capacity() == 22);
-  STATIC_ASSERT(s.data()[0] == 'h');
-  STATIC_ASSERT(s.data()[1] == 'e');
-  STATIC_ASSERT(s.data()[2] == 'l');
-  STATIC_ASSERT(s.data()[3] == 'l');
-  STATIC_ASSERT(s.data()[4] == 'o');
+  um2::String const s(s0);
+  ASSERT(s.size() == 5);
+  ASSERT(s.capacity() == 22);
+  ASSERT(s.data()[0] == 'h');
+  ASSERT(s.data()[1] == 'e');
+  ASSERT(s.data()[2] == 'l');
+  ASSERT(s.data()[3] == 'l');
+  ASSERT(s.data()[4] == 'o');
 
   um2::String s1("This string will be too long to fit in the small string optimization");
   um2::String s2(s1);
@@ -182,13 +181,13 @@ TEST_CASE(compare)
   constexpr const char * data1 = "Hello, World!";
   constexpr const char * data2 = "Hello, Worl!";
   constexpr const char * data3 = "Hekko, World!";
-  um2::String constexpr s1(data1);
-  um2::String constexpr s2(data2);
-  um2::String constexpr s3(data3);
-  STATIC_ASSERT(s1.compare(s1) == 0);
-  STATIC_ASSERT(s1.compare(s2) > 0);
-  STATIC_ASSERT(s2.compare(s1) < 0);
-  STATIC_ASSERT(s1.compare(s3) > 0);
+  um2::String const s1(data1);
+  um2::String const s2(data2);
+  um2::String const s3(data3);
+  ASSERT(s1.compare(s1) == 0);
+  ASSERT(s1.compare(s2) > 0);
+  ASSERT(s2.compare(s1) < 0);
+  ASSERT(s1.compare(s3) > 0);
 }
 MAKE_CUDA_KERNEL(compare)
 
@@ -196,11 +195,11 @@ HOSTDEV
 TEST_CASE(starts_with)
 {
   constexpr const char * data = "Hello, World!";
-  um2::String constexpr s(data);
-  STATIC_ASSERT(s.starts_with("Hello"));
-  STATIC_ASSERT(s.starts_with("Hello, World!"));
-  STATIC_ASSERT(!s.starts_with("Hello, World! "));
-  STATIC_ASSERT(!s.starts_with("World"));
+  um2::String const s(data);
+  ASSERT(s.starts_with("Hello"));
+  ASSERT(s.starts_with("Hello, World!"));
+  ASSERT(!s.starts_with("Hello, World! "));
+  ASSERT(!s.starts_with("World"));
 }
 MAKE_CUDA_KERNEL(starts_with)
 
@@ -208,52 +207,52 @@ HOSTDEV
 TEST_CASE(end_with)
 {
   constexpr const char * data = "StringView";
-  um2::String constexpr s(data);
-  STATIC_ASSERT(s.ends_with("View"));
-  STATIC_ASSERT(s.ends_with("StringView"));
-  STATIC_ASSERT(!s.ends_with("String"));
-  STATIC_ASSERT(!s.ends_with("StringView "));
-  STATIC_ASSERT(s.ends_with("w"));
+  um2::String const s(data);
+  ASSERT(s.ends_with("View"));
+  ASSERT(s.ends_with("StringView"));
+  ASSERT(!s.ends_with("String"));
+  ASSERT(!s.ends_with("StringView "));
+  ASSERT(s.ends_with("w"));
 }
 MAKE_CUDA_KERNEL(end_with)
 
 HOSTDEV
 TEST_CASE(relational_operators)
 {
-  um2::String constexpr s0("Ant");
-  um2::String constexpr s1("Zebra");
-  STATIC_ASSERT(s0 < s1);
-  STATIC_ASSERT(s1 > s0);
-  STATIC_ASSERT(s0 <= s1);
-  STATIC_ASSERT(s1 >= s0);
-  STATIC_ASSERT(s0 <= s0);
-  STATIC_ASSERT(s0 >= s0);
+  um2::String const s0("Ant");
+  um2::String const s1("Zebra");
+  ASSERT(s0 < s1);
+  ASSERT(s1 > s0);
+  ASSERT(s0 <= s1);
+  ASSERT(s1 >= s0);
+  ASSERT(s0 <= s0);
+  ASSERT(s0 >= s0);
 }
 MAKE_CUDA_KERNEL(relational_operators);
 
 HOSTDEV
 TEST_CASE(substr)
 {
-  um2::String constexpr s("hello");
-  um2::String constexpr s0 = s.substr(1);
-  STATIC_ASSERT(s0.size() == 4);
-  STATIC_ASSERT(s0.data()[0] == 'e');
-  STATIC_ASSERT(s0.data()[1] == 'l');
-  STATIC_ASSERT(s0.data()[2] == 'l');
-  STATIC_ASSERT(s0.data()[3] == 'o');
-  um2::String constexpr s1 = s.substr(1, 2);
-  STATIC_ASSERT(s1.size() == 2);
-  STATIC_ASSERT(s1.data()[0] == 'e');
-  STATIC_ASSERT(s1.data()[1] == 'l');
-  um2::String constexpr s2 = s.substr(0, 0);
-  STATIC_ASSERT(s2.empty());
-  um2::String constexpr s3 = s.substr(0, 100);
-  STATIC_ASSERT(s3.size() == 5);
-  STATIC_ASSERT(s3.data()[0] == 'h');
-  STATIC_ASSERT(s3.data()[1] == 'e');
-  STATIC_ASSERT(s3.data()[2] == 'l');
-  STATIC_ASSERT(s3.data()[3] == 'l');
-  STATIC_ASSERT(s3.data()[4] == 'o');
+  um2::String const s("hello");
+  um2::String const s0 = s.substr(1);
+  ASSERT(s0.size() == 4);
+  ASSERT(s0.data()[0] == 'e');
+  ASSERT(s0.data()[1] == 'l');
+  ASSERT(s0.data()[2] == 'l');
+  ASSERT(s0.data()[3] == 'o');
+  um2::String const s1 = s.substr(1, 2);
+  ASSERT(s1.size() == 2);
+  ASSERT(s1.data()[0] == 'e');
+  ASSERT(s1.data()[1] == 'l');
+  um2::String const s2 = s.substr(0, 0);
+  ASSERT(s2.empty());
+  um2::String const s3 = s.substr(0, 100);
+  ASSERT(s3.size() == 5);
+  ASSERT(s3.data()[0] == 'h');
+  ASSERT(s3.data()[1] == 'e');
+  ASSERT(s3.data()[2] == 'l');
+  ASSERT(s3.data()[3] == 'l');
+  ASSERT(s3.data()[4] == 'o');
 }
 MAKE_CUDA_KERNEL(substr);
 
@@ -261,14 +260,14 @@ HOSTDEV
 TEST_CASE(find_last_of)
 {
   constexpr const char * data = "Hello, World!";
-  um2::String constexpr s(data);
-  STATIC_ASSERT(s.find_last_of('H') == 0);
-  STATIC_ASSERT(s.find_last_of('W') == 7);
-  STATIC_ASSERT(s.find_last_of('!') == 12);
-  STATIC_ASSERT(s.find_last_of('z') == um2::String::npos);
-  STATIC_ASSERT(s.find_last_of('l') == 10);
-  STATIC_ASSERT(s.find_last_of('o', 4) == 4);
-  STATIC_ASSERT(s.find_last_of('o', 3) == um2::String::npos);
+  um2::String const s(data);
+  ASSERT(s.find_last_of('H') == 0);
+  ASSERT(s.find_last_of('W') == 7);
+  ASSERT(s.find_last_of('!') == 12);
+  ASSERT(s.find_last_of('z') == um2::String::npos);
+  ASSERT(s.find_last_of('l') == 10);
+  ASSERT(s.find_last_of('o', 4) == 4);
+  ASSERT(s.find_last_of('o', 3) == um2::String::npos);
 }
 MAKE_CUDA_KERNEL(find_last_of);
 
@@ -291,26 +290,27 @@ TEST_CASE(compound_addition)
   ASSERT(s.size() == 30);
   ASSERT(s.capacity() == 44);
 }
+MAKE_CUDA_KERNEL(compound_addition);
 
 TEST_SUITE(String)
 {
   // Constructors
-  TEST_HOSTDEV(constructor_default)
-  TEST_HOSTDEV(constructor_const_char_ptr)
-  TEST_HOSTDEV(constructor_copy)
-  TEST_HOSTDEV(constructor_move)
-  TEST_HOSTDEV(assign_copy)
-  TEST_HOSTDEV(assign_move)
-  TEST(int_float_constructors)
+  TEST_HOSTDEV(constructor_default);
+  TEST_HOSTDEV(constructor_const_char_ptr);
+  TEST_HOSTDEV(constructor_copy);
+  TEST_HOSTDEV(constructor_move);
+  TEST_HOSTDEV(assign_copy);
+  TEST_HOSTDEV(assign_move);
+  TEST(int_float_constructors);
 
   // Operations
-  TEST_HOSTDEV(compare)
-  TEST_HOSTDEV(starts_with)
-  TEST_HOSTDEV(end_with)
-  TEST_HOSTDEV(relational_operators)
-  TEST_HOSTDEV(substr)
-  TEST_HOSTDEV(find_last_of)
-  TEST_HOSTDEV(compound_addition)
+  TEST_HOSTDEV(compare);
+  TEST_HOSTDEV(starts_with);
+  TEST_HOSTDEV(end_with);
+  TEST_HOSTDEV(relational_operators);
+  TEST_HOSTDEV(substr);
+  TEST_HOSTDEV(find_last_of);
+  TEST_HOSTDEV(compound_addition);
 }
 
 auto

@@ -15,22 +15,6 @@ TEST_CASE(copy_trivial)
 }
 MAKE_CUDA_KERNEL(copy_trivial)
 
-constexpr auto
-foo() -> int
-{
-  int constexpr a[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  int b[10] = {0};
-  um2::copy(&a[0], &a[0] + 10, &b[0]);
-  int sum = 0;
-  for (int const i : b) {
-    sum += i;
-  }
-  return sum;
-}
-
-HOSTDEV
-TEST_CASE(copy_trivial_constexpr) { static_assert(foo() == 45); }
-
 // Define a struct with a non-trivial copy constructor and assignment operator
 struct A {
   int a;
@@ -87,7 +71,6 @@ MAKE_CUDA_KERNEL(copy_nontrivial)
 TEST_SUITE(copy)
 {
   TEST_HOSTDEV(copy_trivial);
-  TEST_HOSTDEV(copy_trivial_constexpr);
   TEST_HOSTDEV(copy_nontrivial);
 }
 

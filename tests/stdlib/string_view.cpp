@@ -134,6 +134,7 @@ TEST_CASE(find_first_not_of)
   STATIC_ASSERT(s.find_first_not_of('l', 2) == 4);
   STATIC_ASSERT(s.find_first_not_of('l', 20) == um2::StringView::npos);
 }
+MAKE_CUDA_KERNEL(find_first_not_of)
 
 HOSTDEV
 TEST_CASE(find_last_of)
@@ -147,6 +148,7 @@ TEST_CASE(find_last_of)
   STATIC_ASSERT(s.find_last_of('o', 4) == 4);
   STATIC_ASSERT(s.find_last_of('o', 3) == um2::StringView::npos);
 }
+MAKE_CUDA_KERNEL(find_last_of)
 
 HOSTDEV
 TEST_CASE(ends_with)

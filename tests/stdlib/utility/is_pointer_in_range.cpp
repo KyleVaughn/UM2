@@ -14,10 +14,14 @@ TEST_CASE(test_is_pointer_in_range)
   ASSERT(um2::is_pointer_in_range(begin, end, a + 2));
   ASSERT(!um2::is_pointer_in_range(begin, end, a + 4));
 // CUDA warns about out-of-bounds pointer. This is what we want to check. Suppress.
-#pragma nv_diagnostic push
-#pragma nv_diag_suppress 170
+#if UM2_USE_CUDA
+#  pragma nv_diagnostic push
+#  pragma nv_diag_suppress 170
+#endif
   ASSERT(!um2::is_pointer_in_range(begin, end, a - 1));
-#pragma nv_diagnostic pop
+#if UM2_USE_CUDA
+#  pragma nv_diagnostic pop
+#endif
 }
 MAKE_CUDA_KERNEL(test_is_pointer_in_range);
 

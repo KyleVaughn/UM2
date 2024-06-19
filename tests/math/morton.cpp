@@ -114,7 +114,6 @@ template <std::unsigned_integral U, std::floating_point T>
 HOSTDEV
 TEST_CASE(mortonDecodeFloat)
 {
-
   T constexpr eps = static_cast<T>(1e-6);
 
   T x;

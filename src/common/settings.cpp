@@ -1,6 +1,6 @@
 #include <um2/common/settings.hpp>
 
-// #include <um2/stdlib/string.hpp>
+#include <um2/stdlib/string.hpp>
 
 #include <cstdint>
 
@@ -24,10 +24,10 @@ bool exit_on_error = defaults::exit_on_error;
 // CROSS SECTION LIBRARY (XS)
 //==============================================================================
 
-// namespace um2::settings::xs
-//{
-// String library_path = defaults::LIBRARY_PATH;
-// String library_name = defaults::LIBRARY_NAME;
-// } // namespace um2::settings::xs
+namespace um2::settings::xs
+{
+String library_path = defaults::LIBRARY_PATH;
+String library_name = defaults::LIBRARY_NAME;
+} // namespace um2::settings::xs
 
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)

@@ -1,12 +1,9 @@
 #include <um2/common/strto.hpp>
 
-#include <um2/config.hpp>
-
 #include <cstdint>
 
 #include "../test_macros.hpp"
 
-HOSTDEV
 TEST_CASE(strto_float)
 {
   char const * const s = "123.456";
@@ -15,7 +12,6 @@ TEST_CASE(strto_float)
   ASSERT_NEAR(f, 123.456F, 0.001F);
 }
 
-HOSTDEV
 TEST_CASE(strto_double)
 {
   char const * const s = "123.456";
@@ -24,7 +20,6 @@ TEST_CASE(strto_double)
   ASSERT_NEAR(d, 123.456, 0.001);
 }
 
-HOSTDEV
 TEST_CASE(strto_int32)
 {
   char const * const s = "-123";
@@ -33,7 +28,6 @@ TEST_CASE(strto_int32)
   ASSERT(i == -123);
 }
 
-HOSTDEV
 TEST_CASE(strto_uint32)
 {
   char const * const s = "123";
@@ -42,7 +36,6 @@ TEST_CASE(strto_uint32)
   ASSERT(u == 123);
 }
 
-HOSTDEV
 TEST_CASE(strto_int64)
 {
   char const * const s = "-123";
@@ -51,7 +44,6 @@ TEST_CASE(strto_int64)
   ASSERT(i == -123);
 }
 
-HOSTDEV
 TEST_CASE(strto_uint64)
 {
   char const * const s = "123";
@@ -62,12 +54,12 @@ TEST_CASE(strto_uint64)
 
 TEST_SUITE(strto)
 {
-  TEST_HOSTDEV(strto_float);
-  TEST_HOSTDEV(strto_double);
-  TEST_HOSTDEV(strto_int32);
-  TEST_HOSTDEV(strto_uint32);
-  TEST_HOSTDEV(strto_int64);
-  TEST_HOSTDEV(strto_uint64);
+  TEST(strto_float);
+  TEST(strto_double);
+  TEST(strto_int32);
+  TEST(strto_uint32);
+  TEST(strto_int64);
+  TEST(strto_uint64);
 }
 
 auto

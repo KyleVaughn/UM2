@@ -19,6 +19,7 @@ TEST_CASE(iota_int)
 }
 MAKE_CUDA_KERNEL(iota_int);
 
+HOSTDEV
 constexpr auto
 foo() -> int
 {

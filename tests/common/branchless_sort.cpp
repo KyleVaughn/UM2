@@ -80,6 +80,14 @@ TEST_CASE(sort4)
   TEST_SORT4(4, 3, 2, 1);
 }
 
+#if UM2_USE_CUDA
+template <typename T>
+MAKE_CUDA_KERNEL(sort3, T);
+
+template <typename T>
+MAKE_CUDA_KERNEL(sort4, T);
+#endif
+
 template <typename T>
 TEST_SUITE(branchless_sort)
 {

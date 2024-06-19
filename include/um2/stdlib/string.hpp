@@ -77,75 +77,75 @@ private:
 
   // Assign a short string to the string. Will not allocate memory.
   // n < min_cap
-  HOSTDEV constexpr auto
+  HOSTDEV inline auto
   assignShort(StringView sv) noexcept -> String &;
 
   // Assign a long string to the string. Will allocate memory if necessary.
-  HOSTDEV constexpr auto
+  HOSTDEV inline auto
   assignLong(StringView sv) noexcept -> String &;
 
   // Does a string of length n fit in a short string? n does not include the null
   // terminator.
-  CONST HOSTDEV static constexpr auto
+  CONST HOSTDEV static inline auto
   fitsInShort(uint64_t n) noexcept -> bool;
 
   // Get the capacity of the long string. Includes the null terminator.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   getLongCap() const noexcept -> uint64_t;
 
   // Get a pointer to the long string data.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   getLongPointer() noexcept -> Ptr;
 
   // Get a pointer to the long string data.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   getLongPointer() const noexcept -> ConstPtr;
 
   // Get the size of the long string. Does NOT include the null terminator.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   getLongSize() const noexcept -> uint64_t;
 
   // Get a pointer to the string data regardless of representation.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   getPointer() noexcept -> Ptr;
 
   // Get a pointer to the string data regardless of representation.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   getPointer() const noexcept -> ConstPtr;
 
   // Get a pointer to the short string data.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   getShortPointer() noexcept -> Ptr;
 
   // Get a pointer to the short string data.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   getShortPointer() const noexcept -> ConstPtr;
 
   // Get the size of the short string. Does NOT include the null terminator.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   getShortSize() const noexcept -> uint64_t;
 
   // Initialize the string with a pointer to a string and its length.
   // Does not include the null terminator.
-  HOSTDEV constexpr void
+  HOSTDEV inline void
   init(ConstPtr s, uint64_t size) noexcept;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   isLong() const noexcept -> bool;
 
-  HOSTDEV constexpr void
+  HOSTDEV inline void
   setLongCap(uint64_t cap) noexcept;
 
-  HOSTDEV constexpr void
+  HOSTDEV inline void
   setLongPointer(Ptr p) noexcept;
 
-  HOSTDEV constexpr void
+  HOSTDEV inline void
   setLongSize(uint64_t size) noexcept;
 
-  HOSTDEV constexpr void
+  HOSTDEV inline void
   setShortSize(uint64_t size) noexcept;
 
-  HOSTDEV constexpr void
+  HOSTDEV inline void
   setSize(uint64_t size) noexcept;
 
   HOSTDEV inline void
@@ -154,22 +154,22 @@ private:
 
 public:
   // The maximum capacity of a long string.
-  static Int constexpr npos = intMax();
+  static constexpr Int npos = intMax();
 
   //==============================================================================
   // Constructors and assignment
   //==============================================================================
 
-  HOSTDEV constexpr String() noexcept;
+  HOSTDEV inline String() noexcept;
 
-  HOSTDEV constexpr String(String const & s) noexcept;
+  HOSTDEV inline String(String const & s) noexcept;
 
-  HOSTDEV constexpr String(String && s) noexcept;
+  HOSTDEV inline String(String && s) noexcept;
 
   // NOLINTNEXTLINE(google-explicit-constructor) match std::string
-  HOSTDEV constexpr String(char const * s) noexcept;
+  HOSTDEV inline String(char const * s) noexcept;
 
-  HOSTDEV constexpr String(String const & s, Int pos, Int count = npos) noexcept;
+  HOSTDEV inline String(String const & s, Int pos, Int count = npos) noexcept;
 
   template <std::integral T>
   explicit String(T t) noexcept;
@@ -177,134 +177,134 @@ public:
   template <std::floating_point T>
   explicit String(T t) noexcept;
 
-  HOSTDEV constexpr auto
+  HOSTDEV inline auto
   operator=(String const & s) noexcept -> String &;
 
-  HOSTDEV constexpr auto
+  HOSTDEV inline auto
   operator=(String && s) noexcept -> String &;
 
-  HOSTDEV explicit constexpr String(StringView sv) noexcept;
+  HOSTDEV explicit inline String(StringView sv) noexcept;
 
-  HOSTDEV constexpr
+  HOSTDEV inline
   // NOLINTNEXTLINE(google-explicit-constructor) match std::string
   operator StringView() const noexcept;
 
-  HOSTDEV constexpr auto
+  HOSTDEV inline auto
   assign(StringView sv) noexcept -> String &;
 
   //==============================================================================
   // Destructor
   //==============================================================================
 
-  HOSTDEV constexpr ~String() noexcept;
+  HOSTDEV inline ~String() noexcept;
 
   //==============================================================================
   // Element access
   //==============================================================================
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   front() noexcept -> char &;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   front() const noexcept -> char const &;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   back() noexcept -> char &;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   back() const noexcept -> char const &;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   data() noexcept -> Ptr;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   data() const noexcept -> ConstPtr;
 
   //==============================================================================
   // Iterators
   //==============================================================================
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   begin() noexcept -> Ptr;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   begin() const noexcept -> ConstPtr;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   cbegin() const noexcept -> ConstPtr;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   end() noexcept -> Ptr;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   end() const noexcept -> ConstPtr;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   cend() const noexcept -> ConstPtr;
 
   //==============================================================================
   // Capacity
   //==============================================================================
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   empty() const noexcept -> bool;
 
   // Not including the null terminator.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   size() const noexcept -> Int;
 
   // The number of characters that can be held without reallocating storage.
   // Does not include the null terminator.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   capacity() const noexcept -> Int;
 
   //==============================================================================
   // Modifiers
   //==============================================================================
 
-  HOSTDEV constexpr auto
+  HOSTDEV inline auto
   append(char const * s, Int n) -> String &;
 
-  HOSTDEV constexpr auto
+  HOSTDEV inline auto
   operator+=(char const * s) -> String &;
 
-  HOSTDEV constexpr auto
+  HOSTDEV inline auto
   operator+=(String const & s) -> String &;
 
   //==============================================================================
   // Operations
   //==============================================================================
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   compare(String const & s) const noexcept -> int;
 
   template <std::convertible_to<StringView> T>
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   compare(T const & t) const noexcept -> int;
 
   // NOLINTBEGIN(readability-identifier-naming) match std::string
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   ends_with(StringView sv) const noexcept -> bool;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   ends_with(char c) const noexcept -> bool;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   ends_with(char const * s) const noexcept -> bool;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   starts_with(StringView sv) const noexcept -> bool;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   starts_with(char c) const noexcept -> bool;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   starts_with(char const * s) const noexcept -> bool;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   find_last_of(char c, Int pos = npos) const noexcept -> Int;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline auto
   substr(Int pos, Int count = npos) const noexcept -> String;
 
   // NOLINTEND(readability-identifier-naming) match std::string
@@ -315,43 +315,43 @@ public:
 // Free functions
 //==============================================================================
 
-PURE HOSTDEV [[nodiscard]] constexpr auto
+PURE HOSTDEV [[nodiscard]] inline auto
 operator==(String const & lhs, String const & rhs) -> bool
 {
   return lhs.compare(rhs) == 0;
 }
 
-PURE HOSTDEV [[nodiscard]] constexpr auto
+PURE HOSTDEV [[nodiscard]] inline auto
 operator!=(String const & lhs, String const & rhs) -> bool
 {
   return lhs.compare(rhs) != 0;
 }
 
-PURE HOSTDEV [[nodiscard]] constexpr auto
+PURE HOSTDEV [[nodiscard]] inline auto
 operator<(String const & lhs, String const & rhs) -> bool
 {
   return lhs.compare(rhs) < 0;
 }
 
-PURE HOSTDEV [[nodiscard]] constexpr auto
+PURE HOSTDEV [[nodiscard]] inline auto
 operator<=(String const & lhs, String const & rhs) -> bool
 {
   return lhs.compare(rhs) <= 0;
 }
 
-PURE HOSTDEV [[nodiscard]] constexpr auto
+PURE HOSTDEV [[nodiscard]] inline auto
 operator>(String const & lhs, String const & rhs) -> bool
 {
   return lhs.compare(rhs) > 0;
 }
 
-PURE HOSTDEV [[nodiscard]] constexpr auto
+PURE HOSTDEV [[nodiscard]] inline auto
 operator>=(String const & lhs, String const & rhs) -> bool
 {
   return lhs.compare(rhs) >= 0;
 }
 
-PURE HOSTDEV [[nodiscard]] constexpr auto
+PURE HOSTDEV [[nodiscard]] inline auto
 operator+(String const & lhs, String const & rhs) -> String
 {
   String result(lhs);
@@ -359,7 +359,7 @@ operator+(String const & lhs, String const & rhs) -> String
   return result;
 }
 
-PURE HOSTDEV [[nodiscard]] constexpr auto
+PURE HOSTDEV [[nodiscard]] inline auto
 operator+(String const & lhs, char const * rhs) -> String
 {
   String result(lhs);
@@ -371,7 +371,7 @@ operator+(String const & lhs, char const * rhs) -> String
 // Private functions
 //==============================================================================
 
-HOSTDEV constexpr auto
+HOSTDEV inline auto
 String::assignShort(StringView sv) noexcept -> String &
 {
   uint64_t const n = sv.size();
@@ -390,7 +390,7 @@ String::assignShort(StringView sv) noexcept -> String &
   return *this;
 }
 
-HOSTDEV constexpr auto
+HOSTDEV inline auto
 String::assignLong(StringView sv) noexcept -> String &
 {
   uint64_t const n = sv.size();
@@ -416,74 +416,71 @@ String::assignLong(StringView sv) noexcept -> String &
   return *this;
 }
 
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV inline auto
 String::getLongSize() const noexcept -> uint64_t
 {
   return _r.l.size;
 }
 
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV inline auto
 String::getShortSize() const noexcept -> uint64_t
 {
   return _r.s.size;
 }
 
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV inline auto
 String::getLongCap() const noexcept -> uint64_t
 {
   return _r.l.cap;
 }
 
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV inline auto
 // NOLINTNEXTLINE(readability-make-member-function-const) OK, we offer const next
 String::getLongPointer() noexcept -> Ptr
 {
   return _r.l.data;
 }
 
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV inline auto
 String::getLongPointer() const noexcept -> ConstPtr
 {
   return _r.l.data;
 }
 
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV inline auto
 String::getShortPointer() noexcept -> Ptr
 {
   return um2::addressof(_r.s.data[0]);
 }
 
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV inline auto
 String::getShortPointer() const noexcept -> ConstPtr
 {
   return um2::addressof(_r.s.data[0]);
 }
 
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV inline auto
 String::getPointer() noexcept -> Ptr
 {
   return isLong() ? getLongPointer() : getShortPointer();
 }
 
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV inline auto
 String::getPointer() const noexcept -> ConstPtr
 {
   return isLong() ? getLongPointer() : getShortPointer();
 }
 
 // n does not include the null terminator
-CONST HOSTDEV constexpr auto
+CONST HOSTDEV inline auto
 String::fitsInShort(uint64_t n) noexcept -> bool
 {
   return n < min_cap;
 }
 
-HOSTDEV constexpr void
+HOSTDEV inline void
 String::init(ConstPtr s, uint64_t size) noexcept
 {
-  if (std::is_constant_evaluated()) {
-    _r = Rep();
-  }
   ASSERT(s != nullptr);
   Ptr p = nullptr;
   // GCC warns about wraparound here, but it should not be possible
@@ -502,32 +499,32 @@ String::init(ConstPtr s, uint64_t size) noexcept
   p[size] = '\0';
 }
 
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV inline auto
 String::isLong() const noexcept -> bool
 {
   return _r.s.is_long;
 }
 
-HOSTDEV constexpr void
+HOSTDEV inline void
 String::setLongCap(uint64_t cap) noexcept
 {
   _r.l.cap = cap & long_cap_mask;
   _r.l.is_long = true;
 }
 
-HOSTDEV constexpr void
+HOSTDEV inline void
 String::setLongPointer(Ptr p) noexcept
 {
   _r.l.data = p;
 }
 
-HOSTDEV constexpr void
+HOSTDEV inline void
 String::setLongSize(uint64_t size) noexcept
 {
   _r.l.size = size;
 }
 
-HOSTDEV constexpr void
+HOSTDEV inline void
 String::setShortSize(uint64_t size) noexcept
 {
   ASSERT(size < min_cap);
@@ -535,7 +532,7 @@ String::setShortSize(uint64_t size) noexcept
   _r.s.is_long = false;
 }
 
-HOSTDEV constexpr void
+HOSTDEV inline void
 String::setSize(uint64_t size) noexcept
 {
   if (isLong()) {
@@ -594,7 +591,7 @@ String::growByAndReplace(uint64_t old_cap, uint64_t delta_cap, uint64_t old_sz,
 
 // For a union without a user-defined default constructor, value initialization is zero
 // initialization
-HOSTDEV constexpr String::String() noexcept
+HOSTDEV inline String::String() noexcept
     : _r()
 {
   ASSERT(_r.r.raw[0] == 0);
@@ -602,7 +599,7 @@ HOSTDEV constexpr String::String() noexcept
   ASSERT(_r.r.raw[2] == 0);
 }
 
-HOSTDEV constexpr String::String(String const & s) noexcept
+HOSTDEV inline String::String(String const & s) noexcept
 {
   if (!s.isLong()) {
     // If this is a short string, it is trivially copyable
@@ -612,7 +609,7 @@ HOSTDEV constexpr String::String(String const & s) noexcept
   }
 }
 
-HOSTDEV constexpr String::String(String && s) noexcept
+HOSTDEV inline String::String(String && s) noexcept
     : _r(um2::move(s._r))
 {
   // If short string, we can copy trivially
@@ -622,7 +619,7 @@ HOSTDEV constexpr String::String(String && s) noexcept
   s._r = Rep();
 }
 
-HOSTDEV constexpr String::String(char const * s) noexcept
+HOSTDEV inline String::String(char const * s) noexcept
 {
   ASSERT(s != nullptr);
   // Get the length of the string (not including null terminator)
@@ -631,7 +628,7 @@ HOSTDEV constexpr String::String(char const * s) noexcept
   init(s, n);
 }
 
-HOSTDEV constexpr String::String(String const & s, Int pos, Int count) noexcept
+HOSTDEV inline String::String(String const & s, Int pos, Int count) noexcept
 {
   Int const str_size = s.size();
   ASSERT(pos >= 0);
@@ -688,7 +685,7 @@ inline String::String(double t) noexcept
 #pragma GCC diagnostic pop
 // NOLINTEND(clang-analyzer-deadcode.DeadStores,clang-diagnostic-unused-variable)
 
-HOSTDEV constexpr auto
+HOSTDEV inline auto
 String::operator=(String const & s) noexcept -> String &
 {
   if (this != um2::addressof(s)) {
@@ -697,7 +694,7 @@ String::operator=(String const & s) noexcept -> String &
   return *this;
 }
 
-HOSTDEV constexpr auto
+HOSTDEV inline auto
 String::operator=(String && s) noexcept -> String &
 {
   if (this != addressof(s)) {
@@ -712,14 +709,14 @@ String::operator=(String && s) noexcept -> String &
   return *this;
 }
 
-HOSTDEV constexpr String::String(StringView sv) noexcept { init(sv.data(), sv.size()); }
+HOSTDEV inline String::String(StringView sv) noexcept { init(sv.data(), sv.size()); }
 
-PURE HOSTDEV constexpr String::operator StringView() const noexcept
+PURE HOSTDEV inline String::operator StringView() const noexcept
 {
   return {data(), static_cast<uint64_t>(size())};
 }
 
-HOSTDEV constexpr auto
+HOSTDEV inline auto
 String::assign(StringView sv) noexcept -> String &
 {
   return fitsInShort(sv.size()) ? assignShort(sv) : assignLong(sv);
@@ -729,7 +726,7 @@ String::assign(StringView sv) noexcept -> String &
 // Destructor
 //==============================================================================
 
-HOSTDEV constexpr String::~String() noexcept
+HOSTDEV inline String::~String() noexcept
 {
   if (isLong()) {
     ::operator delete(getLongPointer());
@@ -740,37 +737,37 @@ HOSTDEV constexpr String::~String() noexcept
 // Element access
 //==============================================================================
 
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV inline auto
 String::front() noexcept -> char &
 {
   return *begin();
 }
 
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV inline auto
 String::front() const noexcept -> char const &
 {
   return *begin();
 }
 
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV inline auto
 String::back() noexcept -> char &
 {
   return *(end() - 1);
 }
 
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV inline auto
 String::back() const noexcept -> char const &
 {
   return *(end() - 1);
 }
 
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV inline auto
 String::data() noexcept -> Ptr
 {
   return getPointer();
 }
 
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV inline auto
 String::data() const noexcept -> ConstPtr
 {
   return getPointer();
@@ -780,37 +777,37 @@ String::data() const noexcept -> ConstPtr
 // Iterators
 //==============================================================================
 
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV inline auto
 String::begin() noexcept -> Ptr
 {
   return data();
 }
 
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV inline auto
 String::begin() const noexcept -> ConstPtr
 {
   return data();
 }
 
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV inline auto
 String::cbegin() const noexcept -> ConstPtr
 {
   return data();
 }
 
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV inline auto
 String::end() noexcept -> Ptr
 {
   return data() + size();
 }
 
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV inline auto
 String::end() const noexcept -> ConstPtr
 {
   return data() + size();
 }
 
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV inline auto
 String::cend() const noexcept -> ConstPtr
 {
   return data() + size();
@@ -820,20 +817,20 @@ String::cend() const noexcept -> ConstPtr
 // Capacity
 //==============================================================================
 
-PURE HOSTDEV [[nodiscard]] constexpr auto
+PURE HOSTDEV [[nodiscard]] inline auto
 String::empty() const noexcept -> bool
 {
   return size() == 0;
 }
 
-PURE HOSTDEV [[nodiscard]] constexpr auto
+PURE HOSTDEV [[nodiscard]] inline auto
 String::size() const noexcept -> Int
 {
   return isLong() ? static_cast<Int>(getLongSize()) : static_cast<Int>(getShortSize());
 }
 
 // Allocated bytes - 1 for null terminator
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV inline auto
 String::capacity() const noexcept -> Int
 {
   return isLong() ? static_cast<Int>(getLongCap()) - 1 : static_cast<Int>(min_cap) - 1;
@@ -843,7 +840,7 @@ String::capacity() const noexcept -> Int
 // Modifiers
 //==============================================================================
 
-HOSTDEV constexpr auto
+HOSTDEV inline auto
 String::append(char const * s, Int n) -> String &
 {
   ASSERT(s != nullptr);
@@ -867,13 +864,13 @@ String::append(char const * s, Int n) -> String &
   return *this;
 }
 
-HOSTDEV constexpr auto
+HOSTDEV inline auto
 String::operator+=(char const * s) -> String &
 {
   return append(s, static_cast<Int>(strlen(s)));
 }
 
-HOSTDEV constexpr auto
+HOSTDEV inline auto
 String::operator+=(String const & s) -> String &
 {
   return append(s.data(), s.size());
@@ -883,7 +880,7 @@ String::operator+=(String const & s) -> String &
 // Operations
 //==============================================================================
 
-PURE HOSTDEV [[nodiscard]] constexpr auto
+PURE HOSTDEV [[nodiscard]] inline auto
 String::compare(String const & s) const noexcept -> int
 {
   StringView const self_sv(data(), static_cast<uint64_t>(size()));
@@ -892,7 +889,7 @@ String::compare(String const & s) const noexcept -> int
 }
 
 template <std::convertible_to<StringView> T>
-PURE HOSTDEV [[nodiscard]] constexpr auto
+PURE HOSTDEV [[nodiscard]] inline auto
 String::compare(T const & t) const noexcept -> int
 {
   StringView const self_sv(data(), static_cast<uint64_t>(size()));
@@ -900,45 +897,45 @@ String::compare(T const & t) const noexcept -> int
   return self_sv.compare(sv);
 }
 
-PURE HOSTDEV [[nodiscard]] constexpr auto
+PURE HOSTDEV [[nodiscard]] inline auto
 String::ends_with(StringView sv) const noexcept -> bool
 {
   StringView const self_sv(data(), static_cast<uint64_t>(size()));
   return self_sv.ends_with(sv);
 }
 
-PURE HOSTDEV [[nodiscard]] constexpr auto
+PURE HOSTDEV [[nodiscard]] inline auto
 String::ends_with(char c) const noexcept -> bool
 {
   return !empty() && back() == c;
 }
 
-PURE HOSTDEV [[nodiscard]] constexpr auto
+PURE HOSTDEV [[nodiscard]] inline auto
 String::ends_with(char const * s) const noexcept -> bool
 {
   return ends_with(StringView(s));
 }
 
-PURE HOSTDEV [[nodiscard]] constexpr auto
+PURE HOSTDEV [[nodiscard]] inline auto
 String::starts_with(StringView sv) const noexcept -> bool
 {
   StringView const self_sv(data(), static_cast<uint64_t>(size()));
   return self_sv.starts_with(sv);
 }
 
-PURE HOSTDEV [[nodiscard]] constexpr auto
+PURE HOSTDEV [[nodiscard]] inline auto
 String::starts_with(char c) const noexcept -> bool
 {
   return !empty() && front() == c;
 }
 
-PURE HOSTDEV [[nodiscard]] constexpr auto
+PURE HOSTDEV [[nodiscard]] inline auto
 String::starts_with(char const * s) const noexcept -> bool
 {
   return starts_with(StringView(s));
 }
 
-PURE HOSTDEV [[nodiscard]] constexpr auto
+PURE HOSTDEV [[nodiscard]] inline auto
 String::find_last_of(char c, Int pos) const noexcept -> Int
 {
   ASSERT(pos >= 0);
@@ -947,7 +944,7 @@ String::find_last_of(char c, Int pos) const noexcept -> Int
   return result == StringView::npos ? npos : static_cast<Int>(result);
 }
 
-PURE HOSTDEV [[nodiscard]] constexpr auto
+PURE HOSTDEV [[nodiscard]] inline auto
 String::substr(Int pos, Int count) const noexcept -> String
 {
   return {*this, pos, count};

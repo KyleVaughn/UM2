@@ -6,7 +6,7 @@
 
 #include <concepts>
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV constexpr auto
 makeVec() -> um2::Vec<D, T>
 {
@@ -26,21 +26,23 @@ isPowerOf2(Int x) noexcept -> bool
 };
 } // namespace
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(isSIMD)
 {
-  um2::Vec<D, T> const v = makeVec<D, T>();
   if constexpr (isPowerOf2(D)) {
-#if UM2_ENABLE_SIMD_VEC
-    ASSERT(v.isSIMD());
-#else
-    ASSERT(!v.isSIMD());
-#endif
+    static_assert(alignof(um2::Vec<D, T>) == alignof(T) * D);
+    static_assert(!um2::IsSIMDVec<T>::value);
+    static_assert(um2::IsSIMDVec<um2::Vec<D, T>>::value);
+    static_assert(um2::IsSIMDVec<um2::Vec<4, double>>::value);
+    static_assert(!um2::IsSIMDVec<um2::Vec<3, double>>::value);
+    static_assert(alignof(um2::Vec<4, double>) == alignof(double) * 4);
+    static_assert(alignof(um2::Vec<3, double>) == alignof(double));
+    static_assert(alignof(um2::Vec<4, um2::Vec<2, double>>) == alignof(double) * 8);
   }
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(accessor)
 {
@@ -56,7 +58,7 @@ TEST_CASE(accessor)
   }
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(compound_add)
 {
@@ -74,7 +76,7 @@ TEST_CASE(compound_add)
   }
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(compound_sub)
 {
@@ -92,7 +94,7 @@ TEST_CASE(compound_sub)
   }
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(compound_mul)
 {
@@ -110,7 +112,7 @@ TEST_CASE(compound_mul)
   }
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(compound_div)
 {
@@ -128,7 +130,7 @@ TEST_CASE(compound_div)
   }
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(scalar_assign)
 {
@@ -145,7 +147,7 @@ TEST_CASE(scalar_assign)
   }
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(compound_scalar_add)
 {
@@ -162,7 +164,7 @@ TEST_CASE(compound_scalar_add)
   }
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(compound_scalar_sub)
 {
@@ -179,7 +181,7 @@ TEST_CASE(compound_scalar_sub)
   }
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(compound_scalar_mul)
 {
@@ -196,7 +198,7 @@ TEST_CASE(compound_scalar_mul)
   }
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(compound_scalar_div)
 {
@@ -213,7 +215,7 @@ TEST_CASE(compound_scalar_div)
   }
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(zero)
 {
@@ -229,7 +231,7 @@ TEST_CASE(zero)
   }
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(min)
 {
@@ -250,7 +252,7 @@ TEST_CASE(min)
   }
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(max)
 {
@@ -271,7 +273,7 @@ TEST_CASE(max)
   }
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(dot)
 {
@@ -284,7 +286,7 @@ TEST_CASE(dot)
   }
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(squaredNorm)
 {
@@ -298,7 +300,7 @@ TEST_CASE(squaredNorm)
   }
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(norm)
 {
@@ -308,7 +310,7 @@ TEST_CASE(norm)
   ASSERT_NEAR(norm, ref, static_cast<T>(1e-6));
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(normalized)
 {
@@ -317,7 +319,7 @@ TEST_CASE(normalized)
   ASSERT_NEAR(um2::norm(vn), 1, static_cast<T>(1e-6));
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(cross)
 {
@@ -336,26 +338,26 @@ TEST_CASE(cross)
   }
 }
 
-template <Int D>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(isApprox)
 {
-  um2::Vec<D, Float> const v1 = um2::Vec<D, Float>::zero();
-  um2::Vec<D, Float> v2 = um2::Vec<D, Float>::zero() + 1;
+  um2::Vec<D, T> const v1 = um2::Vec<D, T>::zero();
+  um2::Vec<D, T> v2 = um2::Vec<D, T>::zero() + 1;
   // Trivial equality
   ASSERT(v1.isApprox(v1));
   // Trivial inequality
   ASSERT(!v1.isApprox(v2));
   // Non-trivial equality
   v2 = v1;
-  v2[0] += um2::eps_distance / 2;
+  v2[0] += um2::eps_distance<T> / 2;
   ASSERT(v1.isApprox(v2));
   // Non-trivial inequality
-  v2[0] += um2::eps_distance;
+  v2[0] += um2::eps_distance<T>;
   ASSERT(!v1.isApprox(v2));
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(relational)
 {
@@ -372,7 +374,7 @@ TEST_CASE(relational)
   ASSERT(v2 >= v);
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(add)
 {
@@ -390,7 +392,7 @@ TEST_CASE(add)
   }
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(sub)
 {
@@ -408,7 +410,7 @@ TEST_CASE(sub)
   }
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(mul)
 {
@@ -426,7 +428,7 @@ TEST_CASE(mul)
   }
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(div)
 {
@@ -444,7 +446,7 @@ TEST_CASE(div)
   }
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(scalar_add)
 {
@@ -464,7 +466,7 @@ TEST_CASE(scalar_add)
   }
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(scalar_sub)
 {
@@ -481,7 +483,7 @@ TEST_CASE(scalar_sub)
   }
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(scalar_mul)
 {
@@ -501,7 +503,7 @@ TEST_CASE(scalar_mul)
   }
 }
 
-template <Int D, typename T>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(scalar_div)
 {
@@ -523,60 +525,95 @@ TEST_CASE(scalar_div)
 //=============================================================================
 
 #if UM2_USE_CUDA
-template <Int D, typename T>
+template <Int D, class T>
+MAKE_CUDA_KERNEL(isSIMD, D, T);
+
+template <Int D, class T>
 MAKE_CUDA_KERNEL(accessor, D, T);
 
-template <Int D, typename T>
-MAKE_CUDA_KERNEL(unary_minus, D, T);
-
-template <Int D, typename T>
+template <Int D, class T>
 MAKE_CUDA_KERNEL(compound_add, D, T);
 
-template <Int D, typename T>
+template <Int D, class T>
 MAKE_CUDA_KERNEL(compound_sub, D, T);
 
-template <Int D, typename T>
+template <Int D, class T>
 MAKE_CUDA_KERNEL(compound_mul, D, T);
 
-template <Int D, typename T>
+template <Int D, class T>
 MAKE_CUDA_KERNEL(compound_div, D, T);
 
-template <Int D, typename T>
+template <Int D, class T>
+MAKE_CUDA_KERNEL(scalar_assign, D, T);
+
+template <Int D, class T>
 MAKE_CUDA_KERNEL(compound_scalar_add, D, T);
 
-template <Int D, typename T>
+template <Int D, class T>
 MAKE_CUDA_KERNEL(compound_scalar_sub, D, T);
 
-template <Int D, typename T>
+template <Int D, class T>
 MAKE_CUDA_KERNEL(compound_scalar_mul, D, T);
 
-template <Int D, typename T>
+template <Int D, class T>
 MAKE_CUDA_KERNEL(compound_scalar_div, D, T);
 
-template <Int D, typename T>
+template <Int D, class T>
+MAKE_CUDA_KERNEL(zero, D, T);
+
+template <Int D, class T>
 MAKE_CUDA_KERNEL(min, D, T);
 
-template <Int D, typename T>
+template <Int D, class T>
 MAKE_CUDA_KERNEL(max, D, T);
 
-template <Int D, typename T>
+template <Int D, class T>
 MAKE_CUDA_KERNEL(dot, D, T);
 
-template <Int D, typename T>
-MAKE_CUDA_KERNEL(cross, D, T);
-
-template <Int D, typename T>
+template <Int D, class T>
 MAKE_CUDA_KERNEL(squaredNorm, D, T);
 
-template <Int D, typename T>
+template <Int D, class T>
 MAKE_CUDA_KERNEL(norm, D, T);
 
-template <Int D, typename T>
+template <Int D, class T>
 MAKE_CUDA_KERNEL(normalized, D, T);
 
+template <Int D, class T>
+MAKE_CUDA_KERNEL(cross, D, T);
+
+template <Int D, class T>
+MAKE_CUDA_KERNEL(isApprox, D, T);
+
+template <Int D, class T>
+MAKE_CUDA_KERNEL(relational, D, T);
+
+template <Int D, class T>
+MAKE_CUDA_KERNEL(add, D, T);
+
+template <Int D, class T>
+MAKE_CUDA_KERNEL(sub, D, T);
+
+template <Int D, class T>
+MAKE_CUDA_KERNEL(mul, D, T);
+
+template <Int D, class T>
+MAKE_CUDA_KERNEL(div, D, T);
+
+template <Int D, class T>
+MAKE_CUDA_KERNEL(scalar_add, D, T);
+
+template <Int D, class T>
+MAKE_CUDA_KERNEL(scalar_sub, D, T);
+
+template <Int D, class T>
+MAKE_CUDA_KERNEL(scalar_mul, D, T);
+
+template <Int D, class T>
+MAKE_CUDA_KERNEL(scalar_div, D, T);
 #endif
 
-template <Int D, typename T>
+template <Int D, class T>
 TEST_SUITE(vec)
 {
   TEST_HOSTDEV(isSIMD, D, T);
@@ -599,7 +636,7 @@ TEST_SUITE(vec)
     TEST_HOSTDEV(norm, D, T);
     TEST_HOSTDEV(normalized, D, T);
     TEST_HOSTDEV(cross, D, T);
-    TEST_HOSTDEV(isApprox, D);
+    TEST_HOSTDEV(isApprox, D, T);
   }
   if constexpr (std::integral<T>) {
     TEST_HOSTDEV(relational, D, T);
@@ -617,22 +654,28 @@ TEST_SUITE(vec)
 auto
 main() -> int
 {
-  RUN_SUITE((vec<2, Float>));
+  RUN_SUITE((vec<2, float>));
+  RUN_SUITE((vec<2, double>));
   RUN_SUITE((vec<2, Int>));
 
-  RUN_SUITE((vec<3, Float>));
+  RUN_SUITE((vec<3, float>));
+  RUN_SUITE((vec<3, double>));
   RUN_SUITE((vec<3, Int>));
 
-  RUN_SUITE((vec<4, Float>));
+  RUN_SUITE((vec<4, float>));
+  RUN_SUITE((vec<4, double>));
   RUN_SUITE((vec<4, Int>));
 
-  RUN_SUITE((vec<8, Float>));
+  RUN_SUITE((vec<8, float>));
+  RUN_SUITE((vec<8, double>));
   RUN_SUITE((vec<8, Int>));
 
-  RUN_SUITE((vec<16, Float>));
+  RUN_SUITE((vec<16, float>));
+  RUN_SUITE((vec<16, double>));
   RUN_SUITE((vec<16, Int>));
 
-  RUN_SUITE((vec<32, Float>));
+  RUN_SUITE((vec<32, float>));
+  RUN_SUITE((vec<32, double>));
   RUN_SUITE((vec<32, Int>));
 
   return 0;

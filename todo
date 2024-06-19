@@ -1,16 +1,9 @@
 Double checking stdlib:
-  assert, algorithm, numeric, cstring, vector, string_view, string
-
-
-
-
-
-
+  string
 
 Document: 
   Exclusions from clang-tidy
   Clang format choices (var_name, Class, etc.)
-  Lack of constexpr -> stdlib is cheating
   
 Benchmarks:
   measure effect of SIMD_VEC on vec ops
@@ -22,11 +15,6 @@ Enhancements:
     How to do this in a smart way? Check on Eigen and others.
   Python API
   Rigorous testing of constexpr functions at compile time and runtime
-  Allocator
-
-CUDA:
-  Add CUDA to unit test macro
-  simplify CUDA unit test macros now that we default to 1 thread. TEST_HOSTDEV(f<T>)
 
 Misc:
   OK on lints
@@ -42,7 +30,6 @@ check for purity -> noreturn assert
 constexpr:
   assert.hpp
 
-Need to take a hard look at CUDA before proceeding
 
 Make a vector class which always aligns to 256 bytes (like CUDA).    
 Then in each method, pass the vector  by reference and use __builtin_assume_aligned    
@@ -50,3 +37,5 @@ Then in each method, pass the vector  by reference and use __builtin_assume_alig
 Additionally, we should us aligned_alloc    
 
 template library for quadmath
+
+CUDA 12.4>>
