@@ -44,14 +44,14 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(UM2_BUILD_BENCHMARKS "Build benchmarks"                  OFF)
 option(UM2_BUILD_MODELS     "Build models"                      OFF)
 option(UM2_BUILD_TESTS      "Build tests"                       ON)
-option(UM2_BUILD_TUTORIAL   "Build tutorial"                    OFF)
+option(UM2_BUILD_TUTORIAL   "Build tutorial"                    ON)
 option(UM2_BUILD_SHARED_LIB "Build UM2 as shared library"       ON)
 
 # Use external dependencies
 option(UM2_USE_CUDA         "Enable CUDA"                       OFF)
-option(UM2_USE_GMSH         "Enable Gmsh"                       ON)
-option(UM2_USE_OPENMP       "Enable OpenMP"                     ON)
-option(UM2_USE_TBB          "Enable Intel TBB"                  ON)
+option(UM2_USE_GMSH         "Enable Gmsh"                       OFF)
+option(UM2_USE_OPENMP       "Enable OpenMP"                     OFF)
+option(UM2_USE_TBB          "Enable Intel TBB"                  OFF)
 
 # Enable/disable features
 option(UM2_ENABLE_FASTMATH  "Enable fast math optimizations"       ON) # CPU and GPU
