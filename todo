@@ -30,7 +30,6 @@ check for purity -> noreturn assert
 constexpr:
   assert.hpp
 
-
 Make a vector class which always aligns to 256 bytes (like CUDA).    
 Then in each method, pass the vector  by reference and use __builtin_assume_aligned    
     

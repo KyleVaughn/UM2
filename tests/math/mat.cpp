@@ -1,8 +1,12 @@
 #include <um2/math/mat.hpp>
-
+#include <um2/math/vec.hpp>
+#include <um2/config.hpp>
 #include <um2/stdlib/numbers.hpp>
 
 #include "../test_macros.hpp"
+
+#include <concepts>
+#include <cstdint>
 
 template <Int M, Int N, typename T>
 HOSTDEV constexpr auto
@@ -30,7 +34,7 @@ TEST_CASE(accessors)
       if constexpr (std::floating_point<T>) {
         ASSERT_NEAR(m.col(j)[i], static_cast<T>(j * M + i), static_cast<T>(1e-6));
       } else {
-        assert(m.col(j)[i] == static_cast<T>(j * M + i));
+        ASSERT(m.col(j)[i] == static_cast<T>(j * M + i));
       }
     }
   }
@@ -39,7 +43,7 @@ TEST_CASE(accessors)
       if constexpr (std::floating_point<T>) {
         ASSERT_NEAR(m(i, j), static_cast<T>(j * M + i), static_cast<T>(1e-6));
       } else {
-        assert(m(i, j) == static_cast<T>(j * M + i));
+        ASSERT(m(i, j) == static_cast<T>(j * M + i));
       }
     }
   }
@@ -63,7 +67,7 @@ TEST_CASE(mat_vec)
     if constexpr (std::floating_point<T>) {
       ASSERT_NEAR(mv[i], mv_i, static_cast<T>(1e-6));
     } else {
-      assert(mv[i] == mv_i);
+      ASSERT(mv[i] == mv_i);
     }
   }
 }
@@ -132,6 +136,11 @@ MAKE_CUDA_KERNEL(accessors, M, N, T);
 template <Int M, Int N, typename T>
 MAKE_CUDA_KERNEL(mat_vec, M, N, T);
 
+template <typename T>
+MAKE_CUDA_KERNEL(makeRotationMatrix, T);
+
+template <typename T>
+MAKE_CUDA_KERNEL(inv, T);
 #endif
 
 template <Int M, Int N, typename T>

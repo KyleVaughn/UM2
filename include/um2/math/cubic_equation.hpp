@@ -28,29 +28,30 @@ namespace um2
 // NOLINTBEGIN(clang-diagnostic-float-equal, cppcoreguidelines-*)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
-PURE HOSTDEV inline auto
-solveCubic(Float a, Float const b, Float const c, Float const d) -> Vec3F
+template <class T>
+CONST HOSTDEV inline auto
+solveCubic(T a, T const b, T const c, T const d) noexcept -> Vec3<T>
 {
-  auto constexpr invalid = castIfNot<Float>(1e16);
-  Vec3F roots;
+  auto constexpr invalid = castIfNot<T>(1e16);
+  Vec3<T> roots;
   roots[0] = invalid;
   roots[1] = invalid;
   roots[2] = invalid;
 
   // Variable initialization.
   auto constexpr lambda =
-      castIfNot<Float>(1.32471795724474602596); // lambda^3 = lambda + 1
-  auto constexpr one_plus_eps = 1 + std::numeric_limits<Float>::epsilon();
-  Float & x = roots[2];
-  Float b1; // b in ax^2 + bx + c for the quadratic equation.
-  Float c2; // c in ax^2 + bx + c for the quadratic equation.
-  Float q0; // Used to evaluate q and q'.
-  Float dq; // q' = 3ax^2 + 2bx + c
-  Float q;  // q = ax^3 + bx^2 + cx + d
-  Float t;  // tmp variable
-  Float r;  // tmp variable
-  Float s;  // tmp variable
-  Float x0; // initial guess for Newton-Raphson iteration.
+      castIfNot<T>(1.32471795724474602596); // lambda^3 = lambda + 1
+  auto constexpr one_plus_eps = 1 + std::numeric_limits<T>::epsilon();
+  T & x = roots[2];
+  T b1; // b in ax^2 + bx + c for the quadratic equation.
+  T c2; // c in ax^2 + bx + c for the quadratic equation.
+  T q0; // Used to evaluate q and q'.
+  T dq; // q' = 3ax^2 + 2bx + c
+  T q;  // q = ax^3 + bx^2 + cx + d
+  T t;  // tmp variable
+  T r;  // tmp variable
+  T s;  // tmp variable
+  T x0; // initial guess for Newton-Raphson iteration.
 
   // Equation is quadratic.
   if (a == 0) {

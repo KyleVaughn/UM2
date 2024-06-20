@@ -1,10 +1,9 @@
 #pragma once
 
-#include <um2/stdlib/algorithm/fill.hpp>
 #include <um2/stdlib/vector.hpp>
+#include <um2/stdlib/algorithm/fill.hpp>
 
 #include <complex>
-#include <iostream>
 
 //==============================================================================
 // MATRIX
@@ -13,7 +12,7 @@
 // size matrices are needed, see Mat.hpp.
 //
 // Uses OpenBLAS for BLAS and LAPACK operations.
-// TODO(kcvaughn): Add static check that sizeof(Int) == sizeof(lapack_int) or
+// TODO(kcvaughn): Add static check that sizeof(Int) == sizeof(lapack_int) or 
 // other types used in OpenBLAS.
 
 namespace um2
@@ -25,7 +24,7 @@ class Matrix
   Int _rows;
   Int _cols;
 
-  Vector<T> _data;
+  Vector<T> _data; 
 
 public:
   //==============================================================================
@@ -43,6 +42,24 @@ public:
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   data() const noexcept -> T const *;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  begin() noexcept -> T *;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  begin() const noexcept -> T const *;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  end() noexcept -> T *;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  end() const noexcept -> T const *;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  asVector() noexcept -> Vector<T> &;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  asVector() const noexcept -> Vector<T> const &;
 
   PURE HOSTDEV constexpr auto
   operator()(Int i) noexcept -> T &;
@@ -63,6 +80,8 @@ public:
   constexpr Matrix() noexcept = default;
 
   Matrix(Int rows, Int cols) noexcept;
+
+  Matrix(Int rows, Int cols, T const & value) noexcept;
 
   static auto
   identity(Int n) -> Matrix<T>;
@@ -92,10 +111,10 @@ public:
 };
 
 //==============================================================================
-// Free functions
+// Free functions 
 //==============================================================================
 
-// Matrix-vector operations
+// Matrix-vector operations 
 //------------------------------------------------------------------------------
 template <typename T>
 PURE auto
@@ -116,12 +135,26 @@ template <typename T>
 PURE auto
 operator*(Matrix<T> const & a, Matrix<T> const & b) -> Matrix<T>;
 
+// Non-allocating matrix-matrix multiplication. C = A * B.
+template <typename T>
+void
+matmul(Matrix<T> & c, Matrix<T> const & a, Matrix<T> const & b);
+
 // Solver
 //------------------------------------------------------------------------------
-// Solve A X = B for X. X = A \ B
+// Solve A * X = B for X. X = A \ B
 template <typename T>
 PURE auto
 linearSolve(Matrix<T> const & a, Matrix<T> const & b) -> Matrix<T>;
+
+// On exit: 
+// - A is overwritten with its LU decomposition.
+// - B is overwritten with the solution X.
+//
+// 
+template <typename T>
+void
+linearSolve(Matrix<T> & a, Matrix<T> & b, Vector<Int> & ipiv);
 
 // Eigenvalues
 //------------------------------------------------------------------------------
@@ -171,6 +204,48 @@ Matrix<T>::data() const noexcept -> T const *
 
 template <typename T>
 PURE HOSTDEV constexpr auto
+Matrix<T>::begin() noexcept -> T *
+{
+  return _data.begin();
+}
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+Matrix<T>::begin() const noexcept -> T const *
+{
+  return _data.begin();
+}
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+Matrix<T>::end() noexcept -> T *
+{
+  return _data.end();
+}
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+Matrix<T>::end() const noexcept -> T const *
+{
+  return _data.end();
+}
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+Matrix<T>::asVector() noexcept -> Vector<T> &
+{
+  return _data;
+}
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+Matrix<T>::asVector() const noexcept -> Vector<T> const &
+{
+  return _data;
+}
+
+template <typename T>
+PURE HOSTDEV constexpr auto
 Matrix<T>::operator()(Int i) noexcept -> T &
 {
   ASSERT_ASSUME(0 <= i);
@@ -178,7 +253,6 @@ Matrix<T>::operator()(Int i) noexcept -> T &
   return _data[i];
 }
 
-template <typename T>
 PURE HOSTDEV constexpr auto
 Matrix<T>::operator()(Int i) const noexcept -> T const &
 {
@@ -191,7 +265,7 @@ template <typename T>
 PURE HOSTDEV constexpr auto
 Matrix<T>::operator()(Int i, Int j) noexcept -> T &
 {
-  ASSERT_ASSUME(0 <= i);
+  ASSERT_ASSUME(0 <= i); 
   ASSERT_ASSUME(0 <= j);
   ASSERT(i < _rows);
   ASSERT(j < _cols);
@@ -204,7 +278,7 @@ Matrix<T>::operator()(Int i, Int j) const noexcept -> T const &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(0 <= j);
-  ASSERT(i < _rows);
+  ASSERT(i < _rows); 
   ASSERT(j < _cols);
   return _data[j * _rows + i];
 }
@@ -215,9 +289,15 @@ Matrix<T>::operator()(Int i, Int j) const noexcept -> T const &
 
 template <typename T>
 Matrix<T>::Matrix(Int rows, Int cols) noexcept
-    : _rows{rows},
-      _cols{cols},
-      _data(rows * cols)
+  : _rows{rows}, _cols{cols}, _data(rows * cols)
+{
+  ASSERT(rows >= 0);
+  ASSERT(cols >= 0);
+}
+
+template <typename T>
+Matrix<T>::Matrix(Int rows, Int cols, T const & value) noexcept
+  : _rows{rows}, _cols{cols}, _data(rows * cols, value)
 {
   ASSERT(rows >= 0);
   ASSERT(cols >= 0);
@@ -228,9 +308,9 @@ auto
 Matrix<T>::identity(Int n) -> Matrix<T>
 {
   Matrix<T> result(n, n);
-  um2::fill(result._data.begin(), result._data.end(), static_cast<T>(0));
+  um2::fill(result.begin(), result.end(), static_cast<T>(0)); 
   for (Int i = 0; i < n; ++i) {
-    result(i, i) = static_cast<T>(1);
+    result(i, i) = static_cast<T>(1); 
   }
   return result;
 }
@@ -297,10 +377,9 @@ Matrix<T>::transpose() noexcept
   for (Int j = 0; j < _cols - 1; ++j) {
     for (Int i = j + 1; i < _rows; ++i) {
       // Fix this.
-      T aij = _data[j * _rows + i];
-      T aji = _data[i * _rows + j];
-      if constexpr (std::is_same_v<T, std::complex<float>> ||
-                    std::is_same_v<T, std::complex<double>>) {
+      T  aij = _data[j * _rows + i]; 
+      T  aji = _data[i * _rows + j]; 
+      if constexpr(std::is_same_v<T, std::complex<float>> || std::is_same_v<T, std::complex<double>>) {
         aij = std::conj(aij);
         aji = std::conj(aji);
       }
@@ -308,8 +387,7 @@ Matrix<T>::transpose() noexcept
       _data[i * _rows + j] = aij;
     }
   }
-  if constexpr (std::is_same_v<T, std::complex<float>> ||
-                std::is_same_v<T, std::complex<double>>) {
+  if constexpr(std::is_same_v<T, std::complex<float>> || std::is_same_v<T, std::complex<double>>) {
     for (Int i = 0; i < _rows; ++i) {
       _data[i * _rows + i] = std::conj(_data[i * _rows + i]);
     }
@@ -317,7 +395,7 @@ Matrix<T>::transpose() noexcept
 }
 
 //==============================================================================
-// Free functions
+// Free functions 
 //==============================================================================
 
 template <typename T>

@@ -280,8 +280,7 @@ public:
   // eps2 is the squared distance below which two points are considered to be
   // equal.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  isApprox(Vec<D, T> const & v, T const & eps2 = eps_distance2<T>) const noexcept -> bool
-    requires(std::is_floating_point_v<T>);
+  isApprox(Vec<D, T> const & v, T const & eps2 = eps_distance2<T>) const noexcept -> bool;
 
 }; // class Vec
 
@@ -734,7 +733,6 @@ template <Int D, class T>
 HOSTDEV [[nodiscard]] constexpr auto
 Vec<D, T>::norm() const noexcept -> T
 {
-  static_assert(std::is_floating_point_v<T>);
   return um2::sqrt(squaredNorm());
 }
 
@@ -742,7 +740,6 @@ template <Int D, class T>
 HOSTDEV constexpr void
 Vec<D, T>::normalize() noexcept
 {
-  static_assert(std::is_floating_point_v<T>);
   *this /= norm();
 }
 
@@ -750,7 +747,6 @@ template <Int D, class T>
 HOSTDEV [[nodiscard]] constexpr auto
 Vec<D, T>::normalized() const noexcept -> Vec<D, T>
 {
-  static_assert(std::is_floating_point_v<T>);
   Vec<D, T> result = *this;
   result.normalize();
   return result;
@@ -773,7 +769,6 @@ HOSTDEV [[nodiscard]] constexpr auto
 Vec<D, T>::cross(Vec<2, T> const & v) const noexcept -> T
   requires(D == 2)
 {
-  static_assert(std::is_floating_point_v<T>);
   // It's important to use the slightly slower, but much more accurate Kahan's
   // algorithm for the 2 x 2 determinant here, since the sign of the result is
   // used in many geometric algorithms.
@@ -785,7 +780,6 @@ HOSTDEV [[nodiscard]] constexpr auto
 Vec<D, T>::cross(Vec<3, T> const & v) const noexcept -> Vec<3, T>
   requires(D == 3)
 {
-  static_assert(std::is_floating_point_v<T>);
   return {det2x2(_data[1], _data[2], v[1], v[2]), det2x2(_data[2], _data[0], v[2], v[0]),
           det2x2(_data[0], _data[1], v[0], v[1])};
 }
@@ -802,14 +796,12 @@ template <Int D, class T>
 HOSTDEV [[nodiscard]] constexpr auto
 Vec<D, T>::distanceTo(Vec<D, T> const & v) const noexcept -> T
 {
-  static_assert(std::is_floating_point_v<T>);
   return um2::sqrt(squaredDistanceTo(v));
 }
 
 template <Int D, class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
 Vec<D, T>::isApprox(Vec<D, T> const & v, T const & eps2) const noexcept -> bool
-  requires(std::is_floating_point_v<T>)
 {
   return squaredDistanceTo(v) < eps2;
 }
@@ -852,7 +844,6 @@ template <Int D, class T>
 PURE HOSTDEV constexpr auto
 norm(Vec<D, T> const & v) noexcept -> T
 {
-  static_assert(std::is_floating_point_v<T>);
   return v.norm();
 }
 
@@ -867,7 +858,6 @@ template <class T>
 PURE HOSTDEV constexpr auto
 cross(Vec2<T> const & u, Vec2<T> const & v) noexcept -> T
 {
-  static_assert(std::is_floating_point_v<T>);
   return u.cross(v);
 }
 
@@ -875,7 +865,6 @@ template <class T>
 PURE HOSTDEV constexpr auto
 cross(Vec3<T> const & u, Vec3<T> const & v) noexcept -> Vec3<T>
 {
-  static_assert(std::is_floating_point_v<T>);
   return u.cross(v);
 }
 

@@ -148,7 +148,7 @@
 
 #define TEST_HOSTDEV_4_ARGS(host_test, T, U, V)                                          \
   TEST((host_test<T, U, V>));                                                            \
-  TEST_CUDA_KERNEL(host_test, blocks, threads, T, U, V);
+  TEST_CUDA_KERNEL(host_test, T, U, V);
 // NOLINTEND(bugprone-macro-parentheses)
 
 #define TEST_HOSTDEV_GET_MACRO(_1, _2, _3, _4, NAME, ...) NAME

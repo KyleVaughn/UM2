@@ -3,6 +3,7 @@
 #include <um2/config.hpp>
 
 #include <um2/math/vec.hpp>
+#include <um2/stdlib/memory/addressof.hpp>
 #include <um2/stdlib/math/trigonometric_functions.hpp>
 
 //==============================================================================
@@ -29,7 +30,7 @@ class Mat
   // 1 4
   // 2 5
 
-  Col _cols[N];
+  Vec<M * N, T> _data;
 
 public:
   //==============================================================================
@@ -41,6 +42,12 @@ public:
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   col(Int i) const noexcept -> Col const &;
+
+  PURE HOSTDEV constexpr auto    
+  operator()(Int i) noexcept -> T &;    
+                        
+  PURE HOSTDEV constexpr auto    
+  operator()(Int i) const noexcept -> T const &;
 
   PURE HOSTDEV constexpr auto
   operator()(Int i, Int j) noexcept -> T &;
@@ -54,9 +61,20 @@ public:
 
   constexpr Mat() noexcept = default;
 
-  template <std::same_as<Col>... Cols>
-    requires(sizeof...(Cols) == N)
-  HOSTDEV constexpr explicit Mat(Cols... cols) noexcept;
+//  template <std::same_as<Col>... Cols>
+//    requires(sizeof...(Cols) == N)
+//  HOSTDEV constexpr explicit Mat(Cols... cols) noexcept;
+
+  //==============================================================================
+  // Methods
+  //==============================================================================
+
+  HOSTDEV [[nodiscard]] static constexpr auto
+  zero() noexcept -> Mat<M, N, T>;
+
+  HOSTDEV [[nodiscard]] static constexpr auto
+  identity() noexcept -> Mat<M, N, T>
+  requires (M == N);
 };
 
 //==============================================================================
@@ -69,7 +87,8 @@ using Mat2x2 = Mat<2, 2, T>;
 template <typename T>
 using Mat3x3 = Mat<3, 3, T>;
 
-using Mat2x2F = Mat2x2<Float>;
+using Mat2x2f = Mat2x2<float>;
+using Mat2x2d = Mat2x2<double>;
 
 //==============================================================================
 // Accessors
@@ -81,7 +100,7 @@ Mat<M, N, T>::col(Int i) noexcept -> typename Mat<M, N, T>::Col &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < N);
-  return _cols[i];
+  return reinterpret_cast<Col &>(_data[M * i]);
 }
 
 template <Int M, Int N, typename T>
@@ -90,7 +109,25 @@ Mat<M, N, T>::col(Int i) const noexcept -> typename Mat<M, N, T>::Col const &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < N);
-  return _cols[i];
+  return reinterpret_cast<Col const &>(_data[M * i]);
+}
+
+template <Int M, Int N, typename T>
+PURE HOSTDEV constexpr auto
+Mat<M, N, T>::operator()(Int i) noexcept -> T &
+{
+  ASSERT_ASSUME(0 <= i);
+  ASSERT_ASSUME(i < M * N);
+  return _data[i];
+}
+
+template <Int M, Int N, typename T>
+PURE HOSTDEV constexpr auto
+Mat<M, N, T>::operator()(Int i) const noexcept -> T const &
+{
+  ASSERT_ASSUME(0 <= i);
+  ASSERT_ASSUME(i < M * N);
+  return _data[i];
 }
 
 template <Int M, Int N, typename T>
@@ -101,7 +138,7 @@ Mat<M, N, T>::operator()(Int i, Int j) noexcept -> T &
   ASSERT_ASSUME(0 <= j);
   ASSERT_ASSUME(i < M);
   ASSERT_ASSUME(j < N);
-  return _cols[j][i];
+  return _data[M * j + i];
 }
 
 template <Int M, Int N, typename T>
@@ -112,51 +149,73 @@ Mat<M, N, T>::operator()(Int i, Int j) const noexcept -> T const &
   ASSERT_ASSUME(0 <= j);
   ASSERT_ASSUME(i < M);
   ASSERT_ASSUME(j < N);
-  return _cols[j][i];
+  return _data[M * j + i];
 }
 
-//==============================================================================
-// Constructors
-//==============================================================================
+////==============================================================================
+//// Constructors
+////==============================================================================
+//
+//// From a list of columns
+//template <Int M, Int N, typename T>
+//template <std::same_as<Vec<M, T>>... Cols>
+//  requires(sizeof...(Cols) == N)
+//HOSTDEV constexpr Mat<M, N, T>::Mat(Cols... cols) noexcept
+//    : _cols{cols...}
+//{
+//}
+//
+//=============================================================================
+// Member functions
+//=============================================================================
 
-// From a list of columns
 template <Int M, Int N, typename T>
-template <std::same_as<Vec<M, T>>... Cols>
-  requires(sizeof...(Cols) == N)
-HOSTDEV constexpr Mat<M, N, T>::Mat(Cols... cols) noexcept
-    : _cols{cols...}
+HOSTDEV [[nodiscard]] constexpr auto
+Mat<M, N, T>::zero() noexcept -> Mat<M, N, T>
 {
+  Mat<M, N, T> result;
+  for (Int i = 0; i < M * N; ++i) {
+    result._data[i] = static_cast<T>(0);
+  }
+  return result;
 }
+
+template <Int M, Int N, typename T>
+HOSTDEV [[nodiscard]] constexpr auto
+identity() noexcept -> Mat<M, N, T>
+requires (M == N)
+{
+  Mat<M, N, T> result = Mat<M, N, T>::zero();
+  for (Int i = 0; i < N; ++i) {
+    result(i, i) = static_cast<T>(1);
+  }
+  return result;
+}  
 
 //==============================================================================
 // Free functions
 //==============================================================================
 
-template <typename T>
+template <Int M, Int N, typename T>
 PURE HOSTDEV constexpr auto
-operator*(Mat2x2<T> const & a, Vec2<T> const & x) noexcept -> Vec2<T>
+operator*(Mat<M, N, T> const & a, Vec<N, T> const & x) noexcept -> Vec<M, T>
 {
-#if UM2_ENABLE_SIMD_VEC
-  return x[0] * a.col(0) + x[1] * a.col(1);
-#else
-  return Vec2<T>{a(0, 0) * x[0] + a(0, 1) * x[1], a(1, 0) * x[0] + a(1, 1) * x[1]};
-#endif
+  Vec<M, T> res = Vec<M, T>::zero();
+  for (Int i = 0; i < N; ++i) {
+    res += x[i] * a.col(i);
+  }
+  return res;
 }
 
-template <typename T>
+template <Int M, Int N, Int P, typename T>
 PURE HOSTDEV constexpr auto
-operator*(Mat2x2<T> const & a, Mat2x2<T> const & b) noexcept -> Mat2x2<T>
+operator*(Mat<M, N, T> const & a, Mat<N, P, T> const & b) noexcept -> Mat<M, P, T>
 {
-  return Mat2x2<T>{a * b.col(0), a * b.col(1)};
-}
-
-template <typename T>
-PURE HOSTDEV constexpr auto
-operator*(Mat3x3<T> const & a, Vec3<T> const & x) noexcept -> Vec3<T>
-{
-  return Vec3<T>{a(0, 0) * x[0] + a(0, 1) * x[1] + a(0, 2) * x[2],
-                 a(1, 0) * x[0] + a(1, 1) * x[1] + a(1, 2) * x[2],
-                 a(2, 0) * x[0] + a(2, 1) * x[1] + a(2, 2) * x[2]};
+  Mat<M, P, T> result;
+  for (Int i = 0; i < N; ++i) {
+    result.col(i) = a * b.col(i);
+  }
+  return result; 
 }
 
 // angle in radians
@@ -166,10 +225,14 @@ makeRotationMatrix(T angle) noexcept -> Mat2x2<T>
 {
   T const c = um2::cos(angle);
   T const s = um2::sin(angle);
-  return Mat2x2<T>{
-      Vec2<T>{ c, s},
-      Vec2<T>{-s, c}
-  };
+  Mat2x2<T> result;
+  // [c -s 
+  //  s  c]
+  result(0) = c;
+  result(1) = s;
+  result(2) = -s;
+  result(3) = c;
+  return result; 
 }
 
 template <typename T>
@@ -178,20 +241,24 @@ inv(Mat2x2<T> const & m) noexcept -> Mat2x2<T>
 {
   // [a b
   //  c d]
-  T const a = m(0, 0);
-  T const b = m(0, 1);
-  T const c = m(1, 0);
-  T const d = m(1, 1);
-  T const det = det2x2(a, b, c, d);
+  T const a = m(0);
+  T const c = m(1);
+  T const b = m(2);
+  T const d = m(3);
+  T const det = det2x2(a, b, c, d); // Kahan's alg. Included from Vec.hpp
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
   // NOLINTNEXTLINE(clang-diagnostic-float-equal)
   ASSERT(det != 0);
 #pragma GCC diagnostic pop
-  return Mat2x2<T>{
-      Vec2<T>{ d / det, -c / det},
-      Vec2<T>{-b / det,  a / det}
-  };
+  Mat2x2<T> result;
+  // [ d -b 
+  //  -c  a]
+  result(0) = d / det;
+  result(1) = -c / det; 
+  result(2) = -b / det;
+  result(3) = a / det;
+  return result;
 }
 
 } // namespace um2

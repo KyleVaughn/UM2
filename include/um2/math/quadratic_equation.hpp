@@ -22,7 +22,7 @@ namespace um2
 // We use 1e16 instead of NaN, since we want consistent behavior using -ffast-math.
 //
 // References:
-// The Ins and Outs of Solving Quadratic Equations with Floating-Point Arithmetic
+// The Ins and Outs of Solving Quadratic Equations with Ting-Point Arithmetic
 // by Frédéric Goualard
 //
 // Cases:
@@ -47,12 +47,15 @@ namespace um2
 // We do not handle cases: 1, 2
 
 // Handle discriminant with Kahan's algorithm, with fma.
-PURE HOSTDEV inline auto
-quadraticDiscriminant(Float const a, Float const b, Float const c) -> Float
+template <class T>
+CONST HOSTDEV inline auto
+quadraticDiscriminant(T const a, T const b, T const c) noexcept -> T
 {
-  Float const w = 4 * a * c;
-  Float const e = um2::fma(-c, 4 * a, w);
-  Float const f = um2::fma(b, b, -w);
+  // b * b - 4 * a * c
+  T const a4 = 4 * a;
+  T const w = a4 * c;
+  T const e = um2::fma(-c, a4, w);
+  T const f = um2::fma(b, b, -w);
   return f + e;
 }
 
@@ -60,11 +63,12 @@ quadraticDiscriminant(Float const a, Float const b, Float const c) -> Float
 // NOLINTBEGIN(clang-diagnostic-float-equal)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
+template <class T>
 PURE HOSTDEV inline auto
-solveQuadratic(Float const a, Float const b, Float const c) -> Vec2F
+solveQuadratic(T const a, T const b, T const c) noexcept -> Vec2<T>
 {
-  auto constexpr invalid = castIfNot<Float>(1e16);
-  Vec2F roots;
+  auto constexpr invalid = castIfNot<T>(1e16);
+  Vec2<T> roots;
   roots[0] = invalid;
   roots[1] = invalid;
 
@@ -78,11 +82,11 @@ solveQuadratic(Float const a, Float const b, Float const c) -> Vec2F
   }
 
   if (b == 0) {
-    Float const x0_sq = -c / a;
+    T const x0_sq = -c / a;
     if (x0_sq < 0) {
       return roots;
     }
-    Float const x0 = um2::sqrt(x0_sq);
+    T const x0 = um2::sqrt(x0_sq);
     roots[0] = -x0;
     roots[1] = x0;
     return roots;
@@ -94,7 +98,7 @@ solveQuadratic(Float const a, Float const b, Float const c) -> Vec2F
     return roots;
   }
 
-  Float const q = -(b + um2::copysign(um2::sqrt(disc), b)) / 2;
+  T const q = -(b + um2::copysign(um2::sqrt(disc), b)) / 2;
   roots[0] = q / a;
   roots[1] = c / q;
   if (roots[0] > roots[1]) {
