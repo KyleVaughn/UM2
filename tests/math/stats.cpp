@@ -41,8 +41,10 @@ HOSTDEV
 TEST_CASE(mean)
 {
   um2::Vector<double> v(5);
-  um2::iota(v.begin(), v.end(), 1);
-  double const m = um2::mean(v.data(), v.data() + v.size());
+  for (Int i = 0; i < 5; ++i) {
+    v[i] = static_cast<double>(i + 1);
+  }
+  double const m = um2::mean(v.begin(), v.end());
   ASSERT_NEAR(m, 3, eps);
 }
 

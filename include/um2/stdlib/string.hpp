@@ -419,7 +419,10 @@ String::assignLong(StringView sv) noexcept -> String &
 PURE HOSTDEV inline auto
 String::getLongSize() const noexcept -> uint64_t
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
   return _r.l.size;
+#pragma GCC diagnostic pop
 }
 
 PURE HOSTDEV inline auto
@@ -634,6 +637,7 @@ HOSTDEV inline String::String(String const & s, Int pos, Int count) noexcept
   ASSERT(pos >= 0);
   ASSERT(pos <= str_size);
   Int const n = um2::min(count, str_size - pos);
+  ASSERT(n >= 0);
   init(s.data() + pos, static_cast<uint64_t>(n));
 }
 

@@ -1,6 +1,6 @@
+#include <um2/config.hpp>
 #include <um2/math/mat.hpp>
 #include <um2/math/vec.hpp>
-#include <um2/config.hpp>
 #include <um2/stdlib/numbers.hpp>
 
 #include "../test_macros.hpp"

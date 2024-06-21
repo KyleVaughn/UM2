@@ -39,8 +39,7 @@ solveCubic(T a, T const b, T const c, T const d) noexcept -> Vec3<T>
   roots[2] = invalid;
 
   // Variable initialization.
-  auto constexpr lambda =
-      castIfNot<T>(1.32471795724474602596); // lambda^3 = lambda + 1
+  auto constexpr lambda = castIfNot<T>(1.32471795724474602596); // lambda^3 = lambda + 1
   auto constexpr one_plus_eps = 1 + std::numeric_limits<T>::epsilon();
   T & x = roots[2];
   T b1; // b in ax^2 + bx + c for the quadratic equation.

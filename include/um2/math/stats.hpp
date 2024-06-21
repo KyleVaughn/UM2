@@ -33,7 +33,11 @@ template <class T>
 PURE HOSTDEV constexpr auto
 naiveSum(T const * begin, T const * end) noexcept -> T
 {
+// Very weird false positive here for GCC 12.3 where it thinks "result" is an index
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
   T result = *begin;
+#pragma GCC diagnostic pop
   while (++begin != end) {
     result += *begin;
   }
@@ -41,7 +45,7 @@ naiveSum(T const * begin, T const * end) noexcept -> T
 }
 
 template <class T>
-PURE constexpr auto
+PURE auto
 // NOLINTNEXTLINE(misc-no-recursion) OK
 pairwiseSum(T const * begin, T const * end) noexcept -> T
 {

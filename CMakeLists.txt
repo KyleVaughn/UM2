@@ -38,7 +38,7 @@ option(UM2_BUILD_TUTORIAL "Build tutorial" OFF)
 # Enable assertions. This option enables UM2_ASSERT*(condition) macros, which
 # are evaluated regardless of the build type, unlike the standard assert macro
 # which is only evaluated if NDEBUG is not defined.
-option(UM2_ENABLE_ASSERTS "Enable assertions" ON)
+option(UM2_ENABLE_ASSERTS "Enable assertions" OFF)
 
 # Enable BMI2 instruction set. This option enables the BMI2 instruction set,
 # if it is supported by the architecture. This is primarily for fast Morton 
@@ -83,7 +83,10 @@ option(UM2_USE_CUDA          "Use CUDA"     OFF)
 
 option(UM2_USE_GMSH          "Use Gmsh"     OFF)  # CAD geometry and meshing
 option(UM2_USE_HDF5          "Use HDF5"     OFF)  # Binary data I/O (Mesh I/O)
-option(UM2_USE_OPENMP        "Use OpenMP"   OFF) # Multi-threading
+
+# Use OpenMP for multi-threading.
+option(UM2_USE_OPENMP        "Use OpenMP"   ON) # Multi-threading
+
 option(UM2_USE_PUGIXML       "Use pugixml"  OFF)  # XML parsing (Mesh I/O)
 option(UM2_USE_TBB           "Use TBB"      OFF) # Parallel STL (std::execution::par, etc.)
 
@@ -118,7 +121,7 @@ endif()
 include(GNUInstallDirs)
 include(CheckCXXCompilerFlag)
 
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 
 # RPATH handling
 # https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
@@ -219,6 +222,7 @@ if (UM2_ENABLE_FASTMATH)
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --use_fast_math")
   endif()
 else()
+  # For expf, adding these flags is approximately an 8.5% speedup
   um2_add_cxx_compiler_flag("-fno-math-errno")
   um2_add_cxx_compiler_flag("-fno-trapping-math")
   um2_add_cxx_compiler_flag("-fno-signed-zeros")
@@ -273,6 +277,15 @@ if (NOT UM2_USE_CUDA)
   um2_add_cxx_compiler_flag("-Werror")
   um2_add_cxx_compiler_flag("-Wold-style-cast")
   um2_add_cxx_compiler_flag("-pedantic")
+endif()
+
+# Options that cause issues with GCC 13
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" 
+    AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 13.0)
+  # This is a bug related to testing substr(0, 0) on GCC 13. We prove it is a false
+  # postive by checking for the error condition with ASSERT statements.
+  # Valgrind also reports no issues.
+  um2_add_cxx_compiler_flag("-Wno-error=stringop-overflow")
 endif()
 
 # If CUDA is enabled, pass the CXX flags via -Xcompiler
@@ -432,9 +445,9 @@ if (UM2_USE_VALGRIND)
   endif()
 endif()
 
-###===============================================================================
-### Optional dependencies
-###===============================================================================
+#===============================================================================
+# Optional dependencies
+#===============================================================================
 ##
 ### Gmsh
 ##if (UM2_USE_GMSH)
@@ -443,13 +456,13 @@ endif()
 ##  target_include_directories(um2 SYSTEM PUBLIC "${GMSH_INC}")
 ##endif()
 ##
-### OpenMP
-##if (UM2_USE_OPENMP)
-##  find_package(OpenMP)
-##  target_link_libraries(um2 PUBLIC OpenMP::OpenMP_CXX)
-##  target_include_directories(um2 SYSTEM PUBLIC "${OpenMP_CXX_INCLUDE_DIRS}")
-##endif()
-##
+# OpenMP
+if (UM2_USE_OPENMP)
+  find_package(OpenMP)
+  target_link_libraries(um2 PUBLIC OpenMP::OpenMP_CXX)
+  target_include_directories(um2 SYSTEM PUBLIC "${OpenMP_CXX_INCLUDE_DIRS}")
+endif()
+
 ### TBB
 ##if (UM2_USE_TBB)
 ##  find_package(TBB REQUIRED)
@@ -462,6 +475,7 @@ endif()
 
 if (UM2_BUILD_BENCHMARKS)
   find_package(benchmark REQUIRED)
+  find_package(PFM REQUIRED)
   add_subdirectory(benchmarks)
 endif()
 

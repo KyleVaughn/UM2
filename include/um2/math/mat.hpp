@@ -3,8 +3,8 @@
 #include <um2/config.hpp>
 
 #include <um2/math/vec.hpp>
-#include <um2/stdlib/memory/addressof.hpp>
 #include <um2/stdlib/math/trigonometric_functions.hpp>
+#include <um2/stdlib/memory/addressof.hpp>
 
 //==============================================================================
 // MAT
@@ -22,6 +22,8 @@ namespace um2
 template <Int M, Int N, typename T>
 class Mat
 {
+  static_assert(M > 0);
+  static_assert(N > 0);
 
   using Col = Vec<M, T>;
 
@@ -43,10 +45,10 @@ public:
   PURE HOSTDEV [[nodiscard]] constexpr auto
   col(Int i) const noexcept -> Col const &;
 
-  PURE HOSTDEV constexpr auto    
-  operator()(Int i) noexcept -> T &;    
-                        
-  PURE HOSTDEV constexpr auto    
+  PURE HOSTDEV constexpr auto
+  operator()(Int i) noexcept -> T &;
+
+  PURE HOSTDEV constexpr auto
   operator()(Int i) const noexcept -> T const &;
 
   PURE HOSTDEV constexpr auto
@@ -61,9 +63,9 @@ public:
 
   constexpr Mat() noexcept = default;
 
-//  template <std::same_as<Col>... Cols>
-//    requires(sizeof...(Cols) == N)
-//  HOSTDEV constexpr explicit Mat(Cols... cols) noexcept;
+  //  template <std::same_as<Col>... Cols>
+  //    requires(sizeof...(Cols) == N)
+  //  HOSTDEV constexpr explicit Mat(Cols... cols) noexcept;
 
   //==============================================================================
   // Methods
@@ -74,7 +76,7 @@ public:
 
   HOSTDEV [[nodiscard]] static constexpr auto
   identity() noexcept -> Mat<M, N, T>
-  requires (M == N);
+    requires(M == N);
 };
 
 //==============================================================================
@@ -157,16 +159,16 @@ Mat<M, N, T>::operator()(Int i, Int j) const noexcept -> T const &
 ////==============================================================================
 //
 //// From a list of columns
-//template <Int M, Int N, typename T>
-//template <std::same_as<Vec<M, T>>... Cols>
-//  requires(sizeof...(Cols) == N)
-//HOSTDEV constexpr Mat<M, N, T>::Mat(Cols... cols) noexcept
-//    : _cols{cols...}
+// template <Int M, Int N, typename T>
+// template <std::same_as<Vec<M, T>>... Cols>
+//   requires(sizeof...(Cols) == N)
+// HOSTDEV constexpr Mat<M, N, T>::Mat(Cols... cols) noexcept
+//     : _cols{cols...}
 //{
-//}
+// }
 //
 //=============================================================================
-// Member functions
+//  Member functions
 //=============================================================================
 
 template <Int M, Int N, typename T>
@@ -183,14 +185,14 @@ Mat<M, N, T>::zero() noexcept -> Mat<M, N, T>
 template <Int M, Int N, typename T>
 HOSTDEV [[nodiscard]] constexpr auto
 identity() noexcept -> Mat<M, N, T>
-requires (M == N)
+  requires(M == N)
 {
   Mat<M, N, T> result = Mat<M, N, T>::zero();
   for (Int i = 0; i < N; ++i) {
     result(i, i) = static_cast<T>(1);
   }
   return result;
-}  
+}
 
 //==============================================================================
 // Free functions
@@ -211,11 +213,15 @@ template <Int M, Int N, Int P, typename T>
 PURE HOSTDEV constexpr auto
 operator*(Mat<M, N, T> const & a, Mat<N, P, T> const & b) noexcept -> Mat<M, P, T>
 {
+// False positive warning for uninitialized variable, since N > 0
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
   Mat<M, P, T> result;
   for (Int i = 0; i < N; ++i) {
     result.col(i) = a * b.col(i);
   }
-  return result; 
+  return result;
+#pragma GCC diagnostic pop
 }
 
 // angle in radians
@@ -226,13 +232,13 @@ makeRotationMatrix(T angle) noexcept -> Mat2x2<T>
   T const c = um2::cos(angle);
   T const s = um2::sin(angle);
   Mat2x2<T> result;
-  // [c -s 
+  // [c -s
   //  s  c]
   result(0) = c;
   result(1) = s;
   result(2) = -s;
   result(3) = c;
-  return result; 
+  return result;
 }
 
 template <typename T>
@@ -252,10 +258,10 @@ inv(Mat2x2<T> const & m) noexcept -> Mat2x2<T>
   ASSERT(det != 0);
 #pragma GCC diagnostic pop
   Mat2x2<T> result;
-  // [ d -b 
+  // [ d -b
   //  -c  a]
   result(0) = d / det;
-  result(1) = -c / det; 
+  result(1) = -c / det;
   result(2) = -b / det;
   result(3) = a / det;
   return result;

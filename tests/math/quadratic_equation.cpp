@@ -1,6 +1,6 @@
+#include <um2/common/cast_if_not.hpp>
 #include <um2/config.hpp>
 #include <um2/math/quadratic_equation.hpp>
-#include <um2/common/cast_if_not.hpp>
 #include <um2/stdlib/math/abs.hpp>
 #include <um2/stdlib/utility/swap.hpp>
 

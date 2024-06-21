@@ -24,7 +24,7 @@ TEST_CASE(accessors_float)
   ASSERT(m.cols() == 4);
   for (Int j = 0; j < 4; ++j) {
     for (Int i = 0; i < 3; ++i) {
-      m(i, j) = static_cast<T>(j * 3 + i); 
+      m(i, j) = static_cast<T>(j * 3 + i);
     }
   }
   for (Int j = 0; j < 4; ++j) {
@@ -48,7 +48,7 @@ TEST_CASE(mat_vec_float)
   auto mv = identity * v;
   ASSERT(mv.size() == n);
   for (Int i = 0; i < n; ++i) {
-    ASSERT_NEAR(mv[i], static_cast<T>(i), eps); 
+    ASSERT_NEAR(mv[i], static_cast<T>(i), eps);
   }
 
   //  5  4  3     100    1000
@@ -75,10 +75,10 @@ TEST_CASE(mat_vec_float)
   v[0] = static_cast<T>(100);
   v[1] = static_cast<T>(80);
   v[2] = static_cast<T>(60);
-  
+
   auto const b = a * v;
   ASSERT(b.size() == 4);
-  ASSERT_NEAR(b[0], static_cast<T>(1000), eps); 
+  ASSERT_NEAR(b[0], static_cast<T>(1000), eps);
   ASSERT_NEAR(b[1], static_cast<T>(1820), eps);
   ASSERT_NEAR(b[2], static_cast<T>(1180), eps);
   ASSERT_NEAR(b[3], static_cast<T>(2180), eps);
@@ -94,9 +94,9 @@ TEST_CASE(add_sub_float)
   um2::Matrix<T> c(3, 4);
   for (Int j = 0; j < 4; ++j) {
     for (Int i = 0; i < 3; ++i) {
-      a(i, j) = static_cast<T>(j * 3 + i); 
-      b(i, j) = static_cast<T>(j * 3 + i + 1); 
-      c(i, j) = static_cast<T>(2 * j * 3 + 2 * i + 1); 
+      a(i, j) = static_cast<T>(j * 3 + i);
+      b(i, j) = static_cast<T>(j * 3 + i + 1);
+      c(i, j) = static_cast<T>(2 * j * 3 + 2 * i + 1);
     }
   }
   auto const d = a + b;
@@ -121,7 +121,7 @@ TEST_CASE(mat_mul_float)
   //     2  1  1
   //     0  1  1
   //     1  1  2
-  // 
+  //
   // b = 1  2  1
   //     2  3  1
   //     4  2  2
@@ -165,7 +165,7 @@ TEST_CASE(mat_mul_float)
   ASSERT_NEAR(ab(1), 8, eps);
   ASSERT_NEAR(ab(2), 6, eps);
   ASSERT_NEAR(ab(3), 11, eps);
-  
+
   ASSERT_NEAR(ab(4), 4, eps);
   ASSERT_NEAR(ab(5), 9, eps);
   ASSERT_NEAR(ab(6), 5, eps);
@@ -184,7 +184,7 @@ TEST_CASE(mat_mul_float)
   ASSERT_NEAR(ab(1), 8, eps);
   ASSERT_NEAR(ab(2), 6, eps);
   ASSERT_NEAR(ab(3), 11, eps);
-  
+
   ASSERT_NEAR(ab(4), 4, eps);
   ASSERT_NEAR(ab(5), 9, eps);
   ASSERT_NEAR(ab(6), 5, eps);
@@ -198,7 +198,7 @@ TEST_CASE(mat_mul_float)
 
 TEST_CASE(lin_solve_float)
 {
- 
+
   // Solve A * X = B
   // A = 6.80  -6.05  -0.45   8.32  -9.67
   //    -2.11  -3.30   2.58   2.71  -5.14
@@ -219,44 +219,44 @@ TEST_CASE(lin_solve_float)
   a(2) = 5.66F;
   a(3) = 5.97F;
   a(4) = 8.23F;
-  
+
   a(5) = -6.05F;
   a(6) = -3.30F;
   a(7) = 5.36F;
   a(8) = -4.44F;
   a(9) = 1.08F;
-  
+
   a(10) = -0.45F;
   a(11) = 2.58F;
   a(12) = -2.70F;
   a(13) = 0.27F;
   a(14) = 9.04F;
-  
+
   a(15) = 8.32F;
   a(16) = 2.71F;
   a(17) = 4.35F;
   a(18) = -7.17F;
   a(19) = 2.14F;
-  
+
   a(20) = -9.67F;
   a(21) = -5.14F;
   a(22) = -7.26F;
   a(23) = 6.08F;
   a(24) = -6.87F;
-  
+
   um2::Matrix<float> b(5, 3);
   b(0) = 4.02F;
   b(1) = 6.19F;
   b(2) = -8.22F;
   b(3) = -7.57F;
   b(4) = -3.03F;
-  
+
   b(5) = -1.56F;
   b(6) = 4.00F;
   b(7) = -8.67F;
   b(8) = 1.75F;
   b(9) = 2.86F;
-  
+
   b(10) = 9.81F;
   b(11) = -4.09F;
   b(12) = -4.57F;
@@ -269,7 +269,7 @@ TEST_CASE(lin_solve_float)
   //      1.32  -0.10   5.36
   //      0.57   0.11   4.04
 
-  auto x = linearSolve(a, b); 
+  auto x = linearSolve(a, b);
   ASSERT(x.rows() == 5);
   ASSERT(x.cols() == 3);
 
@@ -365,20 +365,20 @@ TEST_CASE(eigvals_float)
   auto const lambda = eigvals(a);
 
   ASSERT(lambda.size() == 5);
-  ASSERT_NEAR(lambda[0].real(),  2.86F, eps);
+  ASSERT_NEAR(lambda[0].real(), 2.86F, eps);
   ASSERT_NEAR(lambda[0].imag(), 10.76F, eps);
 
-  ASSERT_NEAR(lambda[1].real(),  2.86F, eps);
-  ASSERT_NEAR(lambda[1].imag(),-10.76F, eps);
+  ASSERT_NEAR(lambda[1].real(), 2.86F, eps);
+  ASSERT_NEAR(lambda[1].imag(), -10.76F, eps);
 
   ASSERT_NEAR(lambda[2].real(), -0.69F, eps);
-  ASSERT_NEAR(lambda[2].imag(),  4.70F, eps);
+  ASSERT_NEAR(lambda[2].imag(), 4.70F, eps);
 
   ASSERT_NEAR(lambda[3].real(), -0.69F, eps);
   ASSERT_NEAR(lambda[3].imag(), -4.70F, eps);
 
-  ASSERT_NEAR(lambda[4].real(),-10.46F, eps);
-  ASSERT_NEAR(lambda[4].imag(),  0.00F, eps);
+  ASSERT_NEAR(lambda[4].real(), -10.46F, eps);
+  ASSERT_NEAR(lambda[4].imag(), 0.00F, eps);
 }
 
 TEST_CASE(transpose_float)
@@ -420,7 +420,7 @@ TEST_CASE(accessors_double)
   ASSERT(m.cols() == 4);
   for (Int j = 0; j < 4; ++j) {
     for (Int i = 0; i < 3; ++i) {
-      m(i, j) = static_cast<T>(j * 3 + i); 
+      m(i, j) = static_cast<T>(j * 3 + i);
     }
   }
   for (Int j = 0; j < 4; ++j) {
@@ -444,7 +444,7 @@ TEST_CASE(mat_vec_double)
   auto mv = identity * v;
   ASSERT(mv.size() == n);
   for (Int i = 0; i < n; ++i) {
-    ASSERT_NEAR(mv[i], static_cast<T>(i), eps); 
+    ASSERT_NEAR(mv[i], static_cast<T>(i), eps);
   }
 
   //  5  4  3     100    1000
@@ -471,10 +471,10 @@ TEST_CASE(mat_vec_double)
   v[0] = static_cast<T>(100);
   v[1] = static_cast<T>(80);
   v[2] = static_cast<T>(60);
-  
+
   auto const b = a * v;
   ASSERT(b.size() == 4);
-  ASSERT_NEAR(b[0], static_cast<T>(1000), eps); 
+  ASSERT_NEAR(b[0], static_cast<T>(1000), eps);
   ASSERT_NEAR(b[1], static_cast<T>(1820), eps);
   ASSERT_NEAR(b[2], static_cast<T>(1180), eps);
   ASSERT_NEAR(b[3], static_cast<T>(2180), eps);
@@ -490,9 +490,9 @@ TEST_CASE(add_sub_double)
   um2::Matrix<T> c(3, 4);
   for (Int j = 0; j < 4; ++j) {
     for (Int i = 0; i < 3; ++i) {
-      a(i, j) = static_cast<T>(j * 3 + i); 
-      b(i, j) = static_cast<T>(j * 3 + i + 1); 
-      c(i, j) = static_cast<T>(2 * j * 3 + 2 * i + 1); 
+      a(i, j) = static_cast<T>(j * 3 + i);
+      b(i, j) = static_cast<T>(j * 3 + i + 1);
+      c(i, j) = static_cast<T>(2 * j * 3 + 2 * i + 1);
     }
   }
   auto const d = a + b;
@@ -517,7 +517,7 @@ TEST_CASE(mat_mul_double)
   //     2  1  1
   //     0  1  1
   //     1  1  2
-  // 
+  //
   // b = 1  2  1
   //     2  3  1
   //     4  2  2
@@ -561,7 +561,7 @@ TEST_CASE(mat_mul_double)
   ASSERT_NEAR(ab(1), 8, eps);
   ASSERT_NEAR(ab(2), 6, eps);
   ASSERT_NEAR(ab(3), 11, eps);
-  
+
   ASSERT_NEAR(ab(4), 4, eps);
   ASSERT_NEAR(ab(5), 9, eps);
   ASSERT_NEAR(ab(6), 5, eps);
@@ -580,7 +580,7 @@ TEST_CASE(mat_mul_double)
   ASSERT_NEAR(ab(1), 8, eps);
   ASSERT_NEAR(ab(2), 6, eps);
   ASSERT_NEAR(ab(3), 11, eps);
-  
+
   ASSERT_NEAR(ab(4), 4, eps);
   ASSERT_NEAR(ab(5), 9, eps);
   ASSERT_NEAR(ab(6), 5, eps);
@@ -594,7 +594,7 @@ TEST_CASE(mat_mul_double)
 
 TEST_CASE(lin_solve_double)
 {
- 
+
   // Solve A * X = B
   // A = 6.80  -6.05  -0.45   8.32  -9.67
   //    -2.11  -3.30   2.58   2.71  -5.14
@@ -615,44 +615,44 @@ TEST_CASE(lin_solve_double)
   a(2) = 5.66;
   a(3) = 5.97;
   a(4) = 8.23;
-  
+
   a(5) = -6.05;
   a(6) = -3.30;
   a(7) = 5.36;
   a(8) = -4.44;
   a(9) = 1.08;
-  
+
   a(10) = -0.45;
   a(11) = 2.58;
   a(12) = -2.70;
   a(13) = 0.27;
   a(14) = 9.04;
-  
+
   a(15) = 8.32;
   a(16) = 2.71;
   a(17) = 4.35;
   a(18) = -7.17;
   a(19) = 2.14;
-  
+
   a(20) = -9.67;
   a(21) = -5.14;
   a(22) = -7.26;
   a(23) = 6.08;
   a(24) = -6.87;
-  
+
   um2::Matrix<double> b(5, 3);
   b(0) = 4.02;
   b(1) = 6.19;
   b(2) = -8.22;
   b(3) = -7.57;
   b(4) = -3.03;
-  
+
   b(5) = -1.56;
   b(6) = 4.00;
   b(7) = -8.67;
   b(8) = 1.75;
   b(9) = 2.86;
-  
+
   b(10) = 9.81;
   b(11) = -4.09;
   b(12) = -4.57;
@@ -665,7 +665,7 @@ TEST_CASE(lin_solve_double)
   //      1.32  -0.10   5.36
   //      0.57   0.11   4.04
 
-  auto const x = linearSolve(a, b); 
+  auto const x = linearSolve(a, b);
   ASSERT(x.rows() == 5);
   ASSERT(x.cols() == 3);
 
@@ -692,19 +692,19 @@ TEST_CASE(lin_solve_double)
 
   ASSERT(b.rows() == 5);
   ASSERT(b.cols() == 3);
-                                    
+
   ASSERT_NEAR(b(0, 0), -0.80, eps);
   ASSERT_NEAR(b(1, 0), -0.70, eps);
   ASSERT_NEAR(b(2, 0), 0.59, eps);
   ASSERT_NEAR(b(3, 0), 1.32, eps);
   ASSERT_NEAR(b(4, 0), 0.57, eps);
-                                    
+
   ASSERT_NEAR(b(0, 1), -0.39, eps);
   ASSERT_NEAR(b(1, 1), -0.55, eps);
   ASSERT_NEAR(b(2, 1), 0.84, eps);
   ASSERT_NEAR(b(3, 1), -0.10, eps);
   ASSERT_NEAR(b(4, 1), 0.11, eps);
-                                    
+
   ASSERT_NEAR(b(0, 2), 0.96, eps);
   ASSERT_NEAR(b(1, 2), 0.22, eps);
   ASSERT_NEAR(b(2, 2), 1.90, eps);
@@ -762,20 +762,20 @@ TEST_CASE(eigvals_double)
   auto const lambda = eigvals(a);
 
   ASSERT(lambda.size() == 5);
-  ASSERT_NEAR(lambda[0].real(),  2.86, eps);
+  ASSERT_NEAR(lambda[0].real(), 2.86, eps);
   ASSERT_NEAR(lambda[0].imag(), 10.76, eps);
 
-  ASSERT_NEAR(lambda[1].real(),  2.86, eps);
-  ASSERT_NEAR(lambda[1].imag(),-10.76, eps);
+  ASSERT_NEAR(lambda[1].real(), 2.86, eps);
+  ASSERT_NEAR(lambda[1].imag(), -10.76, eps);
 
   ASSERT_NEAR(lambda[2].real(), -0.69, eps);
-  ASSERT_NEAR(lambda[2].imag(),  4.70, eps);
+  ASSERT_NEAR(lambda[2].imag(), 4.70, eps);
 
   ASSERT_NEAR(lambda[3].real(), -0.69, eps);
   ASSERT_NEAR(lambda[3].imag(), -4.70, eps);
 
-  ASSERT_NEAR(lambda[4].real(),-10.46, eps);
-  ASSERT_NEAR(lambda[4].imag(),  0.00, eps);
+  ASSERT_NEAR(lambda[4].real(), -10.46, eps);
+  ASSERT_NEAR(lambda[4].imag(), 0.00, eps);
 }
 
 //=============================================================================
@@ -821,8 +821,8 @@ TEST_CASE(mat_vec_Complex32)
   ASSERT(mv.size() == n);
   for (Int i = 0; i < n; ++i) {
     Complex32 const c(static_cast<float>(i), static_cast<float>(i + 1));
-    ASSERT_NEAR(mv[i].real(), c.real(), eps); 
-    ASSERT_NEAR(mv[i].imag(), c.imag(), eps); 
+    ASSERT_NEAR(mv[i].real(), c.real(), eps);
+    ASSERT_NEAR(mv[i].imag(), c.imag(), eps);
   }
 }
 
@@ -836,9 +836,10 @@ TEST_CASE(add_sub_Complex32)
   um2::Matrix<T> c(3, 4);
   for (Int j = 0; j < 4; ++j) {
     for (Int i = 0; i < 3; ++i) {
-      a(i, j) = T(static_cast<float>(j * 3 + i), static_cast<float>(j * 3 + i)); 
-      b(i, j) = T(static_cast<float>(j * 3 + i + 1), static_cast<float>(j * 3 + i + 1)); 
-      c(i, j) = T(static_cast<float>(2 * j * 3 + 2 * i + 1), static_cast<float>(2 * j * 3 + 2 * i + 1)); 
+      a(i, j) = T(static_cast<float>(j * 3 + i), static_cast<float>(j * 3 + i));
+      b(i, j) = T(static_cast<float>(j * 3 + i + 1), static_cast<float>(j * 3 + i + 1));
+      c(i, j) = T(static_cast<float>(2 * j * 3 + 2 * i + 1),
+                  static_cast<float>(2 * j * 3 + 2 * i + 1));
     }
   }
   auto const d = a + b;
@@ -865,7 +866,7 @@ TEST_CASE(mat_mul_Complex32)
   //     2  1  1
   //     0  1  1
   //     1  1  2
-  // 
+  //
   // b = 1  2  1
   //     2  3  1
   //     4  2  2
@@ -950,7 +951,7 @@ TEST_CASE(mat_mul_Complex32)
 
 TEST_CASE(lin_solve_Complex32)
 {
- 
+
   // Solve A * X = B
   // A = 6.80  -6.05  -0.45   8.32  -9.67
   //    -2.11  -3.30   2.58   2.71  -5.14
@@ -971,44 +972,44 @@ TEST_CASE(lin_solve_Complex32)
   a(2) = 5.66F;
   a(3) = 5.97F;
   a(4) = 8.23F;
-  
+
   a(5) = -6.05F;
   a(6) = -3.30F;
   a(7) = 5.36F;
   a(8) = -4.44F;
   a(9) = 1.08F;
-  
+
   a(10) = -0.45F;
   a(11) = 2.58F;
   a(12) = -2.70F;
   a(13) = 0.27F;
   a(14) = 9.04F;
-  
+
   a(15) = 8.32F;
   a(16) = 2.71F;
   a(17) = 4.35F;
   a(18) = -7.17F;
   a(19) = 2.14F;
-  
+
   a(20) = -9.67F;
   a(21) = -5.14F;
   a(22) = -7.26F;
   a(23) = 6.08F;
   a(24) = -6.87F;
-  
+
   um2::Matrix<Complex32> b(5, 3);
   b(0) = 4.02F;
   b(1) = 6.19F;
   b(2) = -8.22F;
   b(3) = -7.57F;
   b(4) = -3.03F;
-  
+
   b(5) = -1.56F;
   b(6) = 4.00F;
   b(7) = -8.67F;
   b(8) = 1.75F;
   b(9) = 2.86F;
-  
+
   b(10) = 9.81F;
   b(11) = -4.09F;
   b(12) = -4.57F;
@@ -1021,7 +1022,7 @@ TEST_CASE(lin_solve_Complex32)
   //      1.32  -0.10   5.36
   //      0.57   0.11   4.04
 
-  auto const x = linearSolve(a, b); 
+  auto const x = linearSolve(a, b);
   ASSERT(x.rows() == 5);
   ASSERT(x.cols() == 3);
 
@@ -1119,20 +1120,20 @@ TEST_CASE(eigvals_Complex32)
   auto const lambda = eigvals(a);
 
   ASSERT(lambda.size() == 5);
-  ASSERT_NEAR(lambda[0].real(),  2.86F, eps);
+  ASSERT_NEAR(lambda[0].real(), 2.86F, eps);
   ASSERT_NEAR(lambda[0].imag(), 10.76F, eps);
 
-  ASSERT_NEAR(lambda[1].real(),  2.86F, eps);
-  ASSERT_NEAR(lambda[1].imag(),-10.76F, eps);
+  ASSERT_NEAR(lambda[1].real(), 2.86F, eps);
+  ASSERT_NEAR(lambda[1].imag(), -10.76F, eps);
 
   ASSERT_NEAR(lambda[2].real(), -0.69F, eps);
-  ASSERT_NEAR(lambda[2].imag(),  4.70F, eps);
+  ASSERT_NEAR(lambda[2].imag(), 4.70F, eps);
 
   ASSERT_NEAR(lambda[3].real(), -0.69F, eps);
   ASSERT_NEAR(lambda[3].imag(), -4.70F, eps);
 
-  ASSERT_NEAR(lambda[4].real(),-10.46F, eps);
-  ASSERT_NEAR(lambda[4].imag(),  0.00F, eps);
+  ASSERT_NEAR(lambda[4].real(), -10.46F, eps);
+  ASSERT_NEAR(lambda[4].imag(), 0.00F, eps);
 }
 
 TEST_CASE(transpose_Complex32)
@@ -1148,7 +1149,7 @@ TEST_CASE(transpose_Complex32)
 
   auto constexpr eps = 1e-6F;
   a.transpose();
-  ASSERT_NEAR(a(0).real(), 1, eps); 
+  ASSERT_NEAR(a(0).real(), 1, eps);
   ASSERT_NEAR(a(0).imag(), -1, eps);
 
   ASSERT_NEAR(a(1).real(), 2, eps);
@@ -1159,7 +1160,6 @@ TEST_CASE(transpose_Complex32)
 
   ASSERT_NEAR(a(3).real(), 4, eps);
   ASSERT_NEAR(a(3).imag(), 4, eps);
-
 }
 
 //=============================================================================
@@ -1176,13 +1176,15 @@ TEST_CASE(accessors_Complex64)
   ASSERT(m.cols() == 4);
   for (Int j = 0; j < 4; ++j) {
     for (Int i = 0; i < 3; ++i) {
-      Complex64 const c(static_cast<double>(j * 3 + i), static_cast<double>(j * 3 + i + 1));
+      Complex64 const c(static_cast<double>(j * 3 + i),
+                        static_cast<double>(j * 3 + i + 1));
       m(i, j) = c;
     }
   }
   for (Int j = 0; j < 4; ++j) {
     for (Int i = 0; i < 3; ++i) {
-      Complex64 const c(static_cast<double>(j * 3 + i), static_cast<double>(j * 3 + i + 1));
+      Complex64 const c(static_cast<double>(j * 3 + i),
+                        static_cast<double>(j * 3 + i + 1));
       ASSERT_NEAR(m(i, j).real(), c.real(), eps);
       ASSERT_NEAR(m(i, j).imag(), c.imag(), eps);
     }
@@ -1205,8 +1207,8 @@ TEST_CASE(mat_vec_Complex64)
   ASSERT(mv.size() == n);
   for (Int i = 0; i < n; ++i) {
     Complex64 const c(static_cast<double>(i), static_cast<double>(i + 1));
-    ASSERT_NEAR(mv[i].real(), c.real(), eps); 
-    ASSERT_NEAR(mv[i].imag(), c.imag(), eps); 
+    ASSERT_NEAR(mv[i].real(), c.real(), eps);
+    ASSERT_NEAR(mv[i].imag(), c.imag(), eps);
   }
 }
 
@@ -1220,9 +1222,10 @@ TEST_CASE(add_sub_Complex64)
   um2::Matrix<T> c(3, 4);
   for (Int j = 0; j < 4; ++j) {
     for (Int i = 0; i < 3; ++i) {
-      a(i, j) = T(static_cast<double>(j * 3 + i), static_cast<double>(j * 3 + i)); 
-      b(i, j) = T(static_cast<double>(j * 3 + i + 1), static_cast<double>(j * 3 + i + 1)); 
-      c(i, j) = T(static_cast<double>(2 * j * 3 + 2 * i + 1), static_cast<double>(2 * j * 3 + 2 * i + 1)); 
+      a(i, j) = T(static_cast<double>(j * 3 + i), static_cast<double>(j * 3 + i));
+      b(i, j) = T(static_cast<double>(j * 3 + i + 1), static_cast<double>(j * 3 + i + 1));
+      c(i, j) = T(static_cast<double>(2 * j * 3 + 2 * i + 1),
+                  static_cast<double>(2 * j * 3 + 2 * i + 1));
     }
   }
   auto const d = a + b;
@@ -1249,7 +1252,7 @@ TEST_CASE(mat_mul_Complex64)
   //     2  1  1
   //     0  1  1
   //     1  1  2
-  // 
+  //
   // b = 1  2  1
   //     2  3  1
   //     4  2  2
@@ -1334,7 +1337,7 @@ TEST_CASE(mat_mul_Complex64)
 
 TEST_CASE(lin_solve_Complex64)
 {
- 
+
   // Solve A * X = B
   // A = 6.80  -6.05  -0.45   8.32  -9.67
   //    -2.11  -3.30   2.58   2.71  -5.14
@@ -1355,44 +1358,44 @@ TEST_CASE(lin_solve_Complex64)
   a(2) = 5.66;
   a(3) = 5.97;
   a(4) = 8.23;
-  
+
   a(5) = -6.05;
   a(6) = -3.30;
   a(7) = 5.36;
   a(8) = -4.44;
   a(9) = 1.08;
-  
+
   a(10) = -0.45;
   a(11) = 2.58;
   a(12) = -2.70;
   a(13) = 0.27;
   a(14) = 9.04;
-  
+
   a(15) = 8.32;
   a(16) = 2.71;
   a(17) = 4.35;
   a(18) = -7.17;
   a(19) = 2.14;
-  
+
   a(20) = -9.67;
   a(21) = -5.14;
   a(22) = -7.26;
   a(23) = 6.08;
   a(24) = -6.87;
-  
+
   um2::Matrix<Complex64> b(5, 3);
   b(0) = 4.02;
   b(1) = 6.19;
   b(2) = -8.22;
   b(3) = -7.57;
   b(4) = -3.03;
-  
+
   b(5) = -1.56;
   b(6) = 4.00;
   b(7) = -8.67;
   b(8) = 1.75;
   b(9) = 2.86;
-  
+
   b(10) = 9.81;
   b(11) = -4.09;
   b(12) = -4.57;
@@ -1405,7 +1408,7 @@ TEST_CASE(lin_solve_Complex64)
   //      1.32  -0.10   5.36
   //      0.57   0.11   4.04
 
-  auto const x = linearSolve(a, b); 
+  auto const x = linearSolve(a, b);
   ASSERT(x.rows() == 5);
   ASSERT(x.cols() == 3);
 
@@ -1502,22 +1505,21 @@ TEST_CASE(eigvals_Complex64)
   auto const lambda = eigvals(a);
 
   ASSERT(lambda.size() == 5);
-  ASSERT_NEAR(lambda[0].real(),  2.86, eps);
+  ASSERT_NEAR(lambda[0].real(), 2.86, eps);
   ASSERT_NEAR(lambda[0].imag(), 10.76, eps);
 
-  ASSERT_NEAR(lambda[1].real(),  2.86, eps);
-  ASSERT_NEAR(lambda[1].imag(),-10.76, eps);
+  ASSERT_NEAR(lambda[1].real(), 2.86, eps);
+  ASSERT_NEAR(lambda[1].imag(), -10.76, eps);
 
   ASSERT_NEAR(lambda[2].real(), -0.69, eps);
-  ASSERT_NEAR(lambda[2].imag(),  4.70, eps);
+  ASSERT_NEAR(lambda[2].imag(), 4.70, eps);
 
   ASSERT_NEAR(lambda[3].real(), -0.69, eps);
   ASSERT_NEAR(lambda[3].imag(), -4.70, eps);
 
-  ASSERT_NEAR(lambda[4].real(),-10.46, eps);
-  ASSERT_NEAR(lambda[4].imag(),  0.00, eps);
+  ASSERT_NEAR(lambda[4].real(), -10.46, eps);
+  ASSERT_NEAR(lambda[4].imag(), 0.00, eps);
 }
-
 
 TEST_SUITE(Matrix_float)
 {
