@@ -69,6 +69,10 @@ option(UM2_ENABLE_SIMD_VEC "Enable GCC vector extensions for the Vec class" ON)
 # External tools/dependencies
 #-----------------------------------------------------------------------------
 
+# Use BLAS/LAPACK for linear algebra.
+# NOTE: this is required for CMFD spectral radius calculations.
+option(UM2_USE_BLAS_LAPACK    "Use BLAS/LAPACK" ON)
+
 # Use clang-format for code formatting. This option enables the format-check
 # and format-fix targets, which check and fix the formatting of the code.
 option(UM2_USE_CLANG_FORMAT "Use clang-format" ON)
@@ -312,6 +316,7 @@ endif()
 set(UM2_SOURCES
     "src/common/settings.cpp"    
     "src/common/logger.cpp"
+    "src/math/matrix.cpp"
     #"src/um2.cpp"
     )
 
@@ -340,6 +345,14 @@ configure_file(
 #===============================================================================
 # Dependencies
 #===============================================================================
+
+# BLAS_LAPACK   
+if (UM2_USE_BLAS_LAPACK)
+  set(BLA_VENDOR "OpenBLAS")    
+  find_package(BLAS REQUIRED)    
+  target_link_libraries(um2 PUBLIC "lapacke ${BLAS_LIBRARIES}")    
+  target_include_directories(um2 SYSTEM PUBLIC "${BLAS_INCLUDE_DIRS}")
+endif()
 
 # clang-format
 if (UM2_USE_CLANG_FORMAT)

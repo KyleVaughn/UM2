@@ -32,7 +32,7 @@ class Mat
   // 1 4
   // 2 5
 
-  Vec<M * N, T> _data;
+  Vec<N, Col> _cols;
 
 public:
   //==============================================================================
@@ -62,10 +62,6 @@ public:
   //==============================================================================
 
   constexpr Mat() noexcept = default;
-
-  //  template <std::same_as<Col>... Cols>
-  //    requires(sizeof...(Cols) == N)
-  //  HOSTDEV constexpr explicit Mat(Cols... cols) noexcept;
 
   //==============================================================================
   // Methods
@@ -102,7 +98,7 @@ Mat<M, N, T>::col(Int i) noexcept -> typename Mat<M, N, T>::Col &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < N);
-  return reinterpret_cast<Col &>(_data[M * i]);
+  return _cols[i];
 }
 
 template <Int M, Int N, typename T>
@@ -111,7 +107,7 @@ Mat<M, N, T>::col(Int i) const noexcept -> typename Mat<M, N, T>::Col const &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < N);
-  return reinterpret_cast<Col const &>(_data[M * i]);
+  return _cols[i];
 }
 
 template <Int M, Int N, typename T>
@@ -120,7 +116,7 @@ Mat<M, N, T>::operator()(Int i) noexcept -> T &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < M * N);
-  return _data[i];
+  return reinterpret_cast<T *>(um2::addressof(_cols))[i];
 }
 
 template <Int M, Int N, typename T>
@@ -129,7 +125,7 @@ Mat<M, N, T>::operator()(Int i) const noexcept -> T const &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < M * N);
-  return _data[i];
+  return reinterpret_cast<T const *>(um2::addressof(_cols))[i];
 }
 
 template <Int M, Int N, typename T>
@@ -140,7 +136,7 @@ Mat<M, N, T>::operator()(Int i, Int j) noexcept -> T &
   ASSERT_ASSUME(0 <= j);
   ASSERT_ASSUME(i < M);
   ASSERT_ASSUME(j < N);
-  return _data[M * j + i];
+  return _cols[j][i];
 }
 
 template <Int M, Int N, typename T>
@@ -151,22 +147,9 @@ Mat<M, N, T>::operator()(Int i, Int j) const noexcept -> T const &
   ASSERT_ASSUME(0 <= j);
   ASSERT_ASSUME(i < M);
   ASSERT_ASSUME(j < N);
-  return _data[M * j + i];
+  return _cols[j][i];
 }
 
-////==============================================================================
-//// Constructors
-////==============================================================================
-//
-//// From a list of columns
-// template <Int M, Int N, typename T>
-// template <std::same_as<Vec<M, T>>... Cols>
-//   requires(sizeof...(Cols) == N)
-// HOSTDEV constexpr Mat<M, N, T>::Mat(Cols... cols) noexcept
-//     : _cols{cols...}
-//{
-// }
-//
 //=============================================================================
 //  Member functions
 //=============================================================================
@@ -176,15 +159,15 @@ HOSTDEV [[nodiscard]] constexpr auto
 Mat<M, N, T>::zero() noexcept -> Mat<M, N, T>
 {
   Mat<M, N, T> result;
-  for (Int i = 0; i < M * N; ++i) {
-    result._data[i] = static_cast<T>(0);
+  for (Int i = 0; i < N; ++i) {
+    result._cols[i] = Vec<M, T>::zero();
   }
   return result;
 }
 
 template <Int M, Int N, typename T>
 HOSTDEV [[nodiscard]] constexpr auto
-identity() noexcept -> Mat<M, N, T>
+Mat<M, N, T>::identity() noexcept -> Mat<M, N, T>
   requires(M == N)
 {
   Mat<M, N, T> result = Mat<M, N, T>::zero();

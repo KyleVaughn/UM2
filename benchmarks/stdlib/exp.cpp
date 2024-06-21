@@ -1,8 +1,8 @@
 //=============================================================================
-// Results 
+// Results
 //=============================================================================
 // CPU: i7-12800H
-// GPU: RTX 3050 
+// GPU: RTX 3050
 // clang-format off
 // expCPU<float>/1024                  1.66 us         1.66 us       439450 bytes_per_second=2.30003Gi/s items_per_second=617.41M/s
 // expCPU<float>/4096                  6.63 us         6.62 us       105706 bytes_per_second=2.30372Gi/s items_per_second=618.401M/s
@@ -45,8 +45,8 @@
 #include <benchmark/benchmark.h>
 
 #if UM2_USE_CUDA
-#include <um2/stdlib/math/abs.hpp>
-#include <um2/common/cast_if_not.hpp>
+#  include <um2/common/cast_if_not.hpp>
+#  include <um2/stdlib/math/abs.hpp>
 #endif
 
 Int constexpr npoints = 1 << 20;
@@ -67,7 +67,7 @@ expCPU(benchmark::State & state)
     }
   }
   state.SetItemsProcessed(state.iterations() * n);
-  state.SetBytesProcessed(state.iterations() * n * static_cast<Int>(sizeof(T))); 
+  state.SetBytesProcessed(state.iterations() * n * static_cast<Int>(sizeof(T)));
 }
 
 #if UM2_USE_OPENMP
@@ -80,13 +80,13 @@ expCPUThreads(benchmark::State & state)
       makeVectorOfRandomFloats<T>(n, static_cast<T>(lo), static_cast<T>(hi));
   um2::Vector<T> expx(n);
   for (auto s : state) {
-    #pragma omp parallel for
+#  pragma omp parallel for
     for (Int i = 0; i < n; ++i) {
       expx[i] = um2::exp<T>(x[i]);
     }
   }
   state.SetItemsProcessed(state.iterations() * n);
-  state.SetBytesProcessed(state.iterations() * n * static_cast<Int>(sizeof(T))); 
+  state.SetBytesProcessed(state.iterations() * n * static_cast<Int>(sizeof(T)));
 }
 #endif
 

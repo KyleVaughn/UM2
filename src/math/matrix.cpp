@@ -1,11 +1,17 @@
+#include <um2/config.hpp>
 #include <um2/math/matrix.hpp>
-
-#include <complex>
-
-#include <iostream>
+#include <um2/stdlib/assert.hpp>
+#include <um2/stdlib/vector.hpp>
 
 #include "cblas.h"
+#include "lapack.h"
 #include "lapacke.h"
+
+#include <complex>
+#include <cstdint>
+
+static_assert(sizeof(Int) == sizeof(lapack_int),
+              "LAPACK integer type must be the same size as um2::Int");
 
 namespace um2
 {
@@ -239,6 +245,120 @@ operator*(Matrix<std::complex<double>> const & a,
   return c;
 }
 
+template <>
+void
+matmul(Matrix<float> & c, Matrix<float> const & a, Matrix<float> const & b)
+{
+  ASSERT(a.cols() == b.rows());
+  ASSERT(c.rows() == a.rows());
+  ASSERT(c.cols() == b.cols());
+
+  // Use BLAS's sgemm function to perform the matrix-matrix multiplication
+  // C = alpha * A * B + beta * C
+  cblas_sgemm(CblasColMajor, // Matrix is stored in column-major order
+              CblasNoTrans,  // Do not transpose the matrix A
+              CblasNoTrans,  // Do not transpose the matrix B
+              a.rows(),      // Number of rows in A
+              b.cols(),      // Number of columns in B
+              a.cols(),      // Number of columns in A
+              1.0F,          // alpha
+              a.data(),      // Matrix A data
+              a.rows(),      // Leading dimension of A
+              b.data(),      // Matrix B data
+              b.rows(),      // Leading dimension of B
+              0.0F,          // beta
+              c.data(),      // Output matrix
+              c.rows());     // Leading dimension of C
+}
+
+template <>
+void
+matmul(Matrix<double> & c, Matrix<double> const & a, Matrix<double> const & b)
+{
+  ASSERT(a.cols() == b.rows());
+  ASSERT(c.rows() == a.rows());
+  ASSERT(c.cols() == b.cols());
+
+  // Use BLAS's dgemm function to perform the matrix-matrix multiplication
+  // C = alpha * A * B + beta * C
+  cblas_dgemm(CblasColMajor, // Matrix is stored in column-major order
+              CblasNoTrans,  // Do not transpose the matrix A
+              CblasNoTrans,  // Do not transpose the matrix B
+              a.rows(),      // Number of rows in A
+              b.cols(),      // Number of columns in B
+              a.cols(),      // Number of columns in A
+              1.0,           // alpha
+              a.data(),      // Matrix A data
+              a.rows(),      // Leading dimension of A
+              b.data(),      // Matrix B data
+              b.rows(),      // Leading dimension of B
+              0.0,           // beta
+              c.data(),      // Output matrix
+              c.rows());     // Leading dimension of C
+}
+
+template <>
+void
+matmul(Matrix<std::complex<float>> & c, Matrix<std::complex<float>> const & a,
+       Matrix<std::complex<float>> const & b)
+{
+  using Complex32 = std::complex<float>;
+  ASSERT(a.cols() == b.rows());
+  ASSERT(c.rows() == a.rows());
+  ASSERT(c.cols() == b.cols());
+
+  Complex32 const alpha(1.0F);
+  Complex32 const beta(0.0F);
+
+  // Use BLAS's cgemm function to perform the matrix-matrix multiplication
+  // C = alpha * A * B + beta * C
+  cblas_cgemm(CblasColMajor, // Matrix is stored in column-major order
+              CblasNoTrans,  // Do not transpose the matrix A
+              CblasNoTrans,  // Do not transpose the matrix B
+              a.rows(),      // Number of rows in A
+              b.cols(),      // Number of columns in B
+              a.cols(),      // Number of columns in A
+              &alpha,        // alpha
+              a.data(),      // Matrix A data
+              a.rows(),      // Leading dimension of A
+              b.data(),      // Matrix B data
+              b.rows(),      // Leading dimension of B
+              &beta,         // beta
+              c.data(),      // Output matrix
+              c.rows());     // Leading dimension of C
+}
+
+template <>
+void
+matmul(Matrix<std::complex<double>> & c, Matrix<std::complex<double>> const & a,
+       Matrix<std::complex<double>> const & b)
+{
+  using Complex64 = std::complex<double>;
+  ASSERT(a.cols() == b.rows());
+  ASSERT(c.rows() == a.rows());
+  ASSERT(c.cols() == b.cols());
+
+  Complex64 const alpha(1.0);
+  Complex64 const beta(0.0);
+
+  // Use BLAS's zgemm function to perform the matrix-matrix multiplication
+  // C = alpha * A * B + beta * C
+  cblas_zgemm(CblasColMajor, // Matrix is stored in column-major order
+              CblasNoTrans,  // Do not transpose the matrix A
+              CblasNoTrans,  // Do not transpose the matrix B
+              a.rows(),      // Number of rows in A
+              b.cols(),      // Number of columns in B
+              a.cols(),      // Number of columns in A
+              &alpha,        // alpha
+              a.data(),      // Matrix A data
+              a.rows(),      // Leading dimension of A
+              b.data(),      // Matrix B data
+              b.rows(),      // Leading dimension of B
+              &beta,         // beta
+              c.data(),      // Output matrix
+              c.rows());     // Leading dimension of C
+}
+
 //==============================================================================
 // Solve Linear System
 //==============================================================================
@@ -261,12 +381,16 @@ linearSolve(Matrix<float> const & a, Matrix<float> const & b) -> Matrix<float>
   Int const nrhs = b.cols(); // Number of columns in B
   Matrix<float> a_copy(a);   // Copy of A, since sgesv overwrites A
   Int const lda = a.rows();  // Leading dimension of A
-  Int * ipiv = new Int[static_cast<size_t>(n)];
+  Int * ipiv = new Int[static_cast<uint64_t>(n)];
   Matrix<float> b_copy(b);  // Copy of B, since sgesv overwrites B
   Int const ldb = b.rows(); // Leading dimension of B
+#if UM2_ENABLE_ASSERTS
   Int const info = LAPACKE_sgesv(LAPACK_COL_MAJOR, n, nrhs, a_copy.data(), lda, ipiv,
                                  b_copy.data(), ldb);
   ASSERT(info == 0);
+#else
+  LAPACKE_sgesv(LAPACK_COL_MAJOR, n, nrhs, a_copy.data(), lda, ipiv, b_copy.data(), ldb);
+#endif
   delete[] ipiv;
   return b_copy;
 }
@@ -288,12 +412,16 @@ linearSolve(Matrix<double> const & a, Matrix<double> const & b) -> Matrix<double
   Int const nrhs = b.cols(); // Number of columns in B
   Matrix<double> a_copy(a);  // Copy of A, since sgesv overwrites A
   Int const lda = a.rows();  // Leading dimension of A
-  Int * ipiv = new Int[static_cast<size_t>(n)];
+  Int * ipiv = new Int[static_cast<uint64_t>(n)];
   Matrix<double> b_copy(b); // Copy of B, since sgesv overwrites B
   Int const ldb = b.rows(); // Leading dimension of B
+#if UM2_ENABLE_ASSERTS
   Int const info = LAPACKE_dgesv(LAPACK_COL_MAJOR, n, nrhs, a_copy.data(), lda, ipiv,
                                  b_copy.data(), ldb);
   ASSERT(info == 0);
+#else
+  LAPACKE_dgesv(LAPACK_COL_MAJOR, n, nrhs, a_copy.data(), lda, ipiv, b_copy.data(), ldb);
+#endif
   delete[] ipiv;
   return b_copy;
 }
@@ -318,13 +446,17 @@ linearSolve(Matrix<std::complex<float>> const & a,
   Matrix<Complex32> a_copy(a); // Copy of A, since cgesv overwrites A
   lapack_complex_float * a_data = reinterpret_cast<lapack_complex_float *>(a_copy.data());
   Int const lda = a.rows(); // Leading dimension of A
-  Int * ipiv = new Int[static_cast<size_t>(n)];
+  Int * ipiv = new Int[static_cast<uint64_t>(n)];
   Matrix<Complex32> b_copy(b); // Copy of B, since cgesv overwrites B
   lapack_complex_float * b_data = reinterpret_cast<lapack_complex_float *>(b_copy.data());
   Int const ldb = b.rows(); // Leading dimension of B
+#if UM2_ENABLE_ASSERTS
   Int const info =
       LAPACKE_cgesv(LAPACK_COL_MAJOR, n, nrhs, a_data, lda, ipiv, b_data, ldb);
   ASSERT(info == 0);
+#else
+  LAPACKE_cgesv(LAPACK_COL_MAJOR, n, nrhs, a_data, lda, ipiv, b_data, ldb);
+#endif
   delete[] ipiv;
   return b_copy;
 }
@@ -350,16 +482,132 @@ linearSolve(Matrix<std::complex<double>> const & a,
   lapack_complex_double * a_data =
       reinterpret_cast<lapack_complex_double *>(a_copy.data());
   Int const lda = a.rows(); // Leading dimension of A
-  Int * ipiv = new Int[static_cast<size_t>(n)];
+  Int * ipiv = new Int[static_cast<uint64_t>(n)];
   Matrix<Complex64> b_copy(b); // Copy of B, since zgesv overwrites B
   lapack_complex_double * b_data =
       reinterpret_cast<lapack_complex_double *>(b_copy.data());
   Int const ldb = b.rows(); // Leading dimension of B
+#if UM2_ENABLE_ASSERTS
   Int const info =
       LAPACKE_zgesv(LAPACK_COL_MAJOR, n, nrhs, a_data, lda, ipiv, b_data, ldb);
   ASSERT(info == 0);
+#else
+  LAPACKE_zgesv(LAPACK_COL_MAJOR, n, nrhs, a_data, lda, ipiv, b_data, ldb);
+#endif
   delete[] ipiv;
   return b_copy;
+}
+
+template <>
+void
+linearSolve(Matrix<float> & a, Matrix<float> & b, Vector<Int> & ipiv)
+{
+  ASSERT(a.rows() == a.cols()); // A must be square
+  ASSERT(a.rows() == b.rows());
+  ASSERT(a.rows() == ipiv.size());
+
+  // Solve the linear system using LAPACK's sgesv function
+  // It is important to note that sgesv overwrites:
+  //  - the input matrix A with the LU decomposition of A
+  //  - the input matrix B with the solution matrix X
+  //
+  Int const n = a.rows();    // Number of rows in A
+  Int const nrhs = b.cols(); // Number of columns in B
+  Int const lda = a.rows();  // Leading dimension of A
+  Int const ldb = b.rows();  // Leading dimension of B
+#if UM2_ENABLE_ASSERTS
+  Int const info =
+      LAPACKE_sgesv(LAPACK_COL_MAJOR, n, nrhs, a.data(), lda, ipiv.data(), b.data(), ldb);
+  ASSERT(info == 0);
+#else
+  LAPACKE_sgesv(LAPACK_COL_MAJOR, n, nrhs, a.data(), lda, ipiv.data(), b.data(), ldb);
+#endif
+}
+
+template <>
+void
+linearSolve(Matrix<double> & a, Matrix<double> & b, Vector<Int> & ipiv)
+{
+  ASSERT(a.rows() == a.cols()); // A must be square
+  ASSERT(a.rows() == b.rows());
+  ASSERT(a.rows() == ipiv.size());
+
+  // Solve the linear system using LAPACK's sgesv function
+  // It is important to note that sgesv overwrites:
+  //  - the input matrix A with the LU decomposition of A
+  //  - the input matrix B with the solution matrix X
+  //
+  Int const n = a.rows();    // Number of rows in A
+  Int const nrhs = b.cols(); // Number of columns in B
+  Int const lda = a.rows();  // Leading dimension of A
+  Int const ldb = b.rows();  // Leading dimension of B
+#if UM2_ENABLE_ASSERTS
+  Int const info =
+      LAPACKE_dgesv(LAPACK_COL_MAJOR, n, nrhs, a.data(), lda, ipiv.data(), b.data(), ldb);
+  ASSERT(info == 0);
+#else
+  LAPACKE_dgesv(LAPACK_COL_MAJOR, n, nrhs, a.data(), lda, ipiv.data(), b.data(), ldb);
+#endif
+}
+
+template <>
+void
+linearSolve(Matrix<std::complex<float>> & a, Matrix<std::complex<float>> & b,
+            Vector<Int> & ipiv)
+{
+  ASSERT(a.rows() == a.cols()); // A must be square
+  ASSERT(a.rows() == b.rows());
+  ASSERT(a.rows() == ipiv.size());
+
+  // Solve the linear system using LAPACK's cgesv function
+  // It is important to note that cgesv overwrites:
+  //  - the input matrix A with the LU decomposition of A
+  //  - the input matrix B with the solution matrix X
+  //
+  // Therefore we allocate a copy of A and a copy of B for the function to overwrite
+  Int const n = a.rows();    // Number of rows in A
+  Int const nrhs = b.cols(); // Number of columns in B
+  lapack_complex_float * a_data = reinterpret_cast<lapack_complex_float *>(a.data());
+  Int const lda = a.rows(); // Leading dimension of A
+  lapack_complex_float * b_data = reinterpret_cast<lapack_complex_float *>(b.data());
+  Int const ldb = b.rows(); // Leading dimension of B
+#if UM2_ENABLE_ASSERTS
+  Int const info =
+      LAPACKE_cgesv(LAPACK_COL_MAJOR, n, nrhs, a_data, lda, ipiv.data(), b_data, ldb);
+  ASSERT(info == 0);
+#else
+  LAPACKE_cgesv(LAPACK_COL_MAJOR, n, nrhs, a_data, lda, ipiv.data(), b_data, ldb);
+#endif
+}
+
+template <>
+void
+linearSolve(Matrix<std::complex<double>> & a, Matrix<std::complex<double>> & b,
+            Vector<Int> & ipiv)
+{
+  ASSERT(a.rows() == a.cols()); // A must be square
+  ASSERT(a.rows() == b.rows());
+  ASSERT(a.rows() == ipiv.size());
+
+  // Solve the linear system using LAPACK's zgesv function
+  // It is important to note that zgesv overwrites:
+  //  - the input matrix A with the LU decomposition of A
+  //  - the input matrix B with the solution matrix X
+  //
+  // Therefore we allocate a copy of A and a copy of B for the function to overwrite
+  Int const n = a.rows();    // Number of rows in A
+  Int const nrhs = b.cols(); // Number of columns in B
+  lapack_complex_double * a_data = reinterpret_cast<lapack_complex_double *>(a.data());
+  Int const lda = a.rows(); // Leading dimension of A
+  lapack_complex_double * b_data = reinterpret_cast<lapack_complex_double *>(b.data());
+  Int const ldb = b.rows(); // Leading dimension of B
+#if UM2_ENABLE_ASSERTS
+  Int const info =
+      LAPACKE_zgesv(LAPACK_COL_MAJOR, n, nrhs, a_data, lda, ipiv.data(), b_data, ldb);
+  ASSERT(info == 0);
+#else
+  LAPACKE_zgesv(LAPACK_COL_MAJOR, n, nrhs, a_data, lda, ipiv.data(), b_data, ldb);
+#endif
 }
 
 //==============================================================================
@@ -386,12 +634,17 @@ eigvals(Matrix<float> const & a) -> Vector<std::complex<float>>
   Int const ldvl = 1;       // Leading dimension of left eigenvectors
   float * vr = nullptr;     // Right eigenvectors
   Int const ldvr = 1;       // Leading dimension of right eigenvectors
-  auto * work = new float[static_cast<size_t>(4 * n)]; // Workspace
-  Int const lwork = 4 * n;                             // Size of the workspace
+  auto * work = new float[static_cast<uint64_t>(4 * n)]; // Workspace
+  Int const lwork = 4 * n;                               // Size of the workspace
+#if UM2_ENABLE_ASSERTS
   Int const info =
       LAPACKE_sgeev_work(LAPACK_COL_MAJOR, jobvl, jobvr, n, a_copy.data(), lda, wr.data(),
                          wi.data(), vl, ldvl, vr, ldvr, work, lwork);
   ASSERT(info == 0);
+#else
+  LAPACKE_sgeev_work(LAPACK_COL_MAJOR, jobvl, jobvr, n, a_copy.data(), lda, wr.data(),
+                     wi.data(), vl, ldvl, vr, ldvr, work, lwork);
+#endif
   delete[] work;
 
   Vector<std::complex<float>> w(n);
@@ -421,12 +674,17 @@ eigvals(Matrix<double> const & a) -> Vector<std::complex<double>>
   Int const ldvl = 1;       // Leading dimension of left eigenvectors
   double * vr = nullptr;    // Right eigenvectors
   Int const ldvr = 1;       // Leading dimension of right eigenvectors
-  auto * work = new double[static_cast<size_t>(4 * n)]; // Workspace
-  Int const lwork = 4 * n;                              // Size of the workspace
+  auto * work = new double[static_cast<uint64_t>(4 * n)]; // Workspace
+  Int const lwork = 4 * n;                                // Size of the workspace
+#if UM2_ENABLE_ASSERTS
   Int const info =
       LAPACKE_dgeev_work(LAPACK_COL_MAJOR, jobvl, jobvr, n, a_copy.data(), lda, wr.data(),
                          wi.data(), vl, ldvl, vr, ldvr, work, lwork);
   ASSERT(info == 0);
+#else
+  LAPACKE_dgeev_work(LAPACK_COL_MAJOR, jobvl, jobvr, n, a_copy.data(), lda, wr.data(),
+                     wi.data(), vl, ldvl, vr, ldvr, work, lwork);
+#endif
   delete[] work;
 
   Vector<std::complex<double>> w(n);
@@ -463,10 +721,15 @@ eigvals(Matrix<std::complex<float>> const & a) -> Vector<std::complex<float>>
       reinterpret_cast<lapack_complex_float *>(work.data());
   Int const lwork = 4 * n;    // Size of the workspace
   Vector<float> rwork(2 * n); // Real workspace
+#if UM2_ENABLE_ASSERTS
   Int const info =
       LAPACKE_cgeev_work(LAPACK_COL_MAJOR, jobvl, jobvr, n, a_data, lda, w_data, vl, ldvl,
                          vr, ldvr, work_data, lwork, rwork.data());
   ASSERT(info == 0);
+#else
+  LAPACKE_cgeev_work(LAPACK_COL_MAJOR, jobvl, jobvr, n, a_data, lda, w_data, vl, ldvl,
+                     vr, ldvr, work_data, lwork, rwork.data());
+#endif
 
   return w;
 }
@@ -499,10 +762,15 @@ eigvals(Matrix<std::complex<double>> const & a) -> Vector<std::complex<double>>
       reinterpret_cast<lapack_complex_double *>(work.data());
   Int const lwork = 4 * n;     // Size of the workspace
   Vector<double> rwork(2 * n); // Real workspace
+#if UM2_ENABLE_ASSERTS
   Int const info =
       LAPACKE_zgeev_work(LAPACK_COL_MAJOR, jobvl, jobvr, n, a_data, lda, w_data, vl, ldvl,
                          vr, ldvr, work_data, lwork, rwork.data());
   ASSERT(info == 0);
+#else
+  LAPACKE_zgeev_work(LAPACK_COL_MAJOR, jobvl, jobvr, n, a_data, lda, w_data, vl, ldvl,
+                     vr, ldvr, work_data, lwork, rwork.data());
+#endif
 
   return w;
 }

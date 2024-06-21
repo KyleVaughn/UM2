@@ -18,7 +18,7 @@
 namespace um2
 {
 
-template <typename T>
+template <class T>
 class Matrix
 {
   Int _rows;
@@ -116,43 +116,41 @@ public:
 
 // Matrix-vector operations
 //------------------------------------------------------------------------------
-template <typename T>
+template <class T>
 PURE auto
 operator*(Matrix<T> const & a, Vector<T> const & x) -> Vector<T>;
 
 // Matrix-matrix operations
 //------------------------------------------------------------------------------
 
-template <typename T>
+template <class T>
 PURE auto
 operator+(Matrix<T> const & a, Matrix<T> const & b) -> Matrix<T>;
 
-template <typename T>
+template <class T>
 PURE auto
 operator-(Matrix<T> const & a, Matrix<T> const & b) -> Matrix<T>;
 
-template <typename T>
+template <class T>
 PURE auto
 operator*(Matrix<T> const & a, Matrix<T> const & b) -> Matrix<T>;
 
 // Non-allocating matrix-matrix multiplication. C = A * B.
-template <typename T>
+template <class T>
 void
 matmul(Matrix<T> & c, Matrix<T> const & a, Matrix<T> const & b);
 
 // Solver
 //------------------------------------------------------------------------------
 // Solve A * X = B for X. X = A \ B
-template <typename T>
+template <class T>
 PURE auto
 linearSolve(Matrix<T> const & a, Matrix<T> const & b) -> Matrix<T>;
 
 // On exit:
 // - A is overwritten with its LU decomposition.
 // - B is overwritten with the solution X.
-//
-//
-template <typename T>
+template <class T>
 void
 linearSolve(Matrix<T> & a, Matrix<T> & b, Vector<Int> & ipiv);
 
@@ -174,77 +172,77 @@ eigvals(Matrix<std::complex<double>> const & a) -> Vector<std::complex<double>>;
 // Accessors
 //==============================================================================
 
-template <typename T>
+template <class T>
 PURE HOSTDEV constexpr auto
 Matrix<T>::rows() const noexcept -> Int
 {
   return _rows;
 }
 
-template <typename T>
+template <class T>
 PURE HOSTDEV constexpr auto
 Matrix<T>::cols() const noexcept -> Int
 {
   return _cols;
 }
 
-template <typename T>
+template <class T>
 PURE HOSTDEV constexpr auto
 Matrix<T>::data() noexcept -> T *
 {
   return _data.data();
 }
 
-template <typename T>
+template <class T>
 PURE HOSTDEV constexpr auto
 Matrix<T>::data() const noexcept -> T const *
 {
   return _data.data();
 }
 
-template <typename T>
+template <class T>
 PURE HOSTDEV constexpr auto
 Matrix<T>::begin() noexcept -> T *
 {
   return _data.begin();
 }
 
-template <typename T>
+template <class T>
 PURE HOSTDEV constexpr auto
 Matrix<T>::begin() const noexcept -> T const *
 {
   return _data.begin();
 }
 
-template <typename T>
+template <class T>
 PURE HOSTDEV constexpr auto
 Matrix<T>::end() noexcept -> T *
 {
   return _data.end();
 }
 
-template <typename T>
+template <class T>
 PURE HOSTDEV constexpr auto
 Matrix<T>::end() const noexcept -> T const *
 {
   return _data.end();
 }
 
-template <typename T>
+template <class T>
 PURE HOSTDEV constexpr auto
 Matrix<T>::asVector() noexcept -> Vector<T> &
 {
   return _data;
 }
 
-template <typename T>
+template <class T>
 PURE HOSTDEV constexpr auto
 Matrix<T>::asVector() const noexcept -> Vector<T> const &
 {
   return _data;
 }
 
-template <typename T>
+template <class T>
 PURE HOSTDEV constexpr auto
 Matrix<T>::operator()(Int i) noexcept -> T &
 {
@@ -253,6 +251,7 @@ Matrix<T>::operator()(Int i) noexcept -> T &
   return _data[i];
 }
 
+template <class T>
 PURE HOSTDEV constexpr auto
 Matrix<T>::operator()(Int i) const noexcept -> T const &
 {
@@ -261,7 +260,7 @@ Matrix<T>::operator()(Int i) const noexcept -> T const &
   return _data[i];
 }
 
-template <typename T>
+template <class T>
 PURE HOSTDEV constexpr auto
 Matrix<T>::operator()(Int i, Int j) noexcept -> T &
 {
@@ -272,7 +271,7 @@ Matrix<T>::operator()(Int i, Int j) noexcept -> T &
   return _data[j * _rows + i];
 }
 
-template <typename T>
+template <class T>
 PURE HOSTDEV constexpr auto
 Matrix<T>::operator()(Int i, Int j) const noexcept -> T const &
 {
@@ -287,7 +286,7 @@ Matrix<T>::operator()(Int i, Int j) const noexcept -> T const &
 // Constructors
 //==============================================================================
 
-template <typename T>
+template <class T>
 Matrix<T>::Matrix(Int rows, Int cols) noexcept
     : _rows{rows},
       _cols{cols},
@@ -297,7 +296,7 @@ Matrix<T>::Matrix(Int rows, Int cols) noexcept
   ASSERT(cols >= 0);
 }
 
-template <typename T>
+template <class T>
 Matrix<T>::Matrix(Int rows, Int cols, T const & value) noexcept
     : _rows{rows},
       _cols{cols},
@@ -307,7 +306,7 @@ Matrix<T>::Matrix(Int rows, Int cols, T const & value) noexcept
   ASSERT(cols >= 0);
 }
 
-template <typename T>
+template <class T>
 auto
 Matrix<T>::identity(Int n) -> Matrix<T>
 {
@@ -323,7 +322,7 @@ Matrix<T>::identity(Int n) -> Matrix<T>
 // Operators
 //==============================================================================
 
-template <typename T>
+template <class T>
 auto
 Matrix<T>::operator*=(T const scalar) -> Matrix<T> &
 {
@@ -333,7 +332,7 @@ Matrix<T>::operator*=(T const scalar) -> Matrix<T> &
   return *this;
 }
 
-template <typename T>
+template <class T>
 auto
 Matrix<T>::operator+=(Matrix<T> const & other) -> Matrix<T> &
 {
@@ -346,7 +345,7 @@ Matrix<T>::operator+=(Matrix<T> const & other) -> Matrix<T> &
   return *this;
 }
 
-template <typename T>
+template <class T>
 auto
 Matrix<T>::operator-=(Matrix<T> const & other) -> Matrix<T> &
 {
@@ -363,7 +362,7 @@ Matrix<T>::operator-=(Matrix<T> const & other) -> Matrix<T> &
 // Methods
 //==============================================================================
 
-template <typename T>
+template <class T>
 void
 Matrix<T>::zero() noexcept
 {
@@ -373,7 +372,7 @@ Matrix<T>::zero() noexcept
 // THIS IS HACKED TOGETHER. DELETE AND BE SMARTER.
 // N x M matrix fails
 // differentiate between conjugate transpose and transpose
-template <typename T>
+template <class T>
 void
 Matrix<T>::transpose() noexcept
 {
@@ -404,7 +403,7 @@ Matrix<T>::transpose() noexcept
 // Free functions
 //==============================================================================
 
-template <typename T>
+template <class T>
 PURE auto
 operator+(Matrix<T> const & a, Matrix<T> const & b) -> Matrix<T>
 {
@@ -418,7 +417,7 @@ operator+(Matrix<T> const & a, Matrix<T> const & b) -> Matrix<T>
   return result;
 }
 
-template <typename T>
+template <class T>
 PURE auto
 operator-(Matrix<T> const & a, Matrix<T> const & b) -> Matrix<T>
 {

@@ -1,4 +1,6 @@
+#include <um2/config.hpp>
 #include <um2/math/matrix.hpp>
+#include <um2/stdlib/vector.hpp>
 
 #include "../test_macros.hpp"
 
