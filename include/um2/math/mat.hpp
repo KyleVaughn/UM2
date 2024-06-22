@@ -183,6 +183,28 @@ Mat<M, N, T>::identity() noexcept -> Mat<M, N, T>
 
 template <Int M, Int N, typename T>
 PURE HOSTDEV constexpr auto
+operator+(Mat<M, N, T> const & a, Mat<M, N, T> const & b) noexcept -> Mat<M, N, T>
+{
+  Mat<M, N, T> result;
+  for (Int i = 0; i < N; ++i) {
+    result.col(i) = a.col(i) + b.col(i);
+  }
+  return result;
+}
+
+template <Int M, Int N, typename T>
+PURE HOSTDEV constexpr auto
+operator-(Mat<M, N, T> const & a, Mat<M, N, T> const & b) noexcept -> Mat<M, N, T>
+{
+  Mat<M, N, T> result;
+  for (Int i = 0; i < N; ++i) {
+    result.col(i) = a.col(i) - b.col(i);
+  }
+  return result;
+}
+
+template <Int M, Int N, typename T>
+PURE HOSTDEV constexpr auto
 operator*(Mat<M, N, T> const & a, Vec<N, T> const & x) noexcept -> Vec<M, T>
 {
   Vec<M, T> res = Vec<M, T>::zero();
