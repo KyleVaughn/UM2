@@ -12,8 +12,6 @@
 // size matrices are needed, see Mat.hpp.
 //
 // Uses OpenBLAS for BLAS and LAPACK operations.
-// TODO(kcvaughn): Add static check that sizeof(Int) == sizeof(lapack_int) or
-// other types used in OpenBLAS.
 
 namespace um2
 {
@@ -140,6 +138,8 @@ template <class T>
 void
 matmul(Matrix<T> & c, Matrix<T> const & a, Matrix<T> const & b);
 
+#if UM2_USE_BLAS_LAPACK
+
 // Solver
 //------------------------------------------------------------------------------
 // Solve A * X = B for X. X = A \ B
@@ -147,6 +147,7 @@ template <class T>
 PURE auto
 linearSolve(Matrix<T> const & a, Matrix<T> const & b) -> Matrix<T>;
 
+// Same as above, but non-allocating. ipiv is of size n.
 // On exit:
 // - A is overwritten with its LU decomposition.
 // - B is overwritten with the solution X.
@@ -167,6 +168,8 @@ eigvals(Matrix<std::complex<float>> const & a) -> Vector<std::complex<float>>;
 
 PURE auto
 eigvals(Matrix<std::complex<double>> const & a) -> Vector<std::complex<double>>;
+
+#endif // UM2_USE_BLAS_LAPACK
 
 //==============================================================================
 // Accessors
@@ -430,5 +433,59 @@ operator-(Matrix<T> const & a, Matrix<T> const & b) -> Matrix<T>
   }
   return result;
 }
+
+// If we aren't using BLAS, we need to implement mat-vec and mat-mat
+#if !UM2_USE_BLAS_LAPACK
+
+template <class T>
+PURE auto
+operator*(Matrix<T> const & a, Vector<T> const & x) -> Vector<T>
+{
+  ASSERT(a.cols() == x.size());
+  Vector<T> y(a.rows(), static_cast<T>(0));
+
+  for (Int i = 0; i < a.cols(); ++i) {
+    for (Int j = 0; j < a.rows(); ++j) {
+      y[j] += a(j, i) * x[i];
+    }
+  }
+  return y; 
+}
+
+template <class T>
+PURE auto
+operator*(Matrix<T> const & a, Matrix<T> const & b) -> Matrix<T>
+{
+  ASSERT(a.cols() == b.rows());
+  Matrix<T> c(a.rows(), b.cols(), static_cast<T>(0));
+
+  for (Int i = 0; i < a.rows(); ++i) {
+    for (Int j = 0; j < b.cols(); ++j) {
+      for (Int k = 0; k < a.cols(); ++k) {
+        c(i, j) += a(i, k) * b(k, j);
+      }
+    }
+  }
+  return c;
+}
+
+template <class T>
+void
+matmul(Matrix<T> & c, Matrix<T> const & a, Matrix<T> const & b)
+{
+  ASSERT(a.cols() == b.rows());
+  ASSERT(c.rows() == a.rows());
+  ASSERT(c.cols() == b.cols());
+
+  for (Int i = 0; i < a.rows(); ++i) {
+    for (Int j = 0; j < b.cols(); ++j) {
+      for (Int k = 0; k < a.cols(); ++k) {
+        c(i, j) += a(i, k) * b(k, j);
+      }
+    }
+  }
+}
+
+#endif // !UM2_USE_BLAS_LAPACK
 
 } // namespace um2

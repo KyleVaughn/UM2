@@ -198,6 +198,7 @@ TEST_CASE(mat_mul_float)
   ASSERT_NEAR(ab(11), 6, eps);
 }
 
+#if UM2_USE_BLAS_LAPACK
 TEST_CASE(lin_solve_float)
 {
 
@@ -382,6 +383,7 @@ TEST_CASE(eigvals_float)
   ASSERT_NEAR(lambda[4].real(), -10.46F, eps);
   ASSERT_NEAR(lambda[4].imag(), 0.00F, eps);
 }
+#endif // UM2_USE_BLAS_LAPACK
 
 TEST_CASE(transpose_float)
 {
@@ -594,6 +596,7 @@ TEST_CASE(mat_mul_double)
   ASSERT_NEAR(ab(11), 6, eps);
 }
 
+#if UM2_USE_BLAS_LAPACK
 TEST_CASE(lin_solve_double)
 {
 
@@ -779,6 +782,7 @@ TEST_CASE(eigvals_double)
   ASSERT_NEAR(lambda[4].real(), -10.46, eps);
   ASSERT_NEAR(lambda[4].imag(), 0.00, eps);
 }
+#endif // UM2_USE_BLAS_LAPACK
 
 //=============================================================================
 // Complex32
@@ -951,6 +955,7 @@ TEST_CASE(mat_mul_Complex32)
   }
 }
 
+#if UM2_USE_BLAS_LAPACK
 TEST_CASE(lin_solve_Complex32)
 {
 
@@ -1137,6 +1142,7 @@ TEST_CASE(eigvals_Complex32)
   ASSERT_NEAR(lambda[4].real(), -10.46F, eps);
   ASSERT_NEAR(lambda[4].imag(), 0.00F, eps);
 }
+#endif // UM2_USE_BLAS_LAPACK
 
 TEST_CASE(transpose_Complex32)
 {
@@ -1337,6 +1343,8 @@ TEST_CASE(mat_mul_Complex64)
   }
 }
 
+#if UM2_USE_BLAS_LAPACK
+
 TEST_CASE(lin_solve_Complex64)
 {
 
@@ -1522,6 +1530,7 @@ TEST_CASE(eigvals_Complex64)
   ASSERT_NEAR(lambda[4].real(), -10.46, eps);
   ASSERT_NEAR(lambda[4].imag(), 0.00, eps);
 }
+#endif // UM2_USE_BLAS_LAPACK
 
 TEST_SUITE(Matrix_float)
 {
@@ -1529,8 +1538,10 @@ TEST_SUITE(Matrix_float)
   TEST_HOSTDEV(mat_vec_float);
   TEST_HOSTDEV(add_sub_float);
   TEST_HOSTDEV(mat_mul_float);
+#if UM2_USE_BLAS_LAPACK
   TEST_HOSTDEV(lin_solve_float);
   TEST_HOSTDEV(eigvals_float);
+#endif
   TEST_HOSTDEV(transpose_float);
 }
 
@@ -1540,8 +1551,10 @@ TEST_SUITE(Matrix_double)
   TEST_HOSTDEV(mat_vec_double);
   TEST_HOSTDEV(add_sub_double);
   TEST_HOSTDEV(mat_mul_double);
+#if UM2_USE_BLAS_LAPACK
   TEST_HOSTDEV(lin_solve_double);
   TEST_HOSTDEV(eigvals_double);
+#endif
 }
 
 TEST_SUITE(Matrix_Complex32)
@@ -1550,8 +1563,10 @@ TEST_SUITE(Matrix_Complex32)
   TEST_HOSTDEV(mat_vec_Complex32);
   TEST_HOSTDEV(add_sub_Complex32);
   TEST_HOSTDEV(mat_mul_Complex32);
+#if UM2_USE_BLAS_LAPACK
   TEST_HOSTDEV(lin_solve_Complex32);
   TEST_HOSTDEV(eigvals_Complex32);
+#endif
   TEST_HOSTDEV(transpose_Complex32);
 }
 
@@ -1561,8 +1576,10 @@ TEST_SUITE(Matrix_Complex64)
   TEST_HOSTDEV(mat_vec_Complex64);
   TEST_HOSTDEV(add_sub_Complex64);
   TEST_HOSTDEV(mat_mul_Complex64);
+#if UM2_USE_BLAS_LAPACK
   TEST_HOSTDEV(lin_solve_Complex64);
   TEST_HOSTDEV(eigvals_Complex64);
+#endif
 }
 
 auto

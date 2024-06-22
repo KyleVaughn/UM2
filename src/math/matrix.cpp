@@ -1,4 +1,6 @@
 #include <um2/config.hpp>
+
+#if UM2_USE_BLAS_LAPACK
 #include <um2/math/matrix.hpp>
 #include <um2/stdlib/assert.hpp>
 #include <um2/stdlib/vector.hpp>
@@ -776,3 +778,5 @@ eigvals(Matrix<std::complex<double>> const & a) -> Vector<std::complex<double>>
 }
 
 } // namespace um2
+
+#endif // UM2_USE_BLAS_LAPACK
