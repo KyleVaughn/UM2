@@ -28,7 +28,7 @@ template <Int D, typename P>
 class RegularPartition
 {
 
-  RegularGrid<D> _grid;
+  RegularGrid<D, Float> _grid;
   Vector<P> _children;
 
 public:
@@ -39,7 +39,7 @@ public:
   constexpr RegularPartition() noexcept = default;
 
   HOSTDEV
-  constexpr RegularPartition(RegularGrid<D> const & grid,
+  constexpr RegularPartition(RegularGrid<D, Float> const & grid,
                              Vector<P> const & children) noexcept;
 
   //==============================================================================
@@ -47,7 +47,7 @@ public:
   //==============================================================================
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  grid() const noexcept -> RegularGrid<D> const &;
+  grid() const noexcept -> RegularGrid<D, Float> const &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   children() const noexcept -> Vector<P> const &;
@@ -83,7 +83,7 @@ using RegularPartition3 = RegularPartition<3, P>;
 //==============================================================================
 
 template <Int D, typename P>
-constexpr RegularPartition<D, P>::RegularPartition(RegularGrid<D> const & grid,
+constexpr RegularPartition<D, P>::RegularPartition(RegularGrid<D, Float> const & grid,
                                                    Vector<P> const & children) noexcept
     : _grid(grid),
       _children(children)
@@ -97,7 +97,7 @@ constexpr RegularPartition<D, P>::RegularPartition(RegularGrid<D> const & grid,
 
 template <Int D, typename P>
 PURE HOSTDEV constexpr auto
-RegularPartition<D, P>::grid() const noexcept -> RegularGrid<D> const &
+RegularPartition<D, P>::grid() const noexcept -> RegularGrid<D, Float> const &
 {
   return _grid;
 }

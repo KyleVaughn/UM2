@@ -27,7 +27,7 @@ template <Int D, typename P>
 class RectilinearPartition
 {
 
-  RectilinearGrid<D> _grid;
+  RectilinearGrid<D, Float> _grid;
   Vector<P> _children;
 
 public:
@@ -42,7 +42,7 @@ public:
                                  Vector<Vector<Int>> const & ids) noexcept;
 
   HOSTDEV
-  constexpr RectilinearPartition(RectilinearGrid<D> const & grid,
+  constexpr RectilinearPartition(RectilinearGrid<D, Float> const & grid,
                                  Vector<P> const & children) noexcept;
 
   //==============================================================================
@@ -50,7 +50,7 @@ public:
   //==============================================================================
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  grid() const noexcept -> RectilinearGrid<D> const &;
+  grid() const noexcept -> RectilinearGrid<D, Float> const &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   children() const noexcept -> Vector<P> const &;
@@ -90,7 +90,7 @@ using RectilinearPartition3 = RectilinearPartition<3, P>;
 
 template <Int D, typename P>
 constexpr RectilinearPartition<D, P>::RectilinearPartition(
-    RectilinearGrid<D> const & grid, Vector<P> const & children) noexcept
+    RectilinearGrid<D, Float> const & grid, Vector<P> const & children) noexcept
     : _grid(grid),
       _children(children)
 {
@@ -122,7 +122,7 @@ constexpr RectilinearPartition<D, P>::RectilinearPartition(
 
 template <Int D, typename P>
 PURE HOSTDEV constexpr auto
-RectilinearPartition<D, P>::grid() const noexcept -> RectilinearGrid<D> const &
+RectilinearPartition<D, P>::grid() const noexcept -> RectilinearGrid<D, Float> const &
 {
   return _grid;
 }

@@ -140,6 +140,8 @@ using RegularGrid2 = RegularGrid<2, T>;
 template <class T>
 using RegularGrid3 = RegularGrid<3, T>;
 
+using RegularGrid2F = RegularGrid2<Float>;
+
 //==============================================================================
 // Constructors
 //==============================================================================

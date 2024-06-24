@@ -333,6 +333,7 @@ set(UM2_SOURCES
     "src/physics/cross_section_library.cpp"
     "src/physics/material.cpp"
     "src/physics/cmfd.cpp"
+    "src/mpact/model.cpp"
     #"src/um2.cpp"
     )
 

@@ -127,6 +127,9 @@ using RectilinearGrid2 = RectilinearGrid<2, T>;
 template <class T>
 using RectilinearGrid3 = RectilinearGrid<3, T>;
 
+using RectilinearGrid1F = RectilinearGrid1<Float>;
+using RectilinearGrid2F = RectilinearGrid2<Float>;
+
 //==============================================================================
 // Constructors
 //==============================================================================
