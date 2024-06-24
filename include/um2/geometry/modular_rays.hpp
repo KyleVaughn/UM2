@@ -1,9 +1,12 @@
 #pragma once
 
+#include <um2/config.hpp>
 #include <um2/geometry/axis_aligned_box.hpp>
 #include <um2/geometry/ray.hpp>
+#include <um2/stdlib/math/inverse_trigonometric_functions.hpp>
+#include <um2/stdlib/math/rounding_functions.hpp>
+#include <um2/stdlib/math/trigonometric_functions.hpp>
 #include <um2/stdlib/numbers.hpp>
-#include <um2/stdlib/math.hpp>
 
 //==============================================================================
 // MODULAR RAY PARAMETERS
@@ -20,13 +23,14 @@ namespace um2
 {
 
 // Modular ray parameters for a single angle
+template <class T>
 class ModularRayParams
 {
 
-  AxisAlignedBox2 _box;
-  Vec2I _num_rays;   // Number of rays spawned on the box's x and y edges
-  Vec2F _spacing;   // Spacing between rays in x and y
-  Vec2F _direction; // Direction of rays
+  AxisAlignedBox2<T> _box;
+  Vec2I _num_rays;    // Number of rays spawned on the box's x and y edges
+  Vec2<T> _spacing;   // Spacing between rays in x and y
+  Vec2<T> _direction; // Direction of rays
 
 public:
   //============================================================================
@@ -37,14 +41,14 @@ public:
 
   // a: Target azimuthal angle γ ∈ (0, π)
   // s: Target ray spacing
-  HOSTDEV constexpr ModularRayParams(Float a, Float s, AxisAlignedBox2 box) noexcept;
+  HOSTDEV constexpr ModularRayParams(T a, T s, AxisAlignedBox2<T> box) noexcept;
 
   //============================================================================
   // Methods
   //============================================================================
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getRay(Int i) const noexcept -> Ray2;
+  getRay(Int i) const noexcept -> Ray2<T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getTotalNumRays() const noexcept -> Int;
@@ -56,10 +60,10 @@ public:
   getNumYRays() const noexcept -> Int;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getSpacing() const noexcept -> Vec2F;
+  getSpacing() const noexcept -> Vec2<T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getDirection() const noexcept -> Vec2F;
+  getDirection() const noexcept -> Vec2<T>;
 };
 
 //==============================================================================
@@ -70,20 +74,21 @@ public:
 // s: ray spacing
 // w: width of ray tracing module
 // h: height of ray tracing module
-HOSTDEV constexpr ModularRayParams::ModularRayParams(Float const a, Float const s,
-                                                     AxisAlignedBox2 const box) noexcept
+template <class T>
+HOSTDEV constexpr ModularRayParams<T>::ModularRayParams(
+    T const a, T const s, AxisAlignedBox2<T> const box) noexcept
     : _box(box)
 {
   ASSERT_ASSUME(0 < a);
-  ASSERT_ASSUME(a < um2::pi<Float>);
+  ASSERT_ASSUME(a < um2::pi<T>);
   ASSERT_ASSUME(0 < s);
 
   // width and height of the box
   auto const wh = box.extents();
 
   // Number of rays in the x and y directions
-  Vec2F const num_rays_t(um2::ceil(um2::abs(wh[0] * um2::sin(a) / s)),
-                         um2::ceil(um2::abs(wh[1] * um2::cos(a) / s)));
+  Vec2<T> const num_rays_t(um2::ceil(um2::abs(wh[0] * um2::sin(a) / s)),
+                           um2::ceil(um2::abs(wh[1] * um2::cos(a) / s)));
 
   _num_rays[0] = static_cast<Int>(num_rays_t[0]);
   _num_rays[1] = static_cast<Int>(num_rays_t[1]);
@@ -94,7 +99,7 @@ HOSTDEV constexpr ModularRayParams::ModularRayParams(Float const a, Float const 
   // Effective angle to ensure cyclic rays
   auto const a_eff = um2::atan(_spacing[1] / _spacing[0]);
   _direction[0] = um2::cos(a_eff);
-  if (a > pi_2<Float>) {
+  if (a > pi_2<T>) {
     _direction[0] = -_direction[0];
   }
   _direction[1] = um2::sin(a_eff);
@@ -104,8 +109,9 @@ HOSTDEV constexpr ModularRayParams::ModularRayParams(Float const a, Float const 
 // Methods
 //==============================================================================
 
+template <class T>
 HOSTDEV constexpr auto
-ModularRayParams::getRay(Int const i) const noexcept -> Ray2
+ModularRayParams<T>::getRay(Int const i) const noexcept -> Ray2<T>
 {
   // Angle < π/2
   //
@@ -133,55 +139,60 @@ ModularRayParams::getRay(Int const i) const noexcept -> Ray2
   ASSERT_ASSUME(i < _num_rays[0] + _num_rays[1]);
   int case_id = (i < _num_rays[0]) ? 0 : 1;
   case_id += (_direction[0] < 0) ? 2 : 0;
-  Point2 origin = _box.minima();
-  auto const i_half = static_cast<Float>(i) + static_cast<Float>(1) / 2;
+  Point2<T> origin = _box.minima();
+  auto const i_half = static_cast<T>(i) + static_cast<T>(1) / 2;
   switch (case_id) {
   case 0:
     origin[0] = _box.maxima(0) - _spacing[0] * i_half;
     break;
   case 1:
-    origin[1] += _spacing[1] * (i_half - static_cast<Float>(_num_rays[0]));
+    origin[1] += _spacing[1] * (i_half - static_cast<T>(_num_rays[0]));
     break;
   case 2:
     origin[0] += _spacing[0] * i_half;
     break;
   case 3:
     origin[0] = _box.maxima(0);
-    origin[1] += _spacing[1] * (i_half - static_cast<Float>(_num_rays[0]));
+    origin[1] += _spacing[1] * (i_half - static_cast<T>(_num_rays[0]));
     break;
   default:
     __builtin_unreachable();
   }
-  Ray2 res(origin, _direction);
+  Ray2<T> res(origin, _direction);
   return res;
 }
 
+template <class T>
 HOSTDEV constexpr auto
-ModularRayParams::getTotalNumRays() const noexcept -> Int
+ModularRayParams<T>::getTotalNumRays() const noexcept -> Int
 {
   return _num_rays[0] + _num_rays[1];
 }
 
+template <class T>
 HOSTDEV constexpr auto
-ModularRayParams::getNumXRays() const noexcept -> Int
+ModularRayParams<T>::getNumXRays() const noexcept -> Int
 {
   return _num_rays[0];
 }
 
+template <class T>
 HOSTDEV constexpr auto
-ModularRayParams::getNumYRays() const noexcept -> Int
+ModularRayParams<T>::getNumYRays() const noexcept -> Int
 {
   return _num_rays[1];
 }
 
+template <class T>
 HOSTDEV constexpr auto
-ModularRayParams::getSpacing() const noexcept -> Vec2F
+ModularRayParams<T>::getSpacing() const noexcept -> Vec2<T>
 {
   return _spacing;
 }
 
+template <class T>
 HOSTDEV constexpr auto
-ModularRayParams::getDirection() const noexcept -> Vec2F
+ModularRayParams<T>::getDirection() const noexcept -> Vec2<T>
 {
   return _direction;
 }

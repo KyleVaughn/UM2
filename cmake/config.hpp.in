@@ -43,7 +43,10 @@
 #endif
 
 #if UM2_USE_CUDA
+#  include <cuda/std/complex>
 #  include <cuda_runtime.h>
+#else
+#  include <complex>
 #endif
 
 //==============================================================================
@@ -124,6 +127,25 @@
 // #else
 // using Float = float;
 // #endif
+
+#if UM2_USE_CUDA
+template <class T>
+using Complex = cuda::std::complex<T>;
+#else
+template <class T>
+using Complex = std::complex<T>;
+#endif
+
+template <class T>
+constexpr auto
+conj(T const & z) noexcept -> T
+{
+#if UM2_USE_CUDA
+  return cuda::std::conj(z);
+#else
+  return std::conj(z);
+#endif
+}
 
 // Integer type
 using Int = int32_t;

@@ -350,10 +350,10 @@ TEST_CASE(isApprox)
   ASSERT(!v1.isApprox(v2));
   // Non-trivial equality
   v2 = v1;
-  v2[0] += um2::eps_distance<T> / 2;
+  v2[0] += um2::epsDistance<T>() / 2;
   ASSERT(v1.isApprox(v2));
   // Non-trivial inequality
-  v2[0] += um2::eps_distance<T>;
+  v2[0] += um2::epsDistance<T>();
   ASSERT(!v1.isApprox(v2));
 }
 

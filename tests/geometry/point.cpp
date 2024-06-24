@@ -1,10 +1,10 @@
-#include <um2/geometry/point.hpp>
 #include <um2/config.hpp>
+#include <um2/geometry/point.hpp>
 
 #include "../test_macros.hpp"
 
 template <class T>
-T constexpr eps = um2::eps_distance<T>;
+T constexpr eps = um2::epsDistance<T>();
 
 template <Int D, class T>
 HOSTDEV constexpr auto
@@ -65,10 +65,10 @@ TEST_CASE(areApproxCCW)
   ASSERT(b);
   b = um2::areApproxCCW(p1, p3, p2);
   ASSERT(b);
-  p3[1] -= um2::eps_distance<T> / 2;
+  p3[1] -= um2::epsDistance<T>() / 2;
   b = um2::areApproxCCW(p1, p2, p3);
   ASSERT(b);
-  p3[1] -= um2::eps_distance<T>;
+  p3[1] -= um2::epsDistance<T>();
   b = um2::areApproxCCW(p1, p2, p3);
   ASSERT(!b);
 }
@@ -77,16 +77,16 @@ TEST_CASE(areApproxCCW)
 // CUDA
 //==============================================================================
 
-//#if UM2_USE_CUDA
-//template <Int D, class T>
-//MAKE_CUDA_KERNEL(midpoint, D, T);
-//
-//template <class T>
-//MAKE_CUDA_KERNEL(areCCW, T);
-//
-//template <class T>
-//MAKE_CUDA_KERNEL(areApproxCCW, T);
-//#endif
+#if UM2_USE_CUDA
+template <Int D, class T>
+MAKE_CUDA_KERNEL(midpoint, D, T);
+
+template <class T>
+MAKE_CUDA_KERNEL(areCCW, T);
+
+template <class T>
+MAKE_CUDA_KERNEL(areApproxCCW, T);
+#endif
 
 template <Int D, class T>
 TEST_SUITE(point)

@@ -40,7 +40,13 @@ solveCubic(T a, T const b, T const c, T const d) noexcept -> Vec3<T>
 
   // Variable initialization.
   auto constexpr lambda = castIfNot<T>(1.32471795724474602596); // lambda^3 = lambda + 1
-  auto constexpr one_plus_eps = 1 + std::numeric_limits<T>::epsilon();
+  // Compiler complains if we do the same with a ternary operator. Why?
+  T one_plus_eps;
+  if constexpr (std::same_as<float, T>) {
+    one_plus_eps = 1 + 1.1920928955078125e-07F;
+  } else {
+    one_plus_eps = 1 + 2.2204460492503131e-16;
+  }
   T & x = roots[2];
   T b1; // b in ax^2 + bx + c for the quadratic equation.
   T c2; // c in ax^2 + bx + c for the quadratic equation.

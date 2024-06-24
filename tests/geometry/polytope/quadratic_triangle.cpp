@@ -1,5 +1,5 @@
-#include <um2/geometry/quadratic_triangle.hpp>
 #include <um2/geometry/modular_rays.hpp>
+#include <um2/geometry/quadratic_triangle.hpp>
 
 #include "../../test_macros.hpp"
 
@@ -300,7 +300,8 @@ testTriForIntersections(um2::QuadraticTriangle<2> const tri)
   Int constexpr rays_per_longest_edge = 200;
 
   auto const aabb = tri.boundingBox();
-  auto const longest_edge = aabb.extents(0) > aabb.extents(1) ? aabb.extents(0) : aabb.extents(1);
+  auto const longest_edge =
+      aabb.extents(0) > aabb.extents(1) ? aabb.extents(0) : aabb.extents(1);
   auto const spacing = longest_edge / static_cast<Float>(rays_per_longest_edge);
   Float const pi_deg = um2::pi_2<Float> / static_cast<Float>(num_angles);
   // For each angle
@@ -396,7 +397,6 @@ TEST_CASE(hasSelfIntersection)
     tri[5] = p5;
     ASSERT(tri.hasSelfIntersection());
   }
-
 }
 
 template <Int D>

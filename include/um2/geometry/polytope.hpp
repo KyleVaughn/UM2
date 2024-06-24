@@ -22,7 +22,7 @@
 namespace um2
 {
 
-template <Int K, Int P, Int N, Int D>
+template <Int K, Int P, Int N, Int D, class T>
 class Polytope
 {
   static_assert(K > 0 && K <= 3, "Polytope dimension must be 1, 2, or 3");
@@ -32,104 +32,120 @@ class Polytope
 // Aliases/Specializations
 //==============================================================================
 
-template <Int K, Int N, Int D>
-using LinearPolytope = Polytope<K, 1, N, D>;
+template <Int K, Int N, Int D, class T>
+using LinearPolytope = Polytope<K, 1, N, D, T>;
 
 // K-Polytopes
 //-----------------------------------------------------------------------------
-template <Int P, Int N, Int D>
-using Dion = Polytope<1, P, N, D>;
-template <Int P, Int N, Int D>
-using Polygon = Polytope<2, P, N, D>;
-template <Int P, Int N, Int D>
-using Polyhedron = Polytope<3, P, N, D>;
+template <Int P, Int N, Int D, class T>
+using Dion = Polytope<1, P, N, D, T>;
+template <Int P, Int N, Int D, class T>
+using Polygon = Polytope<2, P, N, D, T>;
+template <Int P, Int N, Int D, class T>
+using Polyhedron = Polytope<3, P, N, D, T>;
 
 // Dions
 //-----------------------------------------------------------------------------
-template <Int D>
-using LineSegment = Dion<1, 2, D>;
-template <Int D>
-using QuadraticSegment = Dion<2, 3, D>;
+template <Int D, class T>
+using LineSegment = Dion<1, 2, D, T>;
+template <Int D, class T>
+using QuadraticSegment = Dion<2, 3, D, T>;
 
 // Planar dions
-template <Int P, Int N>
-using PlanarDion = Dion<P, N, 2>;
-template <Int N>
-using PlanarLineSegment = LineSegment<2>;
-template <Int N>
-using PlanarQuadraticSegment = QuadraticSegment<2>;
+template <Int P, Int N, class T>
+using PlanarDion = Dion<P, N, 2, T>;
+template <Int N, class T>
+using PlanarLineSegment = LineSegment<2, T>;
+template <Int N, class T>
+using PlanarQuadraticSegment = QuadraticSegment<2, T>;
 
 // Dimension specific aliases
-using LineSegment2 = LineSegment<2>;
-using QuadraticSegment2 = QuadraticSegment<2>;
+template <class T>
+using LineSegment2 = LineSegment<2, T>;
+
+template <class T>
+using QuadraticSegment2 = QuadraticSegment<2, T>;
 
 // Polygons
 //-----------------------------------------------------------------------------
-template <Int N, Int D>
-using LinearPolygon = Polygon<1, N, D>;
-template <Int N, Int D>
-using QuadraticPolygon = Polygon<2, N, D>;
+template <Int N, Int D, class T>
+using LinearPolygon = Polygon<1, N, D, T>;
+template <Int N, Int D, class T>
+using QuadraticPolygon = Polygon<2, N, D, T>;
 
 // Planar polygons
-template <Int P, Int N>
-using PlanarPolygon = Polygon<P, N, 2>;
-template <Int N>
-using PlanarLinearPolygon = LinearPolygon<N, 2>;
-template <Int N>
-using PlanarQuadraticPolygon = QuadraticPolygon<N, 2>;
+template <Int P, Int N, class T>
+using PlanarPolygon = Polygon<P, N, 2, T>;
+template <Int N, class T>
+using PlanarLinearPolygon = LinearPolygon<N, 2, T>;
+template <Int N, class T>
+using PlanarQuadraticPolygon = QuadraticPolygon<N, 2, T>;
 
 // N-vertex polygons
-template <Int D>
-using Triangle = LinearPolygon<3, D>;
-template <Int D>
-using Quadrilateral = LinearPolygon<4, D>;
-template <Int D>
-using QuadraticTriangle = QuadraticPolygon<6, D>;
-template <Int D>
-using QuadraticQuadrilateral = QuadraticPolygon<8, D>;
+template <Int D, class T>
+using Triangle = LinearPolygon<3, D, T>;
+template <Int D, class T>
+using Quadrilateral = LinearPolygon<4, D, T>;
+template <Int D, class T>
+using QuadraticTriangle = QuadraticPolygon<6, D, T>;
+template <Int D, class T>
+using QuadraticQuadrilateral = QuadraticPolygon<8, D, T>;
 
 // N-vertex polygons (shorthand)
-template <Int D>
-using Tri = Triangle<D>;
-template <Int D>
-using Quad = Quadrilateral<D>;
-template <Int D>
-using Tri6 = QuadraticTriangle<D>;
-template <Int D>
-using Quad8 = QuadraticQuadrilateral<D>;
+template <Int D, class T>
+using Tri = Triangle<D, T>;
+template <Int D, class T>
+using Quad = Quadrilateral<D, T>;
+template <Int D, class T>
+using Tri6 = QuadraticTriangle<D, T>;
+template <Int D, class T>
+using Quad8 = QuadraticQuadrilateral<D, T>;
 
 // Dimension specific aliases
-using Triangle2 = Triangle<2>;
-using Triangle3 = Triangle<3>;
-using Quadrilateral2 = Quadrilateral<2>;
-using Quadrilateral3 = Quadrilateral<3>;
-using QuadraticTriangle2 = QuadraticTriangle<2>;
-using QuadraticTriangle3 = QuadraticTriangle<3>;
-using QuadraticQuadrilateral2 = QuadraticQuadrilateral<2>;
-using QuadraticQuadrilateral3 = QuadraticQuadrilateral<3>;
+template <class T>
+using Triangle2 = Triangle<2, T>;
+template <class T>
+using Triangle3 = Triangle<3, T>;
+template <class T>
+using Quadrilateral2 = Quadrilateral<2, T>;
+template <class T>
+using Quadrilateral3 = Quadrilateral<3, T>;
+template <class T>
+using QuadraticTriangle2 = QuadraticTriangle<2, T>;
+template <class T>
+using QuadraticTriangle3 = QuadraticTriangle<3, T>;
+template <class T>
+using QuadraticQuadrilateral2 = QuadraticQuadrilateral<2, T>;
+template <class T>
+using QuadraticQuadrilateral3 = QuadraticQuadrilateral<3, T>;
 
 // Polyhedrons
 //-----------------------------------------------------------------------------
-template <Int N, Int D>
-using LinearPolyhedron = Polyhedron<1, N, D>;
-template <Int N, Int D>
-using QuadraticPolyhedron = Polyhedron<2, N, D>;
+template <Int N, Int D, class T>
+using LinearPolyhedron = Polyhedron<1, N, D, T>;
+
+template <Int N, Int D, class T>
+using QuadraticPolyhedron = Polyhedron<2, N, D, T>;
 
 // N-vertex polyhedrons
 // Only allow embedding in 3D for now
-using Tetrahedron = LinearPolyhedron<4, 3>;
-using Hexahedron = LinearPolyhedron<8, 3>;
-using QuadraticTetrahedron = QuadraticPolyhedron<10, 3>;
-using QuadraticHexahedron = QuadraticPolyhedron<20, 3>;
+template <class T>
+using Tetrahedron = LinearPolyhedron<4, 3, T>;
+template <class T>
+using Hexahedron = LinearPolyhedron<8, 3, T>;
+template <class T>
+using QuadraticTetrahedron = QuadraticPolyhedron<10, 3, T>;
+template <class T>
+using QuadraticHexahedron = QuadraticPolyhedron<20, 3, T>;
 
 //==============================================================================
 // Functions
 //==============================================================================
 
 // The bounding box of any linear polytope is the bounding box of its vertices.
-template <Int K, Int N, Int D>
+template <Int K, Int N, Int D, class T>
 PURE HOSTDEV constexpr auto
-boundingBox(LinearPolytope<K, N, D> const & polytope) noexcept -> AxisAlignedBox<D>
+boundingBox(LinearPolytope<K, N, D, T> const & polytope) noexcept -> AxisAlignedBox<D, T>
 {
   return boundingBox(polytope.vertices(), N);
 }

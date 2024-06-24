@@ -1,5 +1,5 @@
-#include <um2/geometry/quadratic_quadrilateral.hpp>
 #include <um2/geometry/modular_rays.hpp>
+#include <um2/geometry/quadratic_quadrilateral.hpp>
 
 #include "../../test_macros.hpp"
 
@@ -11,7 +11,7 @@ makeQuad() -> um2::QuadraticQuadrilateral<D>
 {
   um2::QuadraticQuadrilateral<D> this_quad;
   for (Int i = 0; i < 8; ++i) {
-    this_quad[i] = 0;  
+    this_quad[i] = 0;
   }
   this_quad[1][0] = castIfNot<Float>(1);
   this_quad[2][0] = castIfNot<Float>(1);
@@ -82,7 +82,7 @@ TEST_CASE(jacobian)
   quad[2][0] = static_cast<Float>(2);
   quad[5][0] = static_cast<Float>(2);
   jac = quad.jacobian(0.5, 0);
-  ASSERT_NEAR((jac(0, 0)), 2, eps); 
+  ASSERT_NEAR((jac(0, 0)), 2, eps);
   ASSERT_NEAR((jac(1, 0)), 0, eps);
   ASSERT_NEAR((jac(0, 1)), 0, eps);
   ASSERT_NEAR((jac(1, 1)), 1, eps);
@@ -258,7 +258,8 @@ testQuadForIntersections(um2::QuadraticQuadrilateral<2> const quad)
   Int constexpr rays_per_longest_edge = 1000;
 
   auto const aabb = quad.boundingBox();
-  auto const longest_edge = aabb.extents(0) > aabb.extents(1) ? aabb.extents(0) : aabb.extents(1);
+  auto const longest_edge =
+      aabb.extents(0) > aabb.extents(1) ? aabb.extents(0) : aabb.extents(1);
   auto const spacing = longest_edge / static_cast<Float>(rays_per_longest_edge);
   Float const pi_deg = um2::pi_2<Float> / static_cast<Float>(num_angles);
   // For each angle

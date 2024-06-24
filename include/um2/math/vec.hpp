@@ -17,12 +17,12 @@
 //==============================================================================
 // Constants
 //==============================================================================
-// eps_distance:
+// epsDistance:
 //   Distance between two points, below which they are considered to be equal.
-// eps_distance2:
+// epsDistance2:
 //   Squared distance between two points, below which they are considered to be
 //   equal.
-// inf_distance:
+// infDistance:
 //  Distance between two points, above which they are considered to be
 //  infinitely far apart. Typically used for invalid points and values.
 //
@@ -31,28 +31,40 @@
 namespace um2
 {
 
-// NOTE: If you change these 3 values, you had better find every instance
-// of them in the code and tests and make sure the values are appropriate.
-
-#ifndef __CUDA_ARCH__
-template <class T>
-inline constexpr T eps_distance = castIfNot<T>(1e-7); // 1 nm
-
-template <class T>
-inline constexpr T eps_distance2 = castIfNot<T>(1e-14); // 1 nm^2
+// EPS_FLOAT = 1.1920928955078125e-07F;
+// EPS_DOUBLE = 2.2204460492503131e-16;
+// Float32 has about 7 decimal digits of precision.
+// If the max coordinate is on the order of 100 or so, then
+// 123.4567 means 1e-4 is about all we can expect in terms of absolute error.
+// This number is likely too small, since many algorithms yield 1 to 3 ULPs of
+// error.
 
 template <class T>
-inline constexpr T inf_distance = castIfNot<T>(1e8); // 1000 km
-#else
-template <class T>
-DEVICE constexpr T eps_distance = castIfNot<T>(1e-7); // 1 nm
+HOSTDEV constexpr auto 
+epsDistance() -> T
+{
+  if constexpr (std::same_as<T, float>) {
+    return castIfNot<T>(1e-4); // 1 um
+  } else if constexpr (std::same_as<T, double>) {
+    return castIfNot<T>(1e-7); // 1 nm
+  } else {
+    static_assert(false, "Unsupported type");
+  }
+}
 
 template <class T>
-DEVICE constexpr T eps_distance2 = castIfNot<T>(1e-14); // 1 nm^2
+HOSTDEV constexpr auto
+epsDistance2() -> T
+{
+  return epsDistance<T>() * epsDistance<T>();
+}
 
 template <class T>
-DEVICE constexpr T inf_distance = castIfNot<T>(1e8); // 1000 km
-#endif
+HOSTDEV constexpr auto
+infDistance() -> T
+{
+  return castIfNot<T>(1e8); // 1000 km
+}
 
 } // namespace um2
 
@@ -280,7 +292,7 @@ public:
   // eps2 is the squared distance below which two points are considered to be
   // equal.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  isApprox(Vec<D, T> const & v, T const & eps2 = eps_distance2<T>) const noexcept -> bool;
+  isApprox(Vec<D, T> const & v, T const & eps2 = epsDistance2<T>()) const noexcept -> bool;
 
 }; // class Vec
 
@@ -297,8 +309,8 @@ using Vec3 = Vec<3, T>;
 template <class T>
 using Vec4 = Vec<4, T>;
 
-using Vec2i = Vec2<Int>;
-using Vec3i = Vec3<Int>;
+using Vec2I = Vec2<Int>;
+using Vec3I = Vec3<Int>;
 
 using Vec2f = Vec2<float>;
 using Vec3f = Vec3<float>;
@@ -528,7 +540,9 @@ HOSTDEV constexpr auto
 Vec<D, T>::operator-() const noexcept -> Vec<D, T>
 {
   if constexpr (is_simd_vec<D, T> && gcc_vec_ext_enabled) {
-    return -_data;
+    Vec<D, T> result;
+    result._data = -_data;
+    return result;
   } else {
     Vec<D, T> result;
     for (Int i = 0; i < D; ++i) {

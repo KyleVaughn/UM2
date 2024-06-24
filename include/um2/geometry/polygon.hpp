@@ -19,8 +19,8 @@
 //  - intersect(Ray2)
 //  - hasSelfIntersection (quadratic polygons only)
 
-#define STATIC_ASSERT_VALID_POLYGON \
-  static_assert(D >= 2, "Polygons must be embedded in at least 2 dimensions"); \
+#define STATIC_ASSERT_VALID_POLYGON                                                      \
+  static_assert(D >= 2, "Polygons must be embedded in at least 2 dimensions");           \
   static_assert(N >= 2, "A polygon must have at least 2 vertices");
 
 namespace um2
@@ -41,15 +41,15 @@ polygonNumEdges() noexcept -> Int
 // linearPolygon
 //==============================================================================
 
-template <Int N, Int D>
+template <Int N, Int D, class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-linearPolygon(QuadraticPolygon<N, D> const & p) noexcept -> LinearPolygon<N / 2, D>
+linearPolygon(QuadraticPolygon<N, D, T> const & p) noexcept -> LinearPolygon<N / 2, D, T>
 {
-  LinearPolygon<N / 2, D> result;
+  LinearPolygon<N / 2, D, T> result;
   for (Int i = 0; i < N / 2; ++i) {
     result[i] = p[i];
   }
-  return result; 
+  return result;
 }
 
 //==============================================================================
@@ -57,27 +57,27 @@ linearPolygon(QuadraticPolygon<N, D> const & p) noexcept -> LinearPolygon<N / 2,
 //==============================================================================
 // Return the i-th edge of the polygon.
 
-template <Int N, Int D>
+template <Int N, Int D, class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-getEdge(LinearPolygon<N, D> const & lp, Int const i) noexcept -> LineSegment<D>
+getEdge(LinearPolygon<N, D, T> const & lp, Int const i) noexcept -> LineSegment<D, T>
 {
   STATIC_ASSERT_VALID_POLYGON;
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < N);
-  return (i < N - 1) ? LineSegment<D>(lp[i], lp[i + 1])
-                     : LineSegment<D>(lp[N - 1], lp[0]);
+  return (i < N - 1) ? LineSegment<D, T>(lp[i], lp[i + 1])
+                     : LineSegment<D, T>(lp[N - 1], lp[0]);
 }
 
-template <Int N, Int D>
+template <Int N, Int D, class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-getEdge(QuadraticPolygon<N, D> const & qp, Int const i) noexcept -> QuadraticSegment<D>
+getEdge(QuadraticPolygon<N, D, T> const & qp, Int const i) noexcept -> QuadraticSegment<D, T>
 {
   STATIC_ASSERT_VALID_POLYGON;
   Int constexpr m = polygonNumEdges<2, N>();
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < m);
-  return (i < m - 1) ? QuadraticSegment<D>(qp[i], qp[i + 1], qp[i + m])
-                     : QuadraticSegment<D>(qp[m - 1], qp[0], qp[N - 1]);
+  return (i < m - 1) ? QuadraticSegment<D, T>(qp[i], qp[i + 1], qp[i + m])
+                     : QuadraticSegment<D, T>(qp[m - 1], qp[0], qp[N - 1]);
 }
 
 //==============================================================================
@@ -87,13 +87,13 @@ getEdge(QuadraticPolygon<N, D> const & qp, Int const i) noexcept -> QuadraticSeg
 // For a linear polygon, we can simply sum the distances between consecutive
 // vertices.
 
-template <Int N, Int D>
+template <Int N, Int D, class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-perimeter(LinearPolygon<N, D> const & p) noexcept -> Float
+perimeter(LinearPolygon<N, D, T> const & p) noexcept -> T
 {
   STATIC_ASSERT_VALID_POLYGON;
   // Take care of the last edge (wraparound) separately.
-  Float result = p[N - 1].distanceTo(p[0]);
+  T result = p[N - 1].distanceTo(p[0]);
   for (Int i = 0; i < N - 1; ++i) {
     result += p[i].distanceTo(p[i + 1]);
   }
@@ -101,13 +101,13 @@ perimeter(LinearPolygon<N, D> const & p) noexcept -> Float
   return result;
 }
 
-template <Int N, Int D>
+template <Int N, Int D, class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-perimeter(QuadraticPolygon<N, D> const & p) noexcept -> Float
+perimeter(QuadraticPolygon<N, D, T> const & p) noexcept -> T
 {
   STATIC_ASSERT_VALID_POLYGON;
   Int constexpr m = polygonNumEdges<2, N>();
-  Float result = p.getEdge(0).length();
+  T result = p.getEdge(0).length();
   for (Int i = 1; i < m; ++i) {
     result += p.getEdge(i).length();
   }
@@ -119,12 +119,12 @@ perimeter(QuadraticPolygon<N, D> const & p) noexcept -> Float
 // boundingBox
 //==============================================================================
 
-template <Int N>
+template <Int N, class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-boundingBox(PlanarQuadraticPolygon<N> const & p) noexcept -> AxisAlignedBox2
+boundingBox(PlanarQuadraticPolygon<N, T> const & p) noexcept -> AxisAlignedBox2<T>
 {
   Int constexpr m = polygonNumEdges<2, N>();
-  AxisAlignedBox2 result = p.getEdge(0).boundingBox();
+  AxisAlignedBox2<T> result = p.getEdge(0).boundingBox();
   for (Int i = 1; i < m; ++i) {
     result += p.getEdge(i).boundingBox();
   }
@@ -138,13 +138,13 @@ boundingBox(PlanarQuadraticPolygon<N> const & p) noexcept -> AxisAlignedBox2
 // The exception is when the polygon is planar (or a triangle).
 // Note: convex quadrilaterals and triangles use a more efficient formula.
 
-template <Int N>
+template <Int N, class T>
 PURE HOSTDEV constexpr auto
-area(PlanarLinearPolygon<N> const & p) noexcept -> Float
+area(PlanarLinearPolygon<N, T> const & p) noexcept -> T
 {
   // Shoelace forumla A = 1/2 * sum_{i=0}^{n-1} cross(p_i, p_{i+1})
   // p_n = p_0
-  Float sum = (p[N - 1]).cross(p[0]); // cross(p_{n-1}, p_0), the last term
+  T sum = (p[N - 1]).cross(p[0]); // cross(p_{n-1}, p_0), the last term
   for (Int i = 0; i < N - 1; ++i) {
     sum += (p[i]).cross(p[i + 1]);
   }
@@ -152,15 +152,15 @@ area(PlanarLinearPolygon<N> const & p) noexcept -> Float
   return sum / 2;
 }
 
-template <Int N>
+template <Int N, class T>
 PURE HOSTDEV constexpr auto
-area(PlanarQuadraticPolygon<N> const & q) noexcept -> Float
+area(PlanarQuadraticPolygon<N, T> const & q) noexcept -> T
 {
   // Geometric decomposition:
   // Area of the linear polygon plus the area enclosed by the quadratic edges.
   // Note, the enclosed area is not necessarily positive.
-  Float result = area(linearPolygon(q));
-  Int constexpr num_edges = polygonNumEdges<2, N>(); 
+  T result = area(linearPolygon(q));
+  Int constexpr num_edges = polygonNumEdges<2, N>();
   for (Int i = 0; i < num_edges; ++i) {
     result += enclosedArea(q.getEdge(i));
   }
@@ -172,33 +172,33 @@ area(PlanarQuadraticPolygon<N> const & q) noexcept -> Float
 // centroid
 //==============================================================================
 
-template <Int N>
+template <Int N, class T>
 PURE HOSTDEV constexpr auto
-centroid(PlanarLinearPolygon<N> const & p) noexcept -> Point2
+centroid(PlanarLinearPolygon<N, T> const & p) noexcept -> Point2<T>
 {
   // Similar to the shoelace formula.
   // C = 1/6A * sum_{i=0}^{n-1} cross(p_i, p_{i+1}) * (p_i + p_{i+1})
-  Float area_sum = (p[N - 1]).cross(p[0]); // p_{n-1} x p_0, the last term
-  Point2 centroid_sum = area_sum * (p[N - 1] + p[0]);
+  T area_sum = (p[N - 1]).cross(p[0]); // p_{n-1} x p_0, the last term
+  Point2<T> centroid_sum = area_sum * (p[N - 1] + p[0]);
   for (Int i = 0; i < N - 1; ++i) {
-    Float const a = (p[i]).cross(p[i + 1]);
+    T const a = (p[i]).cross(p[i + 1]);
     area_sum += a;
     centroid_sum += a * (p[i] + p[i + 1]);
   }
-  return centroid_sum / (static_cast<Float>(3) * area_sum);
+  return centroid_sum / (static_cast<T>(3) * area_sum);
 }
 
-template <Int N>
+template <Int N, class T>
 PURE HOSTDEV constexpr auto
-centroid(PlanarQuadraticPolygon<N> const & q) noexcept -> Point2
+centroid(PlanarQuadraticPolygon<N, T> const & q) noexcept -> Point2<T>
 {
   auto lin_poly = linearPolygon(q);
-  Float area_sum = lin_poly.area();
-  Point2 centroid_sum = area_sum * lin_poly.centroid();
-  Int constexpr num_edges = polygonNumEdges<2, N>(); 
+  T area_sum = lin_poly.area();
+  Point2<T> centroid_sum = area_sum * lin_poly.centroid();
+  Int constexpr num_edges = polygonNumEdges<2, N>();
   for (Int i = 0; i < num_edges; ++i) {
     auto const e = q.getEdge(i);
-    Float const a = enclosedArea(e);
+    T const a = enclosedArea(e);
     area_sum += a;
     centroid_sum += a * enclosedCentroid(e);
   }
@@ -209,9 +209,9 @@ centroid(PlanarQuadraticPolygon<N> const & q) noexcept -> Point2
 // contains
 //==============================================================================
 
-template <Int N>
+template <Int N, class T>
 PURE HOSTDEV constexpr auto
-contains(PlanarQuadraticPolygon<N> const & poly, Point2 const p) noexcept -> bool
+contains(PlanarQuadraticPolygon<N, T> const & poly, Point2<T> const p) noexcept -> bool
 {
   Int constexpr m = polygonNumEdges<2, N>();
   // The point is inside the polygon if it is left of all the edges.
@@ -233,11 +233,11 @@ contains(PlanarQuadraticPolygon<N> const & poly, Point2 const p) noexcept -> boo
 //
 // It can be shown that this is also true for a concave polygon.
 
-template <Int P, Int N>
+template <Int P, Int N, class T>
 PURE HOSTDEV constexpr auto
-meanChordLength(PlanarPolygon<P, N> const & p) noexcept -> Float
+meanChordLength(PlanarPolygon<P, N, T> const & p) noexcept -> T
 {
-  auto const result = um2::pi<Float> * p.area() / p.perimeter();
+  auto const result = um2::pi<T> * p.area() / p.perimeter();
   ASSERT(result > 0);
   return result;
 }
@@ -246,9 +246,10 @@ meanChordLength(PlanarPolygon<P, N> const & p) noexcept -> Float
 // intersect
 //==============================================================================
 
-template <Int P, Int N>
+template <Int P, Int N, class T>
 HOSTDEV constexpr auto
-intersect(PlanarPolygon<P, N> const & poly, Ray2 const & ray, Float * const buffer) noexcept -> Int
+intersect(PlanarPolygon<P, N, T> const & poly, Ray2<T> const & ray,
+          T * const buffer) noexcept -> Int
 {
   Int constexpr m = polygonNumEdges<P, N>();
   Int hits = 0;
@@ -259,13 +260,14 @@ intersect(PlanarPolygon<P, N> const & poly, Ray2 const & ray, Float * const buff
 }
 
 //==============================================================================
-// hasSelfIntersection 
+// hasSelfIntersection
 //==============================================================================
-// Quadratic polygons only. 
+// Quadratic polygons only.
 
-template <Int N>
+template <Int N, class T>
 HOSTDEV constexpr auto
-hasSelfIntersection(PlanarQuadraticPolygon<N> const & poly, Point2 * buffer) noexcept -> bool
+hasSelfIntersection(PlanarQuadraticPolygon<N, T> const & poly,
+                    Point2<T> * buffer) noexcept -> bool
 {
   // Edge i should intersect edge i + 1 exactly once.
   Int constexpr m = polygonNumEdges<2, N>();
@@ -274,7 +276,7 @@ hasSelfIntersection(PlanarQuadraticPolygon<N> const & poly, Point2 * buffer) noe
       return true;
     }
   }
-  
+
   // Edge m - 1 should intersect edge 0 exactly once.
   if (poly.getEdge(m - 1).intersect(poly.getEdge(0), buffer) > 1) {
     return true;
@@ -293,11 +295,11 @@ hasSelfIntersection(PlanarQuadraticPolygon<N> const & poly, Point2 * buffer) noe
   return false;
 }
 
-template <Int N>
+template <Int N, class T>
 PURE HOSTDEV constexpr auto
-hasSelfIntersection(PlanarQuadraticPolygon<N> const & poly) noexcept -> bool
+hasSelfIntersection(PlanarQuadraticPolygon<N, T> const & poly) noexcept -> bool
 {
-  Point2 buffer[2 * N];
+  Point2<T> buffer[2 * N];
   return hasSelfIntersection(poly, buffer);
 }
 

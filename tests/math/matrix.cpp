@@ -1,21 +1,18 @@
+#include <um2/common/cast_if_not.hpp>
 #include <um2/config.hpp>
 #include <um2/math/matrix.hpp>
 #include <um2/stdlib/vector.hpp>
-#include <um2/common/cast_if_not.hpp>
 
 #include "../test_macros.hpp"
 
-#include <complex>
-
 //=============================================================================
-// Real 
+// Real
 //=============================================================================
 
 template <class T>
-HOSTDEV
 TEST_CASE(accessors_real)
 {
-  auto const eps = castIfNot<T>(1e-6); 
+  auto const eps = castIfNot<T>(1e-6);
   um2::Matrix<T> m(3, 4);
   ASSERT(m.rows() == 3);
   ASSERT(m.cols() == 4);
@@ -32,7 +29,6 @@ TEST_CASE(accessors_real)
 }
 
 template <class T>
-HOSTDEV
 TEST_CASE(mat_vec_real)
 {
   auto const eps = castIfNot<T>(1e-6);
@@ -82,10 +78,9 @@ TEST_CASE(mat_vec_real)
 }
 
 template <class T>
-HOSTDEV
 TEST_CASE(add_sub_real)
 {
-  auto const eps = castIfNot<T>(1e-6); 
+  auto const eps = castIfNot<T>(1e-6);
   um2::Matrix<T> a(3, 4);
   um2::Matrix<T> b(3, 4);
   um2::Matrix<T> c(3, 4);
@@ -111,10 +106,9 @@ TEST_CASE(add_sub_real)
 }
 
 template <class T>
-HOSTDEV
 TEST_CASE(mat_mul_real)
 {
-  auto const eps = castIfNot<T>(1e-6); 
+  auto const eps = castIfNot<T>(1e-6);
   // a = 1  0  1
   //     2  1  1
   //     0  1  1
@@ -331,7 +325,7 @@ TEST_CASE(eigvals_real)
   //   ( -0.69, -4.70)
   //   (-10.46,  0.00)
 
-  auto constexpr eps = castIfNot<T>(1e-2); 
+  auto constexpr eps = castIfNot<T>(1e-2);
   um2::Matrix<T> a(5, 5);
   a(0) = static_cast<T>(-1.01);
   a(1) = static_cast<T>(3.98);
@@ -414,11 +408,10 @@ TEST_CASE(transpose_real)
 //=============================================================================
 
 template <class T>
-HOSTDEV
 TEST_CASE(accessors_complex)
 {
-  using ComplexT = std::complex<T>;
-  auto const eps = castIfNot<T>(1e-6); 
+  using ComplexT = Complex<T>;
+  auto const eps = castIfNot<T>(1e-6);
   um2::Matrix<ComplexT> m(3, 4);
   ASSERT(m.rows() == 3);
   ASSERT(m.cols() == 4);
@@ -438,10 +431,9 @@ TEST_CASE(accessors_complex)
 }
 
 template <class T>
-HOSTDEV
 TEST_CASE(mat_vec_complex)
 {
-  using ComplexT = std::complex<T>;
+  using ComplexT = Complex<T>;
   auto const eps = castIfNot<T>(1e-6);
   Int constexpr n = 3;
   um2::Matrix<ComplexT> const identity = um2::Matrix<ComplexT>::identity(n);
@@ -460,10 +452,9 @@ TEST_CASE(mat_vec_complex)
 }
 
 template <class T>
-HOSTDEV
 TEST_CASE(add_sub_complex)
 {
-  using ComplexT = std::complex<T>;
+  using ComplexT = Complex<T>;
   auto const eps = castIfNot<T>(1e-6);
   um2::Matrix<ComplexT> a(3, 4);
   um2::Matrix<ComplexT> b(3, 4);
@@ -473,7 +464,7 @@ TEST_CASE(add_sub_complex)
       a(i, j) = ComplexT(static_cast<T>(j * 3 + i), static_cast<T>(j * 3 + i));
       b(i, j) = ComplexT(static_cast<T>(j * 3 + i + 1), static_cast<T>(j * 3 + i + 1));
       c(i, j) = ComplexT(static_cast<T>(2 * j * 3 + 2 * i + 1),
-                  static_cast<T>(2 * j * 3 + 2 * i + 1));
+                         static_cast<T>(2 * j * 3 + 2 * i + 1));
     }
   }
   auto const d = a + b;
@@ -495,7 +486,7 @@ TEST_CASE(add_sub_complex)
 template <class T>
 TEST_CASE(mat_mul_complex)
 {
-  using ComplexT = std::complex<T>;
+  using ComplexT = Complex<T>;
   auto const eps = castIfNot<T>(1e-6);
   // a = 1  0  1
   //     2  1  1
@@ -602,7 +593,7 @@ TEST_CASE(lin_solve_complex)
   //    -7.57   1.75  -8.61
   //    -3.03   2.86   8.99
 
-  using ComplexT = std::complex<T>;
+  using ComplexT = Complex<T>;
   auto constexpr eps = castIfNot<T>(1e-2);
   um2::Matrix<ComplexT> a(5, 5);
   a(0) = static_cast<T>(6.80);
@@ -722,8 +713,8 @@ TEST_CASE(eigvals_complex)
   //   ( -0.69, -4.70)
   //   (-10.46,  0.00)
 
-  using ComplexT = std::complex<T>;
-  auto constexpr eps = castIfNot<T>(1e-2); 
+  using ComplexT = Complex<T>;
+  auto constexpr eps = castIfNot<T>(1e-2);
   um2::Matrix<ComplexT> a(5, 5);
   a(0) = static_cast<T>(-1.01);
   a(1) = static_cast<T>(3.98);
@@ -781,14 +772,14 @@ TEST_CASE(transpose_complex)
 
   // A = (1, 1)  (2, -2)
   //     (3, 3)  (4, -4)
-  using ComplexT = std::complex<T>;
+  using ComplexT = Complex<T>;
   um2::Matrix<ComplexT> a(2, 2);
   a(0) = ComplexT(1, 1);
   a(1) = ComplexT(3, 3);
   a(2) = ComplexT(2, -2);
   a(3) = ComplexT(4, -4);
 
-  auto constexpr eps = castIfNot<T>(1e-6); 
+  auto constexpr eps = castIfNot<T>(1e-6);
   a.transpose();
   ASSERT_NEAR(a(0).real(), 1, eps);
   ASSERT_NEAR(a(0).imag(), -1, eps);
@@ -806,29 +797,29 @@ TEST_CASE(transpose_complex)
 template <class T>
 TEST_SUITE(Matrix_real)
 {
-  TEST_HOSTDEV(accessors_real, T);
-  TEST_HOSTDEV(mat_vec_real, T);
-  TEST_HOSTDEV(add_sub_real, T);
-  TEST_HOSTDEV(mat_mul_real, T);
+  TEST(accessors_real<T>);
+  TEST(mat_vec_real<T>);
+  TEST(add_sub_real<T>);
+  TEST(mat_mul_real<T>);
 #if UM2_USE_BLAS_LAPACK
-  TEST_HOSTDEV(lin_solve_real, T);
-  TEST_HOSTDEV(eigvals_real, T);
+  TEST(lin_solve_real<T>);
+  TEST(eigvals_real<T>);
 #endif
-  TEST_HOSTDEV(transpose_real, T);
+  TEST(transpose_real<T>);
 }
 
 template <class T>
 TEST_SUITE(Matrix_complex)
 {
-  TEST_HOSTDEV(accessors_complex, T);
-  TEST_HOSTDEV(mat_vec_complex, T);
-  TEST_HOSTDEV(add_sub_complex, T);
-  TEST_HOSTDEV(mat_mul_complex, T);
+  TEST(accessors_complex<T>);
+  TEST(mat_vec_complex<T>);
+  TEST(add_sub_complex<T>);
+  TEST(mat_mul_complex<T>);
 #if UM2_USE_BLAS_LAPACK
-  TEST_HOSTDEV(lin_solve_complex, T);
-  TEST_HOSTDEV(eigvals_complex, T);
+  TEST(lin_solve_complex<T>);
+  TEST(eigvals_complex<T>);
 #endif
-  TEST_HOSTDEV(transpose_complex, T);
+  TEST(transpose_complex<T>);
 }
 
 auto

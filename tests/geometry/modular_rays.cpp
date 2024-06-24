@@ -1,4 +1,8 @@
+#include <um2/config.hpp>
+#include <um2/geometry/axis_aligned_box.hpp>
 #include <um2/geometry/modular_rays.hpp>
+#include <um2/geometry/point.hpp>
+#include <um2/stdlib/vector.hpp>
 
 #include "../test_macros.hpp"
 
@@ -19,29 +23,30 @@
 //   0    r_start     3                6
 //
 
+template <class T>
 HOSTDEV
 TEST_CASE(modular_ray_params)
 {
-  um2::Point2 const p00(0, 0);
-  um2::Point2 const p30(3, 0);
-  um2::Point2 const p02(0, 2);
-  um2::Point2 const p32(3, 2);
-  um2::Point2 const p62(6, 2);
-  um2::Point2 const p34(3, 4);
-  um2::Point2 const p64(6, 4);
-  um2::AxisAlignedBox2 const box00(p00, p32);
-  um2::AxisAlignedBox2 const box10(p30, p62);
-  um2::AxisAlignedBox2 const box01(p02, p34);
-  um2::AxisAlignedBox2 const box11(p32, p64);
-  um2::Vector<um2::AxisAlignedBox2> const boxes{box00, box10, box01, box11};
+  um2::Point2<T> const p00(0, 0);
+  um2::Point2<T> const p30(3, 0);
+  um2::Point2<T> const p02(0, 2);
+  um2::Point2<T> const p32(3, 2);
+  um2::Point2<T> const p62(6, 2);
+  um2::Point2<T> const p34(3, 4);
+  um2::Point2<T> const p64(6, 4);
+  um2::AxisAlignedBox2<T> const box00(p00, p32);
+  um2::AxisAlignedBox2<T> const box10(p30, p62);
+  um2::AxisAlignedBox2<T> const box01(p02, p34);
+  um2::AxisAlignedBox2<T> const box11(p32, p64);
+  um2::Vector<um2::AxisAlignedBox2<T>> const boxes{box00, box10, box01, box11};
 
   Int const degree = 4; // azimuthal angles per quadrant
-  Float const pi_deg = um2::pi_2<Float> / degree;
+  T const pi_deg = um2::pi_2<T> / degree;
   // pi/8, 3pi/8, 5pi/8, 7pi/8
-  um2::Vector<Float> const angles{pi_deg, 3 * pi_deg, 5 * pi_deg, 7 * pi_deg};
+  um2::Vector<T> const angles{pi_deg, 3 * pi_deg, 5 * pi_deg, 7 * pi_deg};
 
-  Float const s = static_cast<Float>(1) / 2; // ray spacing
-  um2::Vector<um2::ModularRayParams> ray_params(4);
+  T const s = static_cast<T>(1) / 2; // ray spacing
+  um2::Vector<um2::ModularRayParams<T>> ray_params(4);
   for (Int i = 0; i < 4; ++i) {
     ray_params[i] = um2::ModularRayParams(angles[0], s, boxes[i]);
   }
@@ -71,14 +76,20 @@ TEST_CASE(modular_ray_params)
 }
 
 #if UM2_USE_CUDA
-MAKE_CUDA_KERNEL(modular_ray_params);
+template <class T>
+MAKE_CUDA_KERNEL(modular_ray_params, T);
 #endif
 
-TEST_SUITE(ModularRayParams) { TEST_HOSTDEV(modular_ray_params); }
+template <class T>
+TEST_SUITE(ModularRayParams)
+{
+  TEST_HOSTDEV(modular_ray_params, T);
+}
 
 auto
 main() -> int
 {
-  RUN_SUITE(ModularRayParams);
+  RUN_SUITE(ModularRayParams<float>);
+  RUN_SUITE(ModularRayParams<double>);
   return 0;
 }

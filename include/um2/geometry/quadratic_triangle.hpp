@@ -50,17 +50,17 @@ public:
   constexpr Polytope() noexcept = default;
 
   template <class... Pts>
-  requires(sizeof...(Pts) == N && (std::same_as<Vertex, Pts> && ...))
-      // NOLINTNEXTLINE(google-explicit-constructor) implicit conversion is desired
-      HOSTDEV constexpr Polytope(Pts const... args) noexcept
+    requires(sizeof...(Pts) == N && (std::same_as<Vertex, Pts> && ...))
+  // NOLINTNEXTLINE(google-explicit-constructor) implicit conversion is desired
+  HOSTDEV constexpr Polytope(Pts const... args) noexcept
       : _v{args...}
   {
   }
 
-  HOSTDEV constexpr Polytope(Vec<N, Int> const & indices, Vertex const * vertices) noexcept
-      : _v{vertices[indices[0]], vertices[indices[1]], 
-           vertices[indices[2]], vertices[indices[3]],
-           vertices[indices[4]], vertices[indices[5]]} 
+  HOSTDEV constexpr Polytope(Vec<N, Int> const & indices,
+                             Vertex const * vertices) noexcept
+      : _v{vertices[indices[0]], vertices[indices[1]], vertices[indices[2]],
+           vertices[indices[3]], vertices[indices[4]], vertices[indices[5]]}
   {
   }
 
@@ -74,7 +74,7 @@ public:
   PURE HOSTDEV constexpr auto
   operator()(Float r, Float s) const noexcept -> Point<D>;
 
-  // Jacobian of the interpolation function. 
+  // Jacobian of the interpolation function.
   // [dF/dr, dF/ds]
   PURE HOSTDEV [[nodiscard]] constexpr auto
   jacobian(Float r, Float s) const noexcept -> Mat<D, 2, Float>;
@@ -97,34 +97,39 @@ public:
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   boundingBox() const noexcept -> AxisAlignedBox2
-  requires(D == 2);
+    requires(D == 2);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   area() const noexcept -> Float
-  requires(D == 2);
+    requires(D == 2);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   centroid() const noexcept -> Point<D>
-  requires(D == 2);
+    requires(D == 2);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  isCCW() const noexcept -> bool requires(D == 2);
+  isCCW() const noexcept -> bool
+    requires(D == 2);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  contains(Point2 p) const noexcept -> bool requires(D == 2);
+  contains(Point2 p) const noexcept -> bool
+    requires(D == 2);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  meanChordLength() const noexcept -> Float requires(D == 2);
+  meanChordLength() const noexcept -> Float
+    requires(D == 2);
 
   HOSTDEV [[nodiscard]] constexpr auto
-  intersect(Ray2 ray, Float * buffer) const noexcept -> Int 
-  requires(D == 2);
+  intersect(Ray2 ray, Float * buffer) const noexcept -> Int
+    requires(D == 2);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  hasSelfIntersection() const noexcept -> bool requires(D == 2);
+  hasSelfIntersection() const noexcept -> bool
+    requires(D == 2);
 
   HOSTDEV [[nodiscard]] constexpr auto
-  hasSelfIntersection(Point2 * buffer) const noexcept -> bool requires(D == 2);
+  hasSelfIntersection(Point2 * buffer) const noexcept -> bool
+    requires(D == 2);
 
 }; // QuadraticTriangle
 
@@ -181,20 +186,21 @@ QuadraticTriangle<D>::operator()(Float const r, Float const s) const noexcept ->
 
 template <Int D>
 PURE HOSTDEV constexpr auto
-jacobian(QuadraticTriangle<D> const & t6, Float const r, Float const s) noexcept
-    -> Mat<D, 2, Float>
+jacobian(QuadraticTriangle<D> const & t6, Float const r,
+         Float const s) noexcept -> Mat<D, 2, Float>
 {
   Float const rr = (4 * r);
   Float const ss = (4 * s);
   Float const tt = rr + ss - 3;
   return Mat<D, 2, Float>{
-    tt * (t6[0] - t6[3]) + (rr - 1) * (t6[1] - t6[3]) + ss * (t6[4] - t6[5]),
-    tt * (t6[0] - t6[5]) + (ss - 1) * (t6[2] - t6[5]) + rr * (t6[4] - t6[3])};
+      tt * (t6[0] - t6[3]) + (rr - 1) * (t6[1] - t6[3]) + ss * (t6[4] - t6[5]),
+      tt * (t6[0] - t6[5]) + (ss - 1) * (t6[2] - t6[5]) + rr * (t6[4] - t6[3])};
 }
 
 template <Int D>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D>::jacobian(Float const r, Float const s) const noexcept -> Mat<D, 2, Float>
+QuadraticTriangle<D>::jacobian(Float const r,
+                               Float const s) const noexcept -> Mat<D, 2, Float>
 {
   return um2::jacobian(*this, r, s);
 }
@@ -255,7 +261,7 @@ QuadraticTriangle<D>::flip() noexcept
 template <Int D>
 PURE HOSTDEV constexpr auto
 QuadraticTriangle<D>::boundingBox() const noexcept -> AxisAlignedBox2
-requires(D == 2)
+  requires(D == 2)
 {
   return um2::boundingBox(*this);
 }
@@ -268,7 +274,7 @@ requires(D == 2)
 template <Int D>
 PURE HOSTDEV constexpr auto
 QuadraticTriangle<D>::area() const noexcept -> Float
-requires(D == 2)
+  requires(D == 2)
 {
   return um2::area(*this);
 }
@@ -281,7 +287,7 @@ requires(D == 2)
 template <Int D>
 PURE HOSTDEV constexpr auto
 QuadraticTriangle<D>::centroid() const noexcept -> Point<D>
-requires(D == 2)
+  requires(D == 2)
 {
   return um2::centroid(*this);
 }
@@ -292,7 +298,8 @@ requires(D == 2)
 
 template <Int D>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D>::isCCW() const noexcept -> bool requires(D == 2)
+QuadraticTriangle<D>::isCCW() const noexcept -> bool
+  requires(D == 2)
 {
   return linearPolygon().isCCW();
 }
@@ -304,7 +311,8 @@ QuadraticTriangle<D>::isCCW() const noexcept -> bool requires(D == 2)
 
 template <Int D>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D>::contains(Point2 p) const noexcept -> bool requires(D == 2)
+QuadraticTriangle<D>::contains(Point2 p) const noexcept -> bool
+  requires(D == 2)
 {
   return um2::contains(*this, p);
 }
@@ -316,7 +324,8 @@ QuadraticTriangle<D>::contains(Point2 p) const noexcept -> bool requires(D == 2)
 
 template <Int D>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D>::meanChordLength() const noexcept -> Float requires(D == 2)
+QuadraticTriangle<D>::meanChordLength() const noexcept -> Float
+  requires(D == 2)
 {
   return um2::meanChordLength(*this);
 }
@@ -328,8 +337,9 @@ QuadraticTriangle<D>::meanChordLength() const noexcept -> Float requires(D == 2)
 
 template <Int D>
 HOSTDEV constexpr auto
-QuadraticTriangle<D>::intersect(Ray2 const ray, Float * const buffer) const noexcept -> Int
-requires(D == 2)
+QuadraticTriangle<D>::intersect(Ray2 const ray,
+                                Float * const buffer) const noexcept -> Int
+  requires(D == 2)
 {
   return um2::intersect(*this, ray, buffer);
 }
@@ -341,7 +351,8 @@ requires(D == 2)
 
 template <Int D>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D>::hasSelfIntersection() const noexcept -> bool requires(D == 2)
+QuadraticTriangle<D>::hasSelfIntersection() const noexcept -> bool
+  requires(D == 2)
 {
   return um2::hasSelfIntersection(*this);
 }
@@ -349,7 +360,7 @@ QuadraticTriangle<D>::hasSelfIntersection() const noexcept -> bool requires(D ==
 template <Int D>
 HOSTDEV constexpr auto
 QuadraticTriangle<D>::hasSelfIntersection(Point2 * const buffer) const noexcept -> bool
-requires(D == 2)
+  requires(D == 2)
 {
   return um2::hasSelfIntersection(*this, buffer);
 }

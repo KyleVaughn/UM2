@@ -1,16 +1,15 @@
 #include <um2/config.hpp>
 
 #if UM2_USE_BLAS_LAPACK
-#include <um2/math/matrix.hpp>
-#include <um2/stdlib/assert.hpp>
-#include <um2/stdlib/vector.hpp>
+#  include <um2/math/matrix.hpp>
+#  include <um2/stdlib/assert.hpp>
+#  include <um2/stdlib/vector.hpp>
 
-#include "cblas.h"
-#include "lapack.h"
-#include "lapacke.h"
+#  include "cblas.h"
+#  include "lapack.h"
+#  include "lapacke.h"
 
-#include <complex>
-#include <cstdint>
+#  include <cstdint>
 
 static_assert(sizeof(Int) == sizeof(lapack_int),
               "LAPACK integer type must be the same size as um2::Int");
@@ -70,13 +69,13 @@ operator*(Matrix<double> const & a, Vector<double> const & x) -> Vector<double>
   return y;
 }
 
-// complex<float> specialization
+// Complex<float> specialization
 template <>
 PURE auto
-operator*(Matrix<std::complex<float>> const & a,
-          Vector<std::complex<float>> const & x) -> Vector<std::complex<float>>
+operator*(Matrix<Complex<float>> const & a,
+          Vector<Complex<float>> const & x) -> Vector<Complex<float>>
 {
-  using Complex32 = std::complex<float>;
+  using Complex32 = Complex<float>;
   ASSERT(a.cols() == x.size());
   Vector<Complex32> y(a.rows());
 
@@ -102,10 +101,10 @@ operator*(Matrix<std::complex<float>> const & a,
 
 template <>
 PURE auto
-operator*(Matrix<std::complex<double>> const & a,
-          Vector<std::complex<double>> const & x) -> Vector<std::complex<double>>
+operator*(Matrix<Complex<double>> const & a,
+          Vector<Complex<double>> const & x) -> Vector<Complex<double>>
 {
-  using Complex64 = std::complex<double>;
+  using Complex64 = Complex<double>;
   ASSERT(a.cols() == x.size());
   Vector<Complex64> y(a.rows());
 
@@ -187,10 +186,10 @@ operator*(Matrix<double> const & a, Matrix<double> const & b) -> Matrix<double>
 
 template <>
 PURE auto
-operator*(Matrix<std::complex<float>> const & a,
-          Matrix<std::complex<float>> const & b) -> Matrix<std::complex<float>>
+operator*(Matrix<Complex<float>> const & a,
+          Matrix<Complex<float>> const & b) -> Matrix<Complex<float>>
 {
-  using Complex32 = std::complex<float>;
+  using Complex32 = Complex<float>;
   ASSERT(a.cols() == b.rows());
   Matrix<Complex32> c(a.rows(), b.cols());
 
@@ -218,10 +217,10 @@ operator*(Matrix<std::complex<float>> const & a,
 
 template <>
 PURE auto
-operator*(Matrix<std::complex<double>> const & a,
-          Matrix<std::complex<double>> const & b) -> Matrix<std::complex<double>>
+operator*(Matrix<Complex<double>> const & a,
+          Matrix<Complex<double>> const & b) -> Matrix<Complex<double>>
 {
-  using Complex64 = std::complex<double>;
+  using Complex64 = Complex<double>;
   ASSERT(a.cols() == b.rows());
   Matrix<Complex64> c(a.rows(), b.cols());
 
@@ -301,10 +300,10 @@ matmul(Matrix<double> & c, Matrix<double> const & a, Matrix<double> const & b)
 
 template <>
 void
-matmul(Matrix<std::complex<float>> & c, Matrix<std::complex<float>> const & a,
-       Matrix<std::complex<float>> const & b)
+matmul(Matrix<Complex<float>> & c, Matrix<Complex<float>> const & a,
+       Matrix<Complex<float>> const & b)
 {
-  using Complex32 = std::complex<float>;
+  using Complex32 = Complex<float>;
   ASSERT(a.cols() == b.rows());
   ASSERT(c.rows() == a.rows());
   ASSERT(c.cols() == b.cols());
@@ -332,10 +331,10 @@ matmul(Matrix<std::complex<float>> & c, Matrix<std::complex<float>> const & a,
 
 template <>
 void
-matmul(Matrix<std::complex<double>> & c, Matrix<std::complex<double>> const & a,
-       Matrix<std::complex<double>> const & b)
+matmul(Matrix<Complex<double>> & c, Matrix<Complex<double>> const & a,
+       Matrix<Complex<double>> const & b)
 {
-  using Complex64 = std::complex<double>;
+  using Complex64 = Complex<double>;
   ASSERT(a.cols() == b.rows());
   ASSERT(c.rows() == a.rows());
   ASSERT(c.cols() == b.cols());
@@ -386,13 +385,13 @@ linearSolve(Matrix<float> const & a, Matrix<float> const & b) -> Matrix<float>
   Int * ipiv = new Int[static_cast<uint64_t>(n)];
   Matrix<float> b_copy(b);  // Copy of B, since sgesv overwrites B
   Int const ldb = b.rows(); // Leading dimension of B
-#if UM2_ENABLE_ASSERTS
+#  if UM2_ENABLE_ASSERTS
   Int const info = LAPACKE_sgesv(LAPACK_COL_MAJOR, n, nrhs, a_copy.data(), lda, ipiv,
                                  b_copy.data(), ldb);
   ASSERT(info == 0);
-#else
+#  else
   LAPACKE_sgesv(LAPACK_COL_MAJOR, n, nrhs, a_copy.data(), lda, ipiv, b_copy.data(), ldb);
-#endif
+#  endif
   delete[] ipiv;
   return b_copy;
 }
@@ -417,23 +416,23 @@ linearSolve(Matrix<double> const & a, Matrix<double> const & b) -> Matrix<double
   Int * ipiv = new Int[static_cast<uint64_t>(n)];
   Matrix<double> b_copy(b); // Copy of B, since sgesv overwrites B
   Int const ldb = b.rows(); // Leading dimension of B
-#if UM2_ENABLE_ASSERTS
+#  if UM2_ENABLE_ASSERTS
   Int const info = LAPACKE_dgesv(LAPACK_COL_MAJOR, n, nrhs, a_copy.data(), lda, ipiv,
                                  b_copy.data(), ldb);
   ASSERT(info == 0);
-#else
+#  else
   LAPACKE_dgesv(LAPACK_COL_MAJOR, n, nrhs, a_copy.data(), lda, ipiv, b_copy.data(), ldb);
-#endif
+#  endif
   delete[] ipiv;
   return b_copy;
 }
 
 template <>
 PURE auto
-linearSolve(Matrix<std::complex<float>> const & a,
-            Matrix<std::complex<float>> const & b) -> Matrix<std::complex<float>>
+linearSolve(Matrix<Complex<float>> const & a,
+            Matrix<Complex<float>> const & b) -> Matrix<Complex<float>>
 {
-  using Complex32 = std::complex<float>;
+  using Complex32 = Complex<float>;
   ASSERT(a.rows() == a.cols()); // A must be square
   ASSERT(a.rows() == b.rows());
 
@@ -452,23 +451,23 @@ linearSolve(Matrix<std::complex<float>> const & a,
   Matrix<Complex32> b_copy(b); // Copy of B, since cgesv overwrites B
   lapack_complex_float * b_data = reinterpret_cast<lapack_complex_float *>(b_copy.data());
   Int const ldb = b.rows(); // Leading dimension of B
-#if UM2_ENABLE_ASSERTS
+#  if UM2_ENABLE_ASSERTS
   Int const info =
       LAPACKE_cgesv(LAPACK_COL_MAJOR, n, nrhs, a_data, lda, ipiv, b_data, ldb);
   ASSERT(info == 0);
-#else
+#  else
   LAPACKE_cgesv(LAPACK_COL_MAJOR, n, nrhs, a_data, lda, ipiv, b_data, ldb);
-#endif
+#  endif
   delete[] ipiv;
   return b_copy;
 }
 
 template <>
 PURE auto
-linearSolve(Matrix<std::complex<double>> const & a,
-            Matrix<std::complex<double>> const & b) -> Matrix<std::complex<double>>
+linearSolve(Matrix<Complex<double>> const & a,
+            Matrix<Complex<double>> const & b) -> Matrix<Complex<double>>
 {
-  using Complex64 = std::complex<double>;
+  using Complex64 = Complex<double>;
   ASSERT(a.rows() == a.cols()); // A must be square
   ASSERT(a.rows() == b.rows());
 
@@ -489,13 +488,13 @@ linearSolve(Matrix<std::complex<double>> const & a,
   lapack_complex_double * b_data =
       reinterpret_cast<lapack_complex_double *>(b_copy.data());
   Int const ldb = b.rows(); // Leading dimension of B
-#if UM2_ENABLE_ASSERTS
+#  if UM2_ENABLE_ASSERTS
   Int const info =
       LAPACKE_zgesv(LAPACK_COL_MAJOR, n, nrhs, a_data, lda, ipiv, b_data, ldb);
   ASSERT(info == 0);
-#else
+#  else
   LAPACKE_zgesv(LAPACK_COL_MAJOR, n, nrhs, a_data, lda, ipiv, b_data, ldb);
-#endif
+#  endif
   delete[] ipiv;
   return b_copy;
 }
@@ -517,13 +516,13 @@ linearSolve(Matrix<float> & a, Matrix<float> & b, Vector<Int> & ipiv)
   Int const nrhs = b.cols(); // Number of columns in B
   Int const lda = a.rows();  // Leading dimension of A
   Int const ldb = b.rows();  // Leading dimension of B
-#if UM2_ENABLE_ASSERTS
+#  if UM2_ENABLE_ASSERTS
   Int const info =
       LAPACKE_sgesv(LAPACK_COL_MAJOR, n, nrhs, a.data(), lda, ipiv.data(), b.data(), ldb);
   ASSERT(info == 0);
-#else
+#  else
   LAPACKE_sgesv(LAPACK_COL_MAJOR, n, nrhs, a.data(), lda, ipiv.data(), b.data(), ldb);
-#endif
+#  endif
 }
 
 template <>
@@ -543,19 +542,18 @@ linearSolve(Matrix<double> & a, Matrix<double> & b, Vector<Int> & ipiv)
   Int const nrhs = b.cols(); // Number of columns in B
   Int const lda = a.rows();  // Leading dimension of A
   Int const ldb = b.rows();  // Leading dimension of B
-#if UM2_ENABLE_ASSERTS
+#  if UM2_ENABLE_ASSERTS
   Int const info =
       LAPACKE_dgesv(LAPACK_COL_MAJOR, n, nrhs, a.data(), lda, ipiv.data(), b.data(), ldb);
   ASSERT(info == 0);
-#else
+#  else
   LAPACKE_dgesv(LAPACK_COL_MAJOR, n, nrhs, a.data(), lda, ipiv.data(), b.data(), ldb);
-#endif
+#  endif
 }
 
 template <>
 void
-linearSolve(Matrix<std::complex<float>> & a, Matrix<std::complex<float>> & b,
-            Vector<Int> & ipiv)
+linearSolve(Matrix<Complex<float>> & a, Matrix<Complex<float>> & b, Vector<Int> & ipiv)
 {
   ASSERT(a.rows() == a.cols()); // A must be square
   ASSERT(a.rows() == b.rows());
@@ -573,19 +571,18 @@ linearSolve(Matrix<std::complex<float>> & a, Matrix<std::complex<float>> & b,
   Int const lda = a.rows(); // Leading dimension of A
   lapack_complex_float * b_data = reinterpret_cast<lapack_complex_float *>(b.data());
   Int const ldb = b.rows(); // Leading dimension of B
-#if UM2_ENABLE_ASSERTS
+#  if UM2_ENABLE_ASSERTS
   Int const info =
       LAPACKE_cgesv(LAPACK_COL_MAJOR, n, nrhs, a_data, lda, ipiv.data(), b_data, ldb);
   ASSERT(info == 0);
-#else
+#  else
   LAPACKE_cgesv(LAPACK_COL_MAJOR, n, nrhs, a_data, lda, ipiv.data(), b_data, ldb);
-#endif
+#  endif
 }
 
 template <>
 void
-linearSolve(Matrix<std::complex<double>> & a, Matrix<std::complex<double>> & b,
-            Vector<Int> & ipiv)
+linearSolve(Matrix<Complex<double>> & a, Matrix<Complex<double>> & b, Vector<Int> & ipiv)
 {
   ASSERT(a.rows() == a.cols()); // A must be square
   ASSERT(a.rows() == b.rows());
@@ -603,13 +600,13 @@ linearSolve(Matrix<std::complex<double>> & a, Matrix<std::complex<double>> & b,
   Int const lda = a.rows(); // Leading dimension of A
   lapack_complex_double * b_data = reinterpret_cast<lapack_complex_double *>(b.data());
   Int const ldb = b.rows(); // Leading dimension of B
-#if UM2_ENABLE_ASSERTS
+#  if UM2_ENABLE_ASSERTS
   Int const info =
       LAPACKE_zgesv(LAPACK_COL_MAJOR, n, nrhs, a_data, lda, ipiv.data(), b_data, ldb);
   ASSERT(info == 0);
-#else
+#  else
   LAPACKE_zgesv(LAPACK_COL_MAJOR, n, nrhs, a_data, lda, ipiv.data(), b_data, ldb);
-#endif
+#  endif
 }
 
 //==============================================================================
@@ -617,7 +614,7 @@ linearSolve(Matrix<std::complex<double>> & a, Matrix<std::complex<double>> & b,
 //==============================================================================
 
 PURE auto
-eigvals(Matrix<float> const & a) -> Vector<std::complex<float>>
+eigvals(Matrix<float> const & a) -> Vector<Complex<float>>
 {
   ASSERT(a.rows() == a.cols()); // A must be square
 
@@ -638,26 +635,26 @@ eigvals(Matrix<float> const & a) -> Vector<std::complex<float>>
   Int const ldvr = 1;       // Leading dimension of right eigenvectors
   auto * work = new float[static_cast<uint64_t>(4 * n)]; // Workspace
   Int const lwork = 4 * n;                               // Size of the workspace
-#if UM2_ENABLE_ASSERTS
+#  if UM2_ENABLE_ASSERTS
   Int const info =
       LAPACKE_sgeev_work(LAPACK_COL_MAJOR, jobvl, jobvr, n, a_copy.data(), lda, wr.data(),
                          wi.data(), vl, ldvl, vr, ldvr, work, lwork);
   ASSERT(info == 0);
-#else
+#  else
   LAPACKE_sgeev_work(LAPACK_COL_MAJOR, jobvl, jobvr, n, a_copy.data(), lda, wr.data(),
                      wi.data(), vl, ldvl, vr, ldvr, work, lwork);
-#endif
+#  endif
   delete[] work;
 
-  Vector<std::complex<float>> w(n);
+  Vector<Complex<float>> w(n);
   for (Int i = 0; i < n; ++i) {
-    w[i] = std::complex<float>(wr[i], wi[i]);
+    w[i] = Complex<float>(wr[i], wi[i]);
   }
   return w;
 }
 
 PURE auto
-eigvals(Matrix<double> const & a) -> Vector<std::complex<double>>
+eigvals(Matrix<double> const & a) -> Vector<Complex<double>>
 {
   ASSERT(a.rows() == a.cols()); // A must be square
 
@@ -678,28 +675,28 @@ eigvals(Matrix<double> const & a) -> Vector<std::complex<double>>
   Int const ldvr = 1;       // Leading dimension of right eigenvectors
   auto * work = new double[static_cast<uint64_t>(4 * n)]; // Workspace
   Int const lwork = 4 * n;                                // Size of the workspace
-#if UM2_ENABLE_ASSERTS
+#  if UM2_ENABLE_ASSERTS
   Int const info =
       LAPACKE_dgeev_work(LAPACK_COL_MAJOR, jobvl, jobvr, n, a_copy.data(), lda, wr.data(),
                          wi.data(), vl, ldvl, vr, ldvr, work, lwork);
   ASSERT(info == 0);
-#else
+#  else
   LAPACKE_dgeev_work(LAPACK_COL_MAJOR, jobvl, jobvr, n, a_copy.data(), lda, wr.data(),
                      wi.data(), vl, ldvl, vr, ldvr, work, lwork);
-#endif
+#  endif
   delete[] work;
 
-  Vector<std::complex<double>> w(n);
+  Vector<Complex<double>> w(n);
   for (Int i = 0; i < n; ++i) {
-    w[i] = std::complex<double>(wr[i], wi[i]);
+    w[i] = Complex<double>(wr[i], wi[i]);
   }
   return w;
 }
 
 PURE auto
-eigvals(Matrix<std::complex<float>> const & a) -> Vector<std::complex<float>>
+eigvals(Matrix<Complex<float>> const & a) -> Vector<Complex<float>>
 {
-  using Complex32 = std::complex<float>;
+  using Complex32 = Complex<float>;
   ASSERT(a.rows() == a.cols()); // A must be square
 
   // Compute the eigenvalues using LAPACK's cgeev function
@@ -723,23 +720,23 @@ eigvals(Matrix<std::complex<float>> const & a) -> Vector<std::complex<float>>
       reinterpret_cast<lapack_complex_float *>(work.data());
   Int const lwork = 4 * n;    // Size of the workspace
   Vector<float> rwork(2 * n); // Real workspace
-#if UM2_ENABLE_ASSERTS
+#  if UM2_ENABLE_ASSERTS
   Int const info =
       LAPACKE_cgeev_work(LAPACK_COL_MAJOR, jobvl, jobvr, n, a_data, lda, w_data, vl, ldvl,
                          vr, ldvr, work_data, lwork, rwork.data());
   ASSERT(info == 0);
-#else
-  LAPACKE_cgeev_work(LAPACK_COL_MAJOR, jobvl, jobvr, n, a_data, lda, w_data, vl, ldvl,
-                     vr, ldvr, work_data, lwork, rwork.data());
-#endif
+#  else
+  LAPACKE_cgeev_work(LAPACK_COL_MAJOR, jobvl, jobvr, n, a_data, lda, w_data, vl, ldvl, vr,
+                     ldvr, work_data, lwork, rwork.data());
+#  endif
 
   return w;
 }
 
 PURE auto
-eigvals(Matrix<std::complex<double>> const & a) -> Vector<std::complex<double>>
+eigvals(Matrix<Complex<double>> const & a) -> Vector<Complex<double>>
 {
-  using Complex64 = std::complex<double>;
+  using Complex64 = Complex<double>;
   ASSERT(a.rows() == a.cols()); // A must be square
 
   // Compute the eigenvalues using LAPACK's zgeev function
@@ -764,15 +761,15 @@ eigvals(Matrix<std::complex<double>> const & a) -> Vector<std::complex<double>>
       reinterpret_cast<lapack_complex_double *>(work.data());
   Int const lwork = 4 * n;     // Size of the workspace
   Vector<double> rwork(2 * n); // Real workspace
-#if UM2_ENABLE_ASSERTS
+#  if UM2_ENABLE_ASSERTS
   Int const info =
       LAPACKE_zgeev_work(LAPACK_COL_MAJOR, jobvl, jobvr, n, a_data, lda, w_data, vl, ldvl,
                          vr, ldvr, work_data, lwork, rwork.data());
   ASSERT(info == 0);
-#else
-  LAPACKE_zgeev_work(LAPACK_COL_MAJOR, jobvl, jobvr, n, a_data, lda, w_data, vl, ldvl,
-                     vr, ldvr, work_data, lwork, rwork.data());
-#endif
+#  else
+  LAPACKE_zgeev_work(LAPACK_COL_MAJOR, jobvl, jobvr, n, a_data, lda, w_data, vl, ldvl, vr,
+                     ldvr, work_data, lwork, rwork.data());
+#  endif
 
   return w;
 }

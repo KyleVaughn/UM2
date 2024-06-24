@@ -60,12 +60,13 @@ areCCW(Point2<T> const & a, Point2<T> const & b, Point2<T> const & c) noexcept -
 // floating point error.
 template <class T>
 PURE HOSTDEV constexpr auto
-areApproxCCW(Point2<T> const & a, Point2<T> const & b, Point2<T> const & c) noexcept -> bool
+areApproxCCW(Point2<T> const & a, Point2<T> const & b,
+             Point2<T> const & c) noexcept -> bool
 {
   // 2D cross product, of (b - a) and (c - a).
   auto const ab = b - a;
   auto const ac = c - a;
-  return -eps_distance<T> <= ab.cross(ac);
+  return -epsDistance<T>() <= ab.cross(ac);
 }
 
 } // namespace um2

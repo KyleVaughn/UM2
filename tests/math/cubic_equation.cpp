@@ -139,6 +139,11 @@ TEST_CASE(random_coeff)
   }
 }
 
+#if UM2_USE_CUDA
+template <class T>
+MAKE_CUDA_KERNEL(degenerate_cases, T);
+#endif
+
 template <class T>
 TEST_SUITE(cubic_equation)
 {

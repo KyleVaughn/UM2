@@ -63,6 +63,9 @@ public:
 
   constexpr Mat() noexcept = default;
 
+  template <std::same_as<Col>... Cols>
+  requires(sizeof...(Cols) == N) HOSTDEV constexpr explicit Mat(Cols... cols) noexcept;
+
   //==============================================================================
   // Methods
   //==============================================================================
@@ -148,6 +151,17 @@ Mat<M, N, T>::operator()(Int i, Int j) const noexcept -> T const &
   ASSERT_ASSUME(i < M);
   ASSERT_ASSUME(j < N);
   return _cols[j][i];
+}
+
+//==============================================================================
+// Constructors
+//==============================================================================
+
+template <Int M, Int N, typename T>
+template <std::same_as<Vec<M, T>>... Cols>
+requires(sizeof...(Cols) == N) HOSTDEV constexpr Mat<M, N, T>::Mat(Cols... cols) noexcept
+    : _cols{cols...}
+{
 }
 
 //=============================================================================

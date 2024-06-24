@@ -1,9 +1,8 @@
 #pragma once
 
+#include <um2/config.hpp>
 #include <um2/stdlib/algorithm/fill.hpp>
 #include <um2/stdlib/vector.hpp>
-
-#include <complex>
 
 //==============================================================================
 // MATRIX
@@ -158,16 +157,16 @@ linearSolve(Matrix<T> & a, Matrix<T> & b, Vector<Int> & ipiv);
 // Eigenvalues
 //------------------------------------------------------------------------------
 PURE auto
-eigvals(Matrix<float> const & a) -> Vector<std::complex<float>>;
+eigvals(Matrix<float> const & a) -> Vector<Complex<float>>;
 
 PURE auto
-eigvals(Matrix<double> const & a) -> Vector<std::complex<double>>;
+eigvals(Matrix<double> const & a) -> Vector<Complex<double>>;
 
 PURE auto
-eigvals(Matrix<std::complex<float>> const & a) -> Vector<std::complex<float>>;
+eigvals(Matrix<Complex<float>> const & a) -> Vector<Complex<float>>;
 
 PURE auto
-eigvals(Matrix<std::complex<double>> const & a) -> Vector<std::complex<double>>;
+eigvals(Matrix<Complex<double>> const & a) -> Vector<Complex<double>>;
 
 #endif // UM2_USE_BLAS_LAPACK
 
@@ -385,19 +384,18 @@ Matrix<T>::transpose() noexcept
       // Fix this.
       T aij = _data[j * _rows + i];
       T aji = _data[i * _rows + j];
-      if constexpr (std::is_same_v<T, std::complex<float>> ||
-                    std::is_same_v<T, std::complex<double>>) {
-        aij = std::conj(aij);
-        aji = std::conj(aji);
+      if constexpr (std::is_same_v<T, Complex<float>> ||
+                    std::is_same_v<T, Complex<double>>) {
+        aij = conj(aij);
+        aji = conj(aji);
       }
       _data[j * _rows + i] = aji;
       _data[i * _rows + j] = aij;
     }
   }
-  if constexpr (std::is_same_v<T, std::complex<float>> ||
-                std::is_same_v<T, std::complex<double>>) {
+  if constexpr (std::is_same_v<T, Complex<float>> || std::is_same_v<T, Complex<double>>) {
     for (Int i = 0; i < _rows; ++i) {
-      _data[i * _rows + i] = std::conj(_data[i * _rows + i]);
+      _data[i * _rows + i] = conj(_data[i * _rows + i]);
     }
   }
 }
@@ -449,7 +447,7 @@ operator*(Matrix<T> const & a, Vector<T> const & x) -> Vector<T>
       y[j] += a(j, i) * x[i];
     }
   }
-  return y; 
+  return y;
 }
 
 template <class T>

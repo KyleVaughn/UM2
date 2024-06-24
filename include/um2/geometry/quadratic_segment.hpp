@@ -2,8 +2,8 @@
 
 #include <um2/geometry/line_segment.hpp>
 #include <um2/geometry/triangle.hpp>
-#include <um2/stdlib/math.hpp>
 #include <um2/math/cubic_equation.hpp>
+#include <um2/stdlib/math/logarithms.hpp>
 
 //==============================================================================
 // QUADRATIC SEGMENT
@@ -22,8 +22,8 @@
 namespace um2
 {
 
-template <Int D>
-class Polytope<1, 2, 3, D>
+template <Int D, class T>
+class Polytope<1, 2, 3, D, T>
 {
   static_assert(0 < D && D <= 3, "Only 1D, 2D, and 3D segments are supported.");
 
@@ -32,7 +32,7 @@ public:
   static constexpr Int N = 3; // Number of vertices
   // NOLINTEND(readability-identifier-naming)
 
-  using Vertex = Point<D>;
+  using Vertex = Point<D, T>;
 
 private:
   Vertex _v[N];
@@ -61,9 +61,9 @@ public:
   constexpr Polytope() noexcept = default;
 
   template <class... Pts>
-  requires(sizeof...(Pts) == N && (std::same_as<Vertex, Pts> && ...))
-      // NOLINTNEXTLINE(google-explicit-constructor) implicit conversion is desired
-      HOSTDEV constexpr Polytope(Pts const... args) noexcept
+    requires(sizeof...(Pts) == N && (std::same_as<Vertex, Pts> && ...))
+  // NOLINTNEXTLINE(google-explicit-constructor) implicit conversion is desired
+  HOSTDEV constexpr Polytope(Pts const... args) noexcept
       : _v{args...}
   {
   }
@@ -75,33 +75,33 @@ public:
   // Interpolate along the segment.
   // r in [0, 1], F(r) -> R^D
   PURE HOSTDEV constexpr auto
-  operator()(Float r) const noexcept -> Point<D>;
+  operator()(T r) const noexcept -> Point<D, T>;
 
   // Jacobian of the segment (Column vector).
   // dF/dr -> R^D
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  jacobian(Float /*r*/) const noexcept -> Vec<D, Float>;
+  PURE HOSTDEV
+      [[nodiscard]] constexpr auto jacobian(T /*r*/) const noexcept -> Vec<D, T>;
 
   // Q(r) = C + rB + r²A
   // returns {C, B, A}
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getPolyCoeffs() const noexcept -> Vec<3, Vec<D, Float>>;
+  getPolyCoeffs() const noexcept -> Vec<3, Vec<D, T>>;
 
   // Arc length of the segment
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  length() const noexcept -> Float;
+  length() const noexcept -> T;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  boundingBox() const noexcept -> AxisAlignedBox<D>;
+  boundingBox() const noexcept -> AxisAlignedBox<D, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  pointClosestTo(Point<D> const & p) const noexcept -> Float;
+  pointClosestTo(Point<D, T> const & p) const noexcept -> T;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  squaredDistanceTo(Point<D> const & p) const noexcept -> Float;
+  squaredDistanceTo(Point<D, T> const & p) const noexcept -> T;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  distanceTo(Point<D> const & p) const noexcept -> Float;
+  distanceTo(Point<D, T> const & p) const noexcept -> T;
 
   // 2D only
   //--------------------------------------------------------------------------
@@ -109,36 +109,39 @@ public:
   // If the seg is translated by -v0, then the first vertex is at the origin.
   // Get the rotation matrix that aligns the seg with the x-axis.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getRotation() const noexcept -> Mat2x2F
-  requires(D == 2);
+  getRotation() const noexcept -> Mat2x2<T>
+    requires(D == 2);
 
   // If a point is to the left of the segment, with the segment oriented from
   // r = 0 to r = 1.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  isLeft(Point2 p) const noexcept -> bool requires(D == 2);
+  isLeft(Point2<T> p) const noexcept -> bool
+    requires(D == 2);
 
   // Intersect the ray with the segment.
   // Returns the number of valid intersections.
   // The ray coordinates r, such that R(r) = o + r*d is an intersection point are
   // stored in the buffer, sorted from closest to farthest. r in [0, inf)
   HOSTDEV [[nodiscard]] constexpr auto
-  intersect(Ray2 ray, Float * buffer) const noexcept -> Int requires(D == 2);
+  intersect(Ray2<T> ray, T * buffer) const noexcept -> Int
+    requires(D == 2);
 
   // Intersect with another segment.
   // Returns the number of valid intersections [0, 2].
   // The intersection points are stored in the buffer.
   HOSTDEV [[nodiscard]] constexpr auto
-  intersect(QuadraticSegment2 const & other, Point2 * buffer) const noexcept -> Int
-  requires(D == 2);
+  intersect(QuadraticSegment2<T> const & other, Point2<T> * buffer) const noexcept -> Int
+    requires(D == 2);
 
   // Intersects with another segment.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  intersects(QuadraticSegment2 const & other) const noexcept -> bool
-  requires(D == 2);
+  intersects(QuadraticSegment2<T> const & other) const noexcept -> bool
+    requires(D == 2);
 
   // The segment extends to the right, curving left from v[0] to v[1].
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  curvesLeft() const noexcept -> bool requires(D == 2);
+  curvesLeft() const noexcept -> bool
+    requires(D == 2);
 
 }; // QuadraticSegment
 
@@ -146,44 +149,46 @@ public:
 // Free functions
 //==============================================================================
 
-template <Int D>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
-isStraight(QuadraticSegment<D> const & q) noexcept -> bool;
+isStraight(QuadraticSegment<D, T> const & q) noexcept -> bool;
 
 // The area enclosed by the segment and the straight line from the p0 to p1.
+template <class T>
 PURE HOSTDEV constexpr auto
-enclosedArea(QuadraticSegment2 const & q) noexcept -> Float;
+enclosedArea(QuadraticSegment2<T> const & q) noexcept -> T;
 
 // The centroid of the area enclosed by the segment and the straight line from
 // the p0 to p1.
+template <class T>
 PURE HOSTDEV constexpr auto
-enclosedCentroid(QuadraticSegment2 const & q) noexcept -> Vec2F;
+enclosedCentroid(QuadraticSegment2<T> const & q) noexcept -> Vec2<T>;
 
 //==============================================================================
 // Accessors
 //==============================================================================
 
-template <Int D>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
-QuadraticSegment<D>::operator[](Int i) noexcept -> Vertex &
+QuadraticSegment<D, T>::operator[](Int i) noexcept -> Vertex &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < N);
   return _v[i];
 }
 
-template <Int D>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
-QuadraticSegment<D>::operator[](Int i) const noexcept -> Vertex const &
+QuadraticSegment<D, T>::operator[](Int i) const noexcept -> Vertex const &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < N);
   return _v[i];
 }
 
-template <Int D>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
-QuadraticSegment<D>::vertices() const noexcept -> Vertex const *
+QuadraticSegment<D, T>::vertices() const noexcept -> Vertex const *
 {
   return _v;
 }
@@ -192,23 +197,20 @@ QuadraticSegment<D>::vertices() const noexcept -> Vertex const *
 // Interpolation
 //==============================================================================
 
-template <Int D>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
-interpolate(QuadraticSegment<D> const & q, Float const r) noexcept -> Point<D>
+interpolate(QuadraticSegment<D, T> const & q, T const r) noexcept -> Point<D, T>
 {
   // Q(r) =
   // (2 * r - 1) * (r - 1) * v0 +
   // (2 * r - 1) *  r      * v1 +
   // -4 * r      * (r - 1) * v2
-  return
-  (2 * r - 1) * (r - 1) * q[0] +
-  (2 * r - 1) *  r      * q[1] +
-  -4 * r      * (r - 1) * q[2];
+  return (2 * r - 1) * (r - 1) * q[0] + (2 * r - 1) * r * q[1] + -4 * r * (r - 1) * q[2];
 }
 
-template <Int D>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
-QuadraticSegment<D>::operator()(Float const r) const noexcept -> Point<D>
+QuadraticSegment<D, T>::operator()(T const r) const noexcept -> Point<D, T>
 {
   return interpolate(*this, r);
 }
@@ -217,19 +219,19 @@ QuadraticSegment<D>::operator()(Float const r) const noexcept -> Point<D>
 // jacobian
 //==============================================================================
 
-template <Int D>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
-jacobian(QuadraticSegment<D> const & q, Float const r) noexcept -> Point<D>
+jacobian(QuadraticSegment<D, T> const & q, T const r) noexcept -> Point<D, T>
 {
   // (4 * r - 3) * (v0 - v2) + (4 * r - 1) * (v1 - v2)
-  Float const w0 = 4 * r - 3;
-  Float const w1 = 4 * r - 1;
+  T const w0 = 4 * r - 3;
+  T const w1 = 4 * r - 1;
   return w0 * (q[0] - q[2]) + w1 * (q[1] - q[2]);
 }
 
-template <Int D>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
-QuadraticSegment<D>::jacobian(Float const r) const noexcept -> Point<D>
+QuadraticSegment<D, T>::jacobian(T const r) const noexcept -> Point<D, T>
 {
   return um2::jacobian(*this, r);
 }
@@ -238,9 +240,9 @@ QuadraticSegment<D>::jacobian(Float const r) const noexcept -> Point<D>
 // getPolyCoeffs
 //==============================================================================
 
-template <Int D>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
-QuadraticSegment<D>::getPolyCoeffs() const noexcept -> Vec<3, Vec<D, Float>>
+QuadraticSegment<D, T>::getPolyCoeffs() const noexcept -> Vec<3, Vec<D, T>>
 {
   // For quadratic segments, the parametric equation is
   //  Q(r) = C + rB + r²A,
@@ -251,10 +253,10 @@ QuadraticSegment<D>::getPolyCoeffs() const noexcept -> Vec<3, Vec<D, Float>>
   // and
   // v02 = q[2] - q[0]
   // v12 = q[2] - q[1]
-  Vec<D, Float> const v02 = _v[2] - _v[0];
-  Vec<D, Float> const v12 = _v[2] - _v[1];
-  Vec<D, Float> const b = 3 * v02 + v12;
-  Vec<D, Float> const a = -2 * (v02 + v12);
+  Vec<D, T> const v02 = _v[2] - _v[0];
+  Vec<D, T> const v12 = _v[2] - _v[1];
+  Vec<D, T> const b = 3 * v02 + v12;
+  Vec<D, T> const a = -2 * (v02 + v12);
   return {_v[0], b, a};
 }
 
@@ -262,9 +264,9 @@ QuadraticSegment<D>::getPolyCoeffs() const noexcept -> Vec<3, Vec<D, Float>>
 // isStraight
 //==============================================================================
 
-template <Int D>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
-isStraight(QuadraticSegment<D> const & q) noexcept -> bool
+isStraight(QuadraticSegment<D, T> const & q) noexcept -> bool
 {
   // Area of triangle = 1/2 base * height.
   // base = ‖p1 - p0‖
@@ -283,9 +285,9 @@ isStraight(QuadraticSegment<D> const & q) noexcept -> bool
   }
   auto const cp = v10.cross(v20);
   if constexpr (D == 2) {
-    return (cp * cp) / v10_sq < eps_distance2;
+    return (cp * cp) / v10_sq < epsDistance2<T>();
   } else {
-    return cp.squaredNorm() / v10_sq < eps_distance2;
+    return cp.squaredNorm() / v10_sq < epsDistance2<T>();
   }
 }
 
@@ -293,9 +295,9 @@ isStraight(QuadraticSegment<D> const & q) noexcept -> bool
 // length
 //==============================================================================
 
-template <Int D>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
-QuadraticSegment<D>::length() const noexcept -> Float
+QuadraticSegment<D, T>::length() const noexcept -> T
 {
   // The arc length integral may be reduced to an integral over the square root of a
   // quadratic polynomial using ‖𝘅‖ = √(𝘅 ⋅ 𝘅), which has an analytic solution.
@@ -320,10 +322,10 @@ QuadraticSegment<D>::length() const noexcept -> Float
   // b = 4(x2 ⋅ x1)
   // c = x1 ⋅ x1
 
-  ASSERT(squaredNorm(x2) > eps_distance2);
-  Float const a = 4 * x2.squaredNorm();
-  Float const b = 4 * x2.dot(x1);
-  Float const c = x1.squaredNorm();
+  ASSERT(squaredNorm(x2) > epsDistance2<T>());
+  T const a = 4 * x2.squaredNorm();
+  T const b = 4 * x2.dot(x1);
+  T const c = x1.squaredNorm();
 
   // According to Wolfram Alpha, the integral of √(ax² + bx + c) is
   // ((b + 2 a x) sqrt(c + x (b + a x)))/(4 a)
@@ -331,7 +333,8 @@ QuadraticSegment<D>::length() const noexcept -> Float
   // + constant
   //
   // Simplifying the integral:
-  // ((b^2 - 4 a c) (log(2 sqrt(a) sqrt(c) + b) - log(2 sqrt(a) sqrt(a + b + c) + 2 a + b))
+  // ((b^2 - 4 a c) (log(2 sqrt(a) sqrt(c) + b) - log(2 sqrt(a) sqrt(a + b + c) + 2 a +
+  // b))
   //  + sqrt(a) (2 (2 a + b) sqrt(a + b + c) - 2 b sqrt(c)))/(8 a^(3/2))
 
   // sa = sqrt(a)
@@ -346,14 +349,15 @@ QuadraticSegment<D>::length() const noexcept -> Float
   //  + sa * (2 * (a2b * sabc - b * sc))
   //  ) / (8 * sa * sa * sa)
   //
-  Float const sa = um2::sqrt(a);
-  Float const sc = um2::sqrt(c);
-  Float const sabc = um2::sqrt(a + b + c);
-  Float const disc = quadraticDiscriminant(a, b, c);
-  Float const a2b = 2 * a + b;
-  Float const num = disc * um2::log((2 * sa * sc + b) / (2 * sa * sabc + a2b)) + sa * (2 * (a2b * sabc - b * sc));
-  Float const den = 8 * sa * sa * sa;
-  Float const result  = num / den;
+  T const sa = um2::sqrt(a);
+  T const sc = um2::sqrt(c);
+  T const sabc = um2::sqrt(a + b + c);
+  T const disc = quadraticDiscriminant(a, b, c);
+  T const a2b = 2 * a + b;
+  T const num = disc * um2::log((2 * sa * sc + b) / (2 * sa * sabc + a2b)) +
+                    sa * (2 * (a2b * sabc - b * sc));
+  T const den = 8 * sa * sa * sa;
+  T const result = num / den;
   ASSERT(0 <= result);
   ASSERT(result <= inf_distance);
   return result;
@@ -363,9 +367,9 @@ QuadraticSegment<D>::length() const noexcept -> Float
 // boundingBox
 //==============================================================================
 
-template <Int D>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
-QuadraticSegment<D>::boundingBox() const noexcept -> AxisAlignedBox<D>
+QuadraticSegment<D, T>::boundingBox() const noexcept -> AxisAlignedBox<D, T>
 {
   // Find the extrema by finding dx_i/dr = 0
   // Q(r) = C + rB + r²A,
@@ -376,8 +380,8 @@ QuadraticSegment<D>::boundingBox() const noexcept -> AxisAlignedBox<D>
   auto const coeffs = getPolyCoeffs();
   auto const b = coeffs[1];
   auto const a = coeffs[2];
-  Point<D> minima = um2::min(_v[0], _v[1]);
-  Point<D> maxima = um2::max(_v[0], _v[1]);
+  Point<D, T> minima = um2::min(_v[0], _v[1]);
+  Point<D, T> maxima = um2::max(_v[0], _v[1]);
   for (Int i = 0; i < D; ++i) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
@@ -386,31 +390,31 @@ QuadraticSegment<D>::boundingBox() const noexcept -> AxisAlignedBox<D>
       continue;
     }
 #pragma GCC diagnostic pop
-    Float const half_b = b[i] / 2;
-    Float const r = - half_b / a[i];
+    T const half_b = b[i] / 2;
+    T const r = -half_b / a[i];
     // if r is not in [0, 1], then the extrema are not on the segment, hence
     // the segment's endpoints are the extrema.
     if (0 < r && r < 1) {
       // x_i = Q(r_i) = C - B² / (4A) = C - r_i(B/2)
-      Float const x = _v[0][i] + r * half_b;
+      T const x = _v[0][i] + r * half_b;
       minima[i] = um2::min(minima[i], x);
       maxima[i] = um2::max(maxima[i], x);
     }
   }
-  return AxisAlignedBox<D>{minima, maxima};
+  return AxisAlignedBox<D, T>{minima, maxima};
 }
 
 //==============================================================================
 // pointClosestTo
 //==============================================================================
 
-template <Int D>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
-QuadraticSegment<D>::pointClosestTo(Point<D> const & p) const noexcept -> Float
+QuadraticSegment<D, T>::pointClosestTo(Point<D, T> const & p) const noexcept -> T
 {
 
   if (isStraight(*this)) {
-    return LineSegment<D>(_v[0], _v[1]).pointClosestTo(p);
+    return LineSegment<D, T>(_v[0], _v[1]).pointClosestTo(p);
   }
 
   // The interpolation function of the quadratic segment is
@@ -437,10 +441,10 @@ QuadraticSegment<D>::pointClosestTo(Point<D> const & p) const noexcept -> Float
   auto const vb = coeffs[1];
   auto const va = coeffs[2];
   auto const vw = vc - p;
-  Float const a = 2 * squaredNorm(va);
-  Float const b = 3 * va.dot(vb);
-  Float const c = squaredNorm(vb) + 2 * va.dot(vw);
-  Float const d = vb.dot(vw);
+  T const a = 2 * squaredNorm(va);
+  T const b = 3 * va.dot(vb);
+  T const c = squaredNorm(vb) + 2 * va.dot(vw);
+  T const d = vb.dot(vw);
 
   // Return the real part of the 3 roots of the cubic equation
   auto const roots = solveCubic(a, b, c, d);
@@ -450,9 +454,9 @@ QuadraticSegment<D>::pointClosestTo(Point<D> const & p) const noexcept -> Float
   // It's not clear that we can simply clamp the root to [0, 1], so we test
   // against v[0] and v[1] explicitly.
 
-  Float r = 0;
-  Float sq_dist = p.squaredDistanceTo(_v[0]);
-  Float const sq_dist1 = p.squaredDistanceTo(_v[1]);
+  T r = 0;
+  T sq_dist = p.squaredDistanceTo(_v[0]);
+  T const sq_dist1 = p.squaredDistanceTo(_v[1]);
   if (sq_dist1 < sq_dist) {
     r = 1;
     sq_dist = sq_dist1;
@@ -461,7 +465,7 @@ QuadraticSegment<D>::pointClosestTo(Point<D> const & p) const noexcept -> Float
   for (auto const rr : roots) {
     if (0 <= rr && rr <= 1) {
       auto const p_root = (*this)(rr);
-      Float const p_sq_dist = p.squaredDistanceTo(p_root);
+      T const p_sq_dist = p.squaredDistanceTo(p_root);
       if (p_sq_dist < sq_dist) {
         r = rr;
         sq_dist = p_sq_dist;
@@ -475,18 +479,18 @@ QuadraticSegment<D>::pointClosestTo(Point<D> const & p) const noexcept -> Float
 // distanceTo
 //==============================================================================
 
-template <Int D>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
-QuadraticSegment<D>::squaredDistanceTo(Vertex const & p) const noexcept -> Float
+QuadraticSegment<D, T>::squaredDistanceTo(Vertex const & p) const noexcept -> T
 {
-  Float const r = pointClosestTo(p);
+  T const r = pointClosestTo(p);
   Vertex const p_closest = (*this)(r);
   return p_closest.squaredDistanceTo(p);
 }
 
-template <Int D>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
-QuadraticSegment<D>::distanceTo(Vertex const & p) const noexcept -> Float
+QuadraticSegment<D, T>::distanceTo(Vertex const & p) const noexcept -> T
 {
   return um2::sqrt(squaredDistanceTo(p));
 }
@@ -495,11 +499,12 @@ QuadraticSegment<D>::distanceTo(Vertex const & p) const noexcept -> Float
 // getRotation
 //==============================================================================
 
-template <Int D>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
-QuadraticSegment<D>::getRotation() const noexcept -> Mat2x2F
-requires(D == 2) {
-  return LineSegment2(_v[0], _v[1]).getRotation();
+QuadraticSegment<D, T>::getRotation() const noexcept -> Mat2x2<T>
+  requires(D == 2)
+{
+  return LineSegment2<T>(_v[0], _v[1]).getRotation();
 }
 
 //==============================================================================
@@ -508,9 +513,9 @@ requires(D == 2) {
 // Get the control point for the quadratic Bezier curve that interpolates the
 // given quadratic segment.
 
-template <Int D>
+template <Int D, class T>
 PURE HOSTDEV static constexpr auto
-getBezierControlPoint(QuadraticSegment<D> const & q) noexcept -> Point<D>
+getBezierControlPoint(QuadraticSegment<D, T> const & q) noexcept -> Point<D, T>
 {
   // p0 == v[0]
   // p2 == v[1]
@@ -522,9 +527,10 @@ getBezierControlPoint(QuadraticSegment<D> const & q) noexcept -> Point<D>
 // pointIsLeft
 //==============================================================================
 
-template <Int D>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
-QuadraticSegment<D>::isLeft(Point2 const p) const noexcept -> bool requires(D == 2)
+QuadraticSegment<D, T>::isLeft(Point2<T> const p) const noexcept -> bool
+  requires(D == 2)
 {
   // If the segment is straight, then we can use the line segment's isLeft method.
   // Note: LineSegment.isLeft(p) is equivalent to areCCW(v[0], v[1], p)
@@ -536,8 +542,8 @@ QuadraticSegment<D>::isLeft(Point2 const p) const noexcept -> bool requires(D ==
   // The triangle formed by the control points of the quadratic Bezier curve
   // bound the curve. If p is not in this triangle we can ignore the curvature of the
   // segment and return simply based upon areCCW(v[0], v[1], p).
-  Vec2F const bcp = getBezierControlPoint(*this);
-  Triangle2 tri(_v[0], _v[1], bcp);
+  Vec2<T> const bcp = getBezierControlPoint(*this);
+  Triangle2<T> tri(_v[0], _v[1], bcp);
   // precondition for tri.contains(p) is that tri.isCCW()
   if (!tri.isCCW()) {
     tri.flip();
@@ -550,8 +556,8 @@ QuadraticSegment<D>::isLeft(Point2 const p) const noexcept -> bool requires(D ==
   // The point is in the bounding triangle, so we must perform further analysis.
   // To make the math easier, we transform the coordinate system so that v[0] is at the
   // origin and v[1] is on the x-axis. In particular, we want v[1][0] > 0.
-  QuadraticSegment2 q(Point2(0, 0), _v[1] - _v[0], _v[2] - _v[0]);
-  Mat2x2F const rot = q.getRotation();
+  QuadraticSegment2<T> q(Point2<T>(0, 0), _v[1] - _v[0], _v[2] - _v[0]);
+  Mat2x2<T> const rot = q.getRotation();
   q[1] = rot * q[1];
   q[2] = rot * q[2];
   // Successful rotation implies that q[1][1] == 0 and q[1][0] > 0.
@@ -606,28 +612,28 @@ QuadraticSegment<D>::isLeft(Point2 const p) const noexcept -> bool requires(D ==
   // r = (-b ± √(b² - 4ac)) / 2a
   // if A_x == 0, then we have a well-behaved quadratic segment, and there is one root.
 
-  Float const bx = -q[1][0] + 4 * q[2][0];
-  Float const by = 4 * q[2][1]; // q[1][1] == 0, q[2][1] > 0 implies by > 0
-  Float const ax = -bx + q[1][0];
-  Float const ay = -by; // q[1][1] == 0, by > 0 implies ay < 0
+  T const bx = -q[1][0] + 4 * q[2][0];
+  T const by = 4 * q[2][1]; // q[1][1] == 0, q[2][1] > 0 implies by > 0
+  T const ax = -bx + q[1][0];
+  T const ay = -by; // q[1][1] == 0, by > 0 implies ay < 0
   ASSERT(by > 0);
 
-  auto constexpr invalid_root = castIfNot<Float>(1e15);
+  auto constexpr invalid_root = castIfNot<T>(1e15);
   auto const roots = solveQuadratic(ax, bx, -p_r[0]);
   // Only one root
   if (roots[1] > invalid_root) {
     // We know the point is in the bounding triangle, so we expect r to be in [0, 1]
     ASSERT(0 <= roots[0]);
     ASSERT(roots[0] <= 1);
-    Float const qy = roots[0] * (by + roots[0] * ay);
+    T const qy = roots[0] * (by + roots[0] * ay);
     bool const is_left = p_r[1] >= qy;
     return curves_right ? is_left : !is_left;
   }
 
-  Float const qy0 = roots[0] * (by + roots[0] * ay);
-  Float const qy1 = roots[1] * (by + roots[1] * ay);
-  Float const qymin = um2::min(qy0, qy1);
-  Float const qymax = um2::max(qy0, qy1);
+  T const qy0 = roots[0] * (by + roots[0] * ay);
+  T const qy1 = roots[1] * (by + roots[1] * ay);
+  T const qymin = um2::min(qy0, qy1);
+  T const qymax = um2::max(qy0, qy1);
   bool const contained_in_curve = qymin <= p_r[1] && p_r[1] <= qymax;
   bool const is_left = !contained_in_curve;
   return curves_right ? is_left : !is_left;
@@ -659,32 +665,32 @@ QuadraticSegment<D>::isLeft(Point2 const p) const noexcept -> bool requires(D ==
 // r = [(C - O) + s(B + sA)] ⋅ D
 // r is valid if 0 ≤ r ≤ ∞
 
-template <Int D>
+template <Int D, class T>
 HOSTDEV constexpr auto
-QuadraticSegment<D>::intersect(Ray2 const ray, Float * const buffer) const noexcept -> Int
-requires(D == 2)
+QuadraticSegment<D, T>::intersect(Ray2<T> const ray, T * const buffer) const noexcept -> Int
+  requires(D == 2)
 {
   auto const coeffs = getPolyCoeffs();
 
-  Vec2F const vc = coeffs[0];
-  Vec2F const vb = coeffs[1];
-  Vec2F const va = coeffs[2];
+  Vec2<T> const vc = coeffs[0];
+  Vec2<T> const vb = coeffs[1];
+  Vec2<T> const va = coeffs[2];
 
-  Vec2F const vd = ray.direction();
-  Vec2F const vo = ray.origin();
+  Vec2<T> const vd = ray.direction();
+  Vec2<T> const vo = ray.origin();
 
-  Vec2F const voc = vc - vo; // (C - O)
+  Vec2<T> const voc = vc - vo; // (C - O)
 
-  Float const a = va.cross(vd);   // (A × D)ₖ
-  Float const b = vb.cross(vd);   // (B × D)ₖ
-  Float const c = voc.cross(vd); // ((C - O) × D)ₖ
+  T const a = va.cross(vd);  // (A × D)ₖ
+  T const b = vb.cross(vd);  // (B × D)ₖ
+  T const c = voc.cross(vd); // ((C - O) × D)ₖ
 
-  Vec2F const s1s2 = solveQuadratic(a, b, c);
+  Vec2<T> const s1s2 = solveQuadratic(a, b, c);
   Int hits = 0;
   for (Int i = 0; i < 2; ++i) {
-    Float const s = s1s2[i];
+    T const s = s1s2[i];
     if (0 <= s && s <= 1) {
-      Float const r = (voc + s * (vb + s * va)).dot(vd);
+      T const r = (voc + s * (vb + s * va)).dot(vd);
       if (0 <= r) {
         buffer[hits] = r;
         ++hits;
@@ -698,13 +704,15 @@ requires(D == 2)
 // intersect (QuadraticSegment)
 //==============================================================================
 
+template <class T>
 HOSTDEV constexpr auto
 // NOLINTNEXTLINE(misc-no-recursion)
-intersect(QuadraticSegment2 const & q1, QuadraticSegment2 const & q2, Point2 * buffer, Int iters = 0) noexcept -> Int
+intersect(QuadraticSegment2<T> const & q1, QuadraticSegment2<T> const & q2, Point2<T> * buffer,
+          Int iters = 0) noexcept -> Int
 {
   // Scale each of the bounding boxes by a small amount to ensure
   // floating point errors do not cause the intersection to be missed.
-  auto constexpr scaling = castIfNot<Float>(1.015625);
+  auto constexpr scaling = castIfNot<T>(1.015625);
   auto bb1 = q1.boundingBox();
   bb1.scale(scaling);
   auto bb2 = q2.boundingBox();
@@ -717,30 +725,29 @@ intersect(QuadraticSegment2 const & q1, QuadraticSegment2 const & q2, Point2 * b
   // is an intersection. Use Newton's method to find the zero of the function quickly.
   // F(r, s) = Q1(r) - Q2(s)
   if (iters > 4) {
-    Vec2F rs(0, 0);
-    Vec2F f_rs = q1(rs[0]) - q2(rs[1]);
-    Float err_prev = f_rs.squaredNorm();
-    Float err_next = err_prev;
+    Vec2<T> rs(0, 0);
+    Vec2<T> f_rs = q1(rs[0]) - q2(rs[1]);
+    T err_prev = f_rs.squaredNorm();
+    T err_next = err_prev;
     Int nr_iters = 0;
     do {
       err_prev = err_next;
-      Mat2x2F const jac = Mat2x2F(q1.jacobian(rs[0]), -q2.jacobian(rs[1]));
+      Mat2x2<T> const jac = Mat2x2<T>(q1.jacobian(rs[0]), -q2.jacobian(rs[1]));
       // Manually compute the inverse of the 2x2 matrix, exiting early if the
       // determinant is zero.
-      Float const a = jac(0, 0);    
-      Float const b = jac(0, 1);    
-      Float const c = jac(1, 0);    
-      Float const d = jac(1, 1);    
-      Float const det = det2x2(a, b, c, d);
-      #pragma GCC diagnostic push    
-      #pragma GCC diagnostic ignored "-Wfloat-equal"    
+      T const a = jac(0, 0);
+      T const b = jac(0, 1);
+      T const c = jac(1, 0);
+      T const d = jac(1, 1);
+      T const det = det2x2(a, b, c, d);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
       // NOLINTNEXTLINE(clang-diagnostic-float-equal)
       if (det == 0) {
         return 0;
       }
-      #pragma GCC diagnostic pop
-      Mat2x2F const inv_jac(Vec2F{d / det, -c / det},    
-                            Vec2F{-b / det, a / det}); 
+#pragma GCC diagnostic pop
+      Mat2x2<T> const inv_jac(Vec2<T>{d / det, -c / det}, Vec2<T>{-b / det, a / det});
       rs -= inv_jac * f_rs;
       f_rs = q1(rs[0]) - q2(rs[1]);
       ++nr_iters;
@@ -749,9 +756,9 @@ intersect(QuadraticSegment2 const & q1, QuadraticSegment2 const & q2, Point2 * b
 
     // This has to be fuzzy, since we incur floating point errors as we bisect the
     // segment.
-    auto constexpr err_tol = 100 * eps_distance;
-    if (err_next < err_tol && -err_tol <= rs[0] && rs[0] <= 1 + err_tol && 
-                              -err_tol <= rs[1] && rs[1] <= 1 + err_tol) {
+    auto constexpr err_tol = 100 * epsDistance<T>();
+    if (err_next < err_tol && -err_tol <= rs[0] && rs[0] <= 1 + err_tol &&
+        -err_tol <= rs[1] && rs[1] <= 1 + err_tol) {
       *buffer = q1(rs[0]);
       return 1;
     }
@@ -760,12 +767,12 @@ intersect(QuadraticSegment2 const & q1, QuadraticSegment2 const & q2, Point2 * b
 
   // QuadraticSegment bisection:
   // q0 ------- q(0.25) ------- q2 ------- q(0.75) ------- q1
-  auto constexpr fourth = castIfNot<Float>(0.25);
-  auto constexpr three_fourths = castIfNot<Float>(0.75);
-  QuadraticSegment2 const q1l(q1[0], q1[2], q1(fourth));
-  QuadraticSegment2 const q1r(q1[2], q1[1], q1(three_fourths));
-  QuadraticSegment2 const q2l(q2[0], q2[2], q2(fourth));
-  QuadraticSegment2 const q2r(q2[2], q2[1], q2(three_fourths));
+  auto constexpr fourth = castIfNot<T>(0.25);
+  auto constexpr three_fourths = castIfNot<T>(0.75);
+  QuadraticSegment2<T> const q1l(q1[0], q1[2], q1(fourth));
+  QuadraticSegment2<T> const q1r(q1[2], q1[1], q1(three_fourths));
+  QuadraticSegment2<T> const q2l(q2[0], q2[2], q2(fourth));
+  QuadraticSegment2<T> const q2r(q2[2], q2[1], q2(three_fourths));
   Int num_intersections = 0;
   ++iters;
   num_intersections += intersect(q1l, q2l, buffer, iters);
@@ -789,13 +796,15 @@ intersect(QuadraticSegment2 const & q1, QuadraticSegment2 const & q2, Point2 * b
   return num_intersections;
 }
 
+template <class T>
 PURE HOSTDEV constexpr auto
 // NOLINTNEXTLINE(misc-no-recursion)
-intersects(QuadraticSegment2 const & q1, QuadraticSegment2 const & q2, Int iters = 0) noexcept -> bool
+intersects(QuadraticSegment2<T> const & q1, QuadraticSegment2<T> const & q2,
+           Int iters = 0) noexcept -> bool
 {
   // Scale each of the bounding boxes by a small amount to ensure
   // floating point errors do not cause the intersection to be missed.
-  auto constexpr scaling = castIfNot<Float>(1.015625);
+  auto constexpr scaling = castIfNot<T>(1.015625);
   auto bb1 = q1.boundingBox();
   bb1.scale(scaling);
   auto bb2 = q2.boundingBox();
@@ -808,30 +817,29 @@ intersects(QuadraticSegment2 const & q1, QuadraticSegment2 const & q2, Int iters
   // is an intersection. Use Newton's method to find the zero of the function quickly.
   // F(r, s) = Q1(r) - Q2(s)
   if (iters > 4) {
-    Vec2F rs(0, 0);
-    Vec2F f_rs = q1(rs[0]) - q2(rs[1]);
-    Float err_prev = f_rs.squaredNorm();
-    Float err_next = err_prev;
+    Vec2<T> rs(0, 0);
+    Vec2<T> f_rs = q1(rs[0]) - q2(rs[1]);
+    T err_prev = f_rs.squaredNorm();
+    T err_next = err_prev;
     Int nr_iters = 0;
     do {
       err_prev = err_next;
-      Mat2x2F const jac = Mat2x2F(q1.jacobian(rs[0]), -q2.jacobian(rs[1]));
+      Mat2x2<T> const jac = Mat2x2<T>(q1.jacobian(rs[0]), -q2.jacobian(rs[1]));
       // Manually compute the inverse of the 2x2 matrix, exiting early if the
       // determinant is zero.
-      Float const a = jac(0, 0);    
-      Float const b = jac(0, 1);    
-      Float const c = jac(1, 0);    
-      Float const d = jac(1, 1);    
-      Float const det = det2x2(a, b, c, d);
-      #pragma GCC diagnostic push    
-      #pragma GCC diagnostic ignored "-Wfloat-equal"    
+      T const a = jac(0, 0);
+      T const b = jac(0, 1);
+      T const c = jac(1, 0);
+      T const d = jac(1, 1);
+      T const det = det2x2(a, b, c, d);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
       // NOLINTNEXTLINE(clang-diagnostic-float-equal)
       if (det == 0) {
         return false;
       }
-      #pragma GCC diagnostic pop
-      Mat2x2F const inv_jac(Vec2F{d / det, -c / det},    
-                            Vec2F{-b / det, a / det}); 
+#pragma GCC diagnostic pop
+      Mat2x2<T> const inv_jac(Vec2<T>{d / det, -c / det}, Vec2<T>{-b / det, a / det});
       rs -= inv_jac * f_rs;
       f_rs = q1(rs[0]) - q2(rs[1]);
       ++nr_iters;
@@ -840,35 +848,36 @@ intersects(QuadraticSegment2 const & q1, QuadraticSegment2 const & q2, Int iters
 
     // This has to be fuzzy, since we incur floating point errors as we bisect the
     // segment.
-    auto constexpr err_tol = 100 * eps_distance;
-    return (err_next < err_tol && -err_tol <= rs[0] && rs[0] <= 1 + err_tol && 
-                                  -err_tol <= rs[1] && rs[1] <= 1 + err_tol);
+    auto constexpr err_tol = 100 * epsDistance<T>();
+    return (err_next < err_tol && -err_tol <= rs[0] && rs[0] <= 1 + err_tol &&
+            -err_tol <= rs[1] && rs[1] <= 1 + err_tol);
   }
 
   // QuadraticSegment bisection:
   // q0 ------- q(0.25) ------- q2 ------- q(0.75) ------- q1
-  auto constexpr fourth = castIfNot<Float>(0.25);
-  auto constexpr three_fourths = castIfNot<Float>(0.75);
-  QuadraticSegment2 const q1l(q1[0], q1[2], q1(fourth));
-  QuadraticSegment2 const q1r(q1[2], q1[1], q1(three_fourths));
-  QuadraticSegment2 const q2l(q2[0], q2[2], q2(fourth));
-  QuadraticSegment2 const q2r(q2[2], q2[1], q2(three_fourths));
+  auto constexpr fourth = castIfNot<T>(0.25);
+  auto constexpr three_fourths = castIfNot<T>(0.75);
+  QuadraticSegment2<T> const q1l(q1[0], q1[2], q1(fourth));
+  QuadraticSegment2<T> const q1r(q1[2], q1[1], q1(three_fourths));
+  QuadraticSegment2<T> const q2l(q2[0], q2[2], q2(fourth));
+  QuadraticSegment2<T> const q2r(q2[2], q2[1], q2(three_fourths));
   ++iters;
   return (intersects(q1l, q2l, iters) || intersects(q1l, q2r, iters) ||
           intersects(q1r, q2l, iters) || intersects(q1r, q2r, iters));
 }
 
-template <Int D>
+template <Int D, class T>
 HOSTDEV [[nodiscard]] constexpr auto
-QuadraticSegment<D>::intersect(QuadraticSegment2 const & other, Point2 * buffer) const noexcept -> Int
+QuadraticSegment<D, T>::intersect(QuadraticSegment2<T> const & other,
+                               Point2<T> * buffer) const noexcept -> Int
   requires(D == 2)
 {
-  return um2::intersect(*this, other, buffer); 
+  return um2::intersect(*this, other, buffer);
 }
 
-template <Int D>
+template <Int D, class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-QuadraticSegment<D>::intersects(QuadraticSegment2 const & other) const noexcept -> bool
+QuadraticSegment<D, T>::intersects(QuadraticSegment2<T> const & other) const noexcept -> bool
   requires(D == 2)
 {
   return um2::intersects(*this, other);
@@ -878,15 +887,16 @@ QuadraticSegment<D>::intersects(QuadraticSegment2 const & other) const noexcept 
 // enclosedArea
 //==============================================================================
 
+template <class T>
 PURE HOSTDEV constexpr auto
-enclosedArea(QuadraticSegment2 const & q) noexcept -> Float
+enclosedArea(QuadraticSegment2<T> const & q) noexcept -> T
 {
   // The area bounded by the segment and the line between the endpoints is
   // 4/3 of the area of the triangle formed by the vertices.
   // Assumes that the segment is convex.
-  Float constexpr two_thirds = static_cast<Float>(2) / static_cast<Float>(3);
-  Vec2F const v02 = q[2] - q[0];
-  Vec2F const v01 = q[1] - q[0];
+  T constexpr two_thirds = static_cast<T>(2) / static_cast<T>(3);
+  Vec2<T> const v02 = q[2] - q[0];
+  Vec2<T> const v01 = q[1] - q[0];
   return two_thirds * v02.cross(v01);
 }
 
@@ -894,8 +904,9 @@ enclosedArea(QuadraticSegment2 const & q) noexcept -> Float
 // enclosedCentroid
 //==============================================================================
 
+template <class T>
 PURE HOSTDEV constexpr auto
-enclosedCentroid(QuadraticSegment2 const & q) noexcept -> Vec2F
+enclosedCentroid(QuadraticSegment2<T> const & q) noexcept -> Vec2<T>
 {
   // For a quadratic segment, with P₁ = (0, 0), P₂ = (x₂, 0), and P₃ = (x₃, y₃),
   // it can be shown that the centroid of the area bounded by the segment and x-axis
@@ -939,16 +950,16 @@ enclosedCentroid(QuadraticSegment2 const & q) noexcept -> Vec2F
   //
   // To transform the centroid back to the standard basis, we use
   // C = U * Cᵤ + P₁
-  Vec2F const v12 = q[1] - q[0];
-  Vec2F const v13 = q[2] - q[0];
-  Vec2F const u1 = v12.normalized();
-  Vec2F const u2(-u1[1], u1[0]);
-  Mat2x2F const u(u1, u2);
-  Float const p2ux = u1.dot(v12);
-  Float const p3ux = u1.dot(v13);
-  Float const p3uy = u2.dot(v13);
-  Vec2F cu(3 * p2ux + 4 * p3ux, 4 * p3uy);
-  Float constexpr tenth = static_cast<Float>(1) / static_cast<Float>(10);
+  Vec2<T> const v12 = q[1] - q[0];
+  Vec2<T> const v13 = q[2] - q[0];
+  Vec2<T> const u1 = v12.normalized();
+  Vec2<T> const u2(-u1[1], u1[0]);
+  Mat2x2<T> const u(u1, u2);
+  T const p2ux = u1.dot(v12);
+  T const p3ux = u1.dot(v13);
+  T const p3uy = u2.dot(v13);
+  Vec2<T> cu(3 * p2ux + 4 * p3ux, 4 * p3uy);
+  T constexpr tenth = static_cast<T>(1) / static_cast<T>(10);
   cu *= tenth;
   return u * cu + q[0];
 }
@@ -957,10 +968,10 @@ enclosedCentroid(QuadraticSegment2 const & q) noexcept -> Vec2F
 // curvesLeft
 //==============================================================================
 
-template <Int D>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
-QuadraticSegment<D>::curvesLeft() const noexcept -> bool
-requires (D == 2)
+QuadraticSegment<D, T>::curvesLeft() const noexcept -> bool
+  requires(D == 2)
 {
   return areCCW(_v[0], _v[2], _v[1]);
 }

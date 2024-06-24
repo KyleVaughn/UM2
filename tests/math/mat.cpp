@@ -133,7 +133,7 @@ template <class T>
 HOSTDEV
 TEST_CASE(accessors_real)
 {
-  auto const eps = castIfNot<T>(1e-6); 
+  auto const eps = castIfNot<T>(1e-6);
   um2::Mat<3, 4, T> m;
   for (Int j = 0; j < 4; ++j) {
     for (Int i = 0; i < 3; ++i) {
@@ -225,9 +225,10 @@ TEST_CASE(add_sub_real)
 }
 
 template <class T>
+HOSTDEV
 TEST_CASE(mat_mul_real)
 {
-  auto const eps = castIfNot<T>(1e-6); 
+  auto const eps = castIfNot<T>(1e-6);
   // a = 1  0  1
   //     2  1  1
   //     0  1  1

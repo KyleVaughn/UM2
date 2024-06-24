@@ -39,7 +39,7 @@ matMul(benchmark::State & state)
   um2::Mat<N, N, T> c;
   for (Int i = 0; i < N; ++i) {
     for (Int j = 0; j < N; ++j) {
-      a(i, j) = randomFloat<T>(); 
+      a(i, j) = randomFloat<T>();
       b(i, j) = randomFloat<T>();
     }
   }
@@ -51,7 +51,6 @@ matMul(benchmark::State & state)
   state.SetBytesProcessed(state.iterations() * N * N * N * static_cast<Int>(sizeof(T)));
 }
 
-
 template <Int N, class T>
 void
 matrixMul(benchmark::State & state)
@@ -61,7 +60,7 @@ matrixMul(benchmark::State & state)
   um2::Matrix<T> c(N, N);
   for (Int i = 0; i < N; ++i) {
     for (Int j = 0; j < N; ++j) {
-      a(i, j) = randomFloat<T>(); 
+      a(i, j) = randomFloat<T>();
       b(i, j) = randomFloat<T>();
     }
   }
@@ -72,7 +71,6 @@ matrixMul(benchmark::State & state)
   state.SetItemsProcessed(state.iterations());
   state.SetBytesProcessed(state.iterations() * N * N * N * static_cast<Int>(sizeof(T)));
 }
-
 
 BENCHMARK_TEMPLATE(matMul, 2, double);
 BENCHMARK_TEMPLATE(matMul, 3, double);
