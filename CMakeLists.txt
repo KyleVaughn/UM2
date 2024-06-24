@@ -85,7 +85,8 @@ option(UM2_USE_COVERAGE      "Use coverage" OFF) # Code coverage
 # Use CUDA for GPU acceleration.
 option(UM2_USE_CUDA          "Use CUDA"     OFF)
 
-option(UM2_USE_GMSH          "Use Gmsh"     OFF)  # CAD geometry and meshing
+# Use GMSH for CAD geometry and mesh generation from CAD geometry.
+option(UM2_USE_GMSH          "Use Gmsh"     ON)
 
 # Use HDF5 for binary data I/O. (Used for mesh I/O)
 option(UM2_USE_HDF5          "Use HDF5"     ON)
@@ -98,8 +99,6 @@ option(UM2_USE_OPENMP        "Use OpenMP"   ON)
 
 # Use pugixml for XML parsing. (Used for mesh I/O)
 option(UM2_USE_PUGIXML       "Use pugixml"  ON)
-
-option(UM2_USE_TBB           "Use TBB"      OFF) # Parallel STL (std::execution::par, etc.)
 
 # Use valgrind for memory checking. Creates a valgrind_X target for each test.
 option(UM2_USE_VALGRIND "Use valgrind" OFF)
@@ -334,6 +333,10 @@ set(UM2_SOURCES
     "src/physics/material.cpp"
     "src/physics/cmfd.cpp"
     "src/mpact/model.cpp"
+    "src/gmsh/base_gmsh_api.cpp"
+    "src/gmsh/io.cpp"
+    "src/gmsh/model.cpp"
+    "src/gmsh/mesh.cpp"
     #"src/um2.cpp"
     )
 
@@ -478,26 +481,20 @@ endif()
 #===============================================================================
 # Optional dependencies
 #===============================================================================
-##
-### Gmsh
-##if (UM2_USE_GMSH)
-##  find_package(Gmsh REQUIRED)
-##  target_link_libraries(um2 PUBLIC "${GMSH_LIB}")
-##  target_include_directories(um2 SYSTEM PUBLIC "${GMSH_INC}")
-##endif()
-##
+
+# Gmsh
+if (UM2_USE_GMSH)
+  find_package(Gmsh REQUIRED)
+  target_link_libraries(um2 PUBLIC "${GMSH_LIB}")
+  target_include_directories(um2 SYSTEM PUBLIC "${GMSH_INC}")
+endif()
+
 # OpenMP
 if (UM2_USE_OPENMP)
   find_package(OpenMP)
   target_link_libraries(um2 PUBLIC OpenMP::OpenMP_CXX)
   target_include_directories(um2 SYSTEM PUBLIC "${OpenMP_CXX_INCLUDE_DIRS}")
 endif()
-
-### TBB
-##if (UM2_USE_TBB)
-##  find_package(TBB REQUIRED)
-##  target_link_libraries(um2 PUBLIC TBB::tbb)
-##endif()
 
 #===============================================================================
 # Build optional subdirectories
