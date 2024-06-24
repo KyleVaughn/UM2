@@ -58,9 +58,9 @@ class FaceVertexMesh
 public:
   using FaceConn = Vec<N, Int>;
   using EdgeConn = Vec<P + 1, Int>;
-  using Face = Polygon<P, N, 2>;
-  using Edge = typename Polygon<P, N, 2>::Edge;
-  using Vertex = typename Polygon<P, N, 2>::Vertex;
+  using Face = Polygon<P, N, 2, Float>;
+  using Edge = typename Polygon<P, N, 2, Float>::Edge;
+  using Vertex = typename Polygon<P, N, 2, Float>::Vertex;
 
 private:
   bool _is_morton_ordered = false;
@@ -164,10 +164,10 @@ public:
   //===========================================================================
 
   PURE [[nodiscard]] constexpr auto
-  boundingBox() const noexcept -> AxisAlignedBox2;
+  boundingBox() const noexcept -> AxisAlignedBox2F;
 
   PURE [[nodiscard]] constexpr auto
-  faceContaining(Point2 p) const noexcept -> Int;
+  faceContaining(Point2F p) const noexcept -> Int;
 
   // NOLINTNEXTLINE(google-explicit-constructor)
   operator PolytopeSoup() const noexcept;
@@ -179,7 +179,7 @@ public:
   // Store the parametric ray coordinates of the intersections in coords.
   // Return the number of intersections.
   auto
-  intersect(Ray2 ray, Float * coords) const noexcept -> Int;
+  intersect(Ray2F ray, Float * coords) const noexcept -> Int;
 
   // Intersect the mesh with a ray.
   // Store the parametric ray coordinates of the intersections in coords.
@@ -189,7 +189,7 @@ public:
   // Store the IDs of the intersected faces in faces.
   // Return the (number of intersections, number of faces).
   auto
-  intersect(Ray2 ray, Float * coords, Int * RESTRICT offsets, Int * RESTRICT faces) const noexcept -> Vec2I;
+  intersect(Ray2F ray, Float * coords, Int * RESTRICT offsets, Int * RESTRICT faces) const noexcept -> Vec2I;
 
 };
 
@@ -434,7 +434,7 @@ FaceVertexMesh<P, N>::flipFace(Int i) noexcept
 
 template <Int N>
 PURE [[nodiscard]] constexpr auto
-boundingBox(LinearFVM<N> const & mesh) noexcept -> AxisAlignedBox2
+boundingBox(LinearFVM<N> const & mesh) noexcept -> AxisAlignedBox2F
 {
   auto const & vertices = mesh.vertices();
   return um2::boundingBox(vertices.cbegin(), vertices.cend());
@@ -442,7 +442,7 @@ boundingBox(LinearFVM<N> const & mesh) noexcept -> AxisAlignedBox2
 
 template <Int N>
 PURE [[nodiscard]] constexpr auto
-boundingBox(QuadraticFVM<N> const & mesh) noexcept -> AxisAlignedBox2
+boundingBox(QuadraticFVM<N> const & mesh) noexcept -> AxisAlignedBox2F
 {
   auto box = mesh.getFace(0).boundingBox();
   for (Int i = 1; i < mesh.numFaces(); ++i) {
@@ -453,14 +453,14 @@ boundingBox(QuadraticFVM<N> const & mesh) noexcept -> AxisAlignedBox2
 
 template <Int P, Int N>
 PURE constexpr auto
-FaceVertexMesh<P, N>::boundingBox() const noexcept -> AxisAlignedBox2
+FaceVertexMesh<P, N>::boundingBox() const noexcept -> AxisAlignedBox2F
 {
   return um2::boundingBox(*this);
 }
 
 template <Int P, Int N>
 PURE constexpr auto
-FaceVertexMesh<P, N>::faceContaining(Point2 const p) const noexcept -> Int
+FaceVertexMesh<P, N>::faceContaining(Point2F const p) const noexcept -> Int
 {
   for (Int i = 0; i < numFaces(); ++i) {
     if (getFace(i).contains(p)) {
@@ -472,7 +472,7 @@ FaceVertexMesh<P, N>::faceContaining(Point2 const p) const noexcept -> Int
 
 template <Int P, Int N>
 auto
-FaceVertexMesh<P, N>::intersect(Ray2 const ray, Float * const coords) const noexcept -> Int
+FaceVertexMesh<P, N>::intersect(Ray2F const ray, Float * const coords) const noexcept -> Int
 {
   Int hits = 0;
   for (Int i = 0; i < numFaces(); ++i) {
@@ -483,7 +483,7 @@ FaceVertexMesh<P, N>::intersect(Ray2 const ray, Float * const coords) const noex
 
 template <Int P, Int N>
 auto
-FaceVertexMesh<P, N>::intersect(Ray2 const ray,
+FaceVertexMesh<P, N>::intersect(Ray2F const ray,
     Float * coords,
     Int * RESTRICT offsets,
     Int * RESTRICT faces) const noexcept -> Vec2I

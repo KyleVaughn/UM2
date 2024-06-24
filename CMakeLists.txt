@@ -90,6 +90,9 @@ option(UM2_USE_GMSH          "Use Gmsh"     OFF)  # CAD geometry and meshing
 # Use HDF5 for binary data I/O. (Used for mesh I/O)
 option(UM2_USE_HDF5          "Use HDF5"     ON)
 
+# Use MPACT's cross section libraries. (Used for CMFD)
+option(UM2_USE_MPACT_XSLIBS  "Use MPACT's cross section libraries" ON)
+
 # Use OpenMP for multi-threading.
 option(UM2_USE_OPENMP        "Use OpenMP"   ON)
 
@@ -200,15 +203,17 @@ else()
 endif()
 message(STATUS "UM2_MAX_LOG_LEVEL: ${UM2_MAX_LOG_LEVEL}")
 
-# Default path to look for MPACT cross section libraries
-if (NOT MPACT_DATA)
-  set(MPACT_DATA "${CMAKE_CURRENT_SOURCE_DIR}/MPACT_Extras/xslibs")
-endif()
-message(STATUS "MPACT_DATA: ${MPACT_DATA}")
-# Check to see if the directory exists
-if (NOT EXISTS "${MPACT_DATA}")
-  # Warn if the directory does not exist
-  message(WARNING "MPACT_DATA directory does not exist: ${MPACT_DATA}")
+if (UM2_USE_MPACT_XSLIBS)
+  # Default path to look for MPACT cross section libraries
+  if (NOT MPACT_DATA)
+    set(MPACT_DATA "${CMAKE_CURRENT_SOURCE_DIR}/MPACT_Extras/xslibs")
+  endif()
+  message(STATUS "MPACT_DATA: ${MPACT_DATA}")
+  # Check to see if the directory exists
+  if (NOT EXISTS "${MPACT_DATA}")
+    # Warn if the directory does not exist
+    message(WARNING "MPACT_DATA directory does not exist: ${MPACT_DATA}")
+  endif()
 endif()
 
 #===============================================================================
@@ -322,6 +327,12 @@ set(UM2_SOURCES
     "src/common/logger.cpp"
     "src/math/matrix.cpp"
     "src/mesh/polytope_soup.cpp"
+    "src/mesh/face_vertex_mesh.cpp"
+    "src/physics/cross_section.cpp"
+    "src/physics/nuclide.cpp"
+    "src/physics/cross_section_library.cpp"
+    "src/physics/material.cpp"
+    "src/physics/cmfd.cpp"
     #"src/um2.cpp"
     )
 

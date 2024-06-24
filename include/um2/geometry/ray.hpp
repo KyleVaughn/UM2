@@ -80,4 +80,7 @@ using Ray2 = Ray<2, T>;
 template <class T>
 using Ray3 = Ray<3, T>;
 
+using Ray2F = Ray2<Float>;
+using Ray3F = Ray3<Float>;
+
 } // namespace um2

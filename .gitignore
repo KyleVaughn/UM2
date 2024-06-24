@@ -3,6 +3,7 @@ build/
 
 # MPACT data
 MPACT_Extras/
+MPACT_Extras
 
 # config files
 include/um2/config.hpp

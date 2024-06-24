@@ -318,6 +318,9 @@ using Vec3f = Vec3<float>;
 using Vec2d = Vec2<double>;
 using Vec3d = Vec3<double>;
 
+using Vec2F = Vec2<Float>;
+using Vec3F = Vec3<Float>;
+
 //==============================================================================
 // Free functions
 //==============================================================================

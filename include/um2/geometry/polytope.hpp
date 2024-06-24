@@ -119,6 +119,15 @@ using QuadraticQuadrilateral2 = QuadraticQuadrilateral<2, T>;
 template <class T>
 using QuadraticQuadrilateral3 = QuadraticQuadrilateral<3, T>;
 
+using Triangle2F = Triangle2<Float>;
+using Triangle3F = Triangle3<Float>;
+using Quadrilateral2F = Quadrilateral2<Float>;
+using Quadrilateral3F = Quadrilateral3<Float>;
+using QuadraticTriangle2F = QuadraticTriangle2<Float>;
+using QuadraticTriangle3F = QuadraticTriangle3<Float>;
+using QuadraticQuadrilateral2F = QuadraticQuadrilateral2<Float>;
+using QuadraticQuadrilateral3F = QuadraticQuadrilateral3<Float>;
+
 // Polyhedrons
 //-----------------------------------------------------------------------------
 template <Int N, Int D, class T>

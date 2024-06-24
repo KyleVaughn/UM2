@@ -1,7 +1,7 @@
 HOSTDEV inline auto
 makeTriReferenceMesh() -> um2::TriFVM
 {
-  um2::Vector<um2::Point2> const v = {
+  um2::Vector<um2::Point2F> const v = {
       {0, 0},
       {1, 0},
       {1, 1},
@@ -19,7 +19,7 @@ makeTriReferenceMesh() -> um2::TriFVM
 HOSTDEV inline auto
 makeQuadReferenceMesh() -> um2::QuadFVM
 {
-  um2::Vector<um2::Point2> const v = {
+  um2::Vector<um2::Point2F> const v = {
       {0, 0},
       {1, 0},
       {1, 1},
@@ -55,7 +55,7 @@ makeQuadReferenceMesh() -> um2::QuadFVM
 HOSTDEV inline auto
 makeTri6ReferenceMesh() -> um2::Tri6FVM
 {
-  um2::Vector<um2::Point2> const v = {
+  um2::Vector<um2::Point2F> const v = {
       {               0,                0},
       {               1,                0},
       {               0,                1},
@@ -78,7 +78,7 @@ makeTri6ReferenceMesh() -> um2::Tri6FVM
 HOSTDEV inline auto
 makeQuad8ReferenceMesh() -> um2::Quad8FVM
 {
-  um2::Vector<um2::Point2> const v = {
+  um2::Vector<um2::Point2F> const v = {
       {castIfNot<Float>(0.0), castIfNot<Float>(0.0)},
       {castIfNot<Float>(1.0), castIfNot<Float>(0.0)},
       {castIfNot<Float>(1.0), castIfNot<Float>(1.0)},

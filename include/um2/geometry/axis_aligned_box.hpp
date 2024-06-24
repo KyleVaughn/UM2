@@ -117,6 +117,8 @@ using AxisAlignedBox2 = AxisAlignedBox<2, T>;
 template <class T>
 using AxisAlignedBox3 = AxisAlignedBox<3, T>;
 
+using AxisAlignedBox2F = AxisAlignedBox2<Float>;
+
 //==============================================================================
 // Free functions
 //==============================================================================

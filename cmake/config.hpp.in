@@ -18,6 +18,7 @@
 #cmakedefine01 UM2_USE_BLAS_LAPACK
 #cmakedefine01 UM2_USE_CUDA
 // #cmakedefine01 UM2_USE_GMSH
+#cmakedefine01 UM2_USE_MPACT_XSLIBS
 #cmakedefine01 UM2_USE_HDF5
 #cmakedefine01 UM2_USE_OPENMP
 #cmakedefine01 UM2_USE_PUGIXML

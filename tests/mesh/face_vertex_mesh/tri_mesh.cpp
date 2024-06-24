@@ -1,5 +1,14 @@
+#include <um2/config.hpp>
 #include <um2/mesh/face_vertex_mesh.hpp>
+#include <um2/mesh/polytope_soup.hpp>
 #include <um2/common/logger.hpp>
+#include <um2/common/cast_if_not.hpp>
+#include <um2/stdlib/vector.hpp>
+#include <um2/geometry/axis_aligned_box.hpp>
+#include <um2/geometry/point.hpp>
+#include <um2/geometry/ray.hpp>
+#include <um2/math/vec.hpp>
+#include <um2/geometry/polytope.hpp>
 
 #include "../helpers/setup_mesh.hpp"
 #include "../helpers/setup_polytope_soup.hpp"
@@ -7,6 +16,7 @@
 #include "../../test_macros.hpp"
 
 #include <algorithm>
+#include <cstdint>
 #include <random>
 
 // Create a square mesh 2 * N^2 triangles
@@ -59,14 +69,14 @@ perturb(um2::TriFVM & mesh)
   // NOLINTNEXTLINE(cert-msc32-c,cert-msc51-cpp)
   static std::mt19937 gen(seed);
   static std::uniform_real_distribution<Float> dis(-delta, delta);
-  um2::Vector<um2::Point2> & verts = mesh.vertices();
-  for (um2::Point2 & v : verts) {
+  um2::Vector<um2::Point2F> & verts = mesh.vertices();
+  for (um2::Point2F & v : verts) {
     v[0] += dis(gen);
     v[1] += dis(gen);
   }
 }
 
-auto constexpr eps = um2::eps_distance;
+auto constexpr eps = um2::epsDistance<Float>();
 
 HOSTDEV
 TEST_CASE(accessors)
@@ -78,16 +88,16 @@ TEST_CASE(accessors)
   ASSERT(mesh.numFaces() == 2);
 
   // getVertex
-  ASSERT(mesh.getVertex(0).isApprox(um2::Point2(0, 0)));
-  ASSERT(mesh.getVertex(1).isApprox(um2::Point2(1, 0)));
+  ASSERT(mesh.getVertex(0).isApprox(um2::Point2F(0, 0)));
+  ASSERT(mesh.getVertex(1).isApprox(um2::Point2F(1, 0)));
 
   // getFace
-  um2::Triangle<2> tri0_ref(mesh.getVertex(0), mesh.getVertex(1), mesh.getVertex(2));
+  um2::Triangle2F tri0_ref(mesh.getVertex(0), mesh.getVertex(1), mesh.getVertex(2));
   auto const tri0 = mesh.getFace(0);
   ASSERT(tri0[0].isApprox(tri0_ref[0]));
   ASSERT(tri0[1].isApprox(tri0_ref[1]));
   ASSERT(tri0[2].isApprox(tri0_ref[2]));
-  um2::Triangle<2> tri1_ref(mesh.getVertex(2), mesh.getVertex(3), mesh.getVertex(0));
+  um2::Triangle2F tri1_ref(mesh.getVertex(2), mesh.getVertex(3), mesh.getVertex(0));
   auto const tri1 = mesh.getFace(1);
   ASSERT(tri1[0].isApprox(tri1_ref[0]));
   ASSERT(tri1[1].isApprox(tri1_ref[1]));
@@ -129,16 +139,16 @@ TEST_CASE(addVertex_addFace)
   ASSERT(mesh.numVertices() == 4);
   ASSERT(mesh.numFaces() == 2);
 
-  ASSERT(mesh.getVertex(0).isApprox(um2::Point2(0, 0)));
-  ASSERT(mesh.getVertex(1).isApprox(um2::Point2(1, 0)));
+  ASSERT(mesh.getVertex(0).isApprox(um2::Point2F(0, 0)));
+  ASSERT(mesh.getVertex(1).isApprox(um2::Point2F(1, 0)));
 
   // Same as reference mesh. Should make an == operator for meshes.
-  um2::Triangle<2> tri0_ref(mesh.getVertex(0), mesh.getVertex(1), mesh.getVertex(2));
+  um2::Triangle2F tri0_ref(mesh.getVertex(0), mesh.getVertex(1), mesh.getVertex(2));
   auto const tri0 = mesh.getFace(0);
   ASSERT(tri0[0].isApprox(tri0_ref[0]));
   ASSERT(tri0[1].isApprox(tri0_ref[1]));
   ASSERT(tri0[2].isApprox(tri0_ref[2]));
-  um2::Triangle<2> tri1_ref(mesh.getVertex(2), mesh.getVertex(3), mesh.getVertex(0));
+  um2::Triangle2F tri1_ref(mesh.getVertex(2), mesh.getVertex(3), mesh.getVertex(0));
   auto const tri1 = mesh.getFace(1);
   ASSERT(tri1[0].isApprox(tri1_ref[0]));
   ASSERT(tri1[1].isApprox(tri1_ref[1]));
@@ -149,37 +159,37 @@ TEST_CASE(boundingBox)
 {
   um2::TriFVM const mesh = makeTriReferenceMesh();
   auto const box = mesh.boundingBox();
-  ASSERT(box.minima().isApprox(um2::Point2(0, 0)));
-  ASSERT(box.maxima().isApprox(um2::Point2(1, 1)));
+  ASSERT(box.minima().isApprox(um2::Point2F(0, 0)));
+  ASSERT(box.maxima().isApprox(um2::Point2F(1, 1)));
 
   um2::TriFVM mesh2;
   makeTriangleMesh(mesh2, 2);
   auto const box2 = mesh2.boundingBox();
-  ASSERT(box2.minima().isApprox(um2::Point2(0, 0)));
-  ASSERT(box2.maxima().isApprox(um2::Point2(2, 2)));
+  ASSERT(box2.minima().isApprox(um2::Point2F(0, 0)));
+  ASSERT(box2.maxima().isApprox(um2::Point2F(2, 2)));
 
   um2::TriFVM mesh3;
   makeTriangleMesh(mesh3, 3);
   auto const box3 = mesh3.boundingBox();
-  ASSERT(box3.minima().isApprox(um2::Point2(0, 0)));
-  ASSERT(box3.maxima().isApprox(um2::Point2(3, 3)));
+  ASSERT(box3.minima().isApprox(um2::Point2F(0, 0)));
+  ASSERT(box3.maxima().isApprox(um2::Point2F(3, 3)));
 }
 
 TEST_CASE(faceContaining)
 {
   um2::TriFVM const mesh = makeTriReferenceMesh();
-  um2::Point2 p(castIfNot<Float>(0.5), castIfNot<Float>(0.25));
+  um2::Point2F p(castIfNot<Float>(0.5), castIfNot<Float>(0.25));
   ASSERT(mesh.faceContaining(p) == 0);
-  p = um2::Point2(castIfNot<Float>(0.5), castIfNot<Float>(0.75));
+  p = um2::Point2F(castIfNot<Float>(0.5), castIfNot<Float>(0.75));
   ASSERT(mesh.faceContaining(p) == 1);
 
   Int const ntri = 5; // 2 * ntri * ntri triangles
   // The min coord is 0 and max coord is ntri
   Int const npoints = 1000;
 
-  um2::Point2 const pmin(castIfNot<Float>(0.11), castIfNot<Float>(0.11));
-  um2::Point2 const pmax(castIfNot<Float>(ntri - 0.11), castIfNot<Float>(ntri - 0.11));
-  um2::AxisAlignedBox2 const box(pmin, pmax);
+  um2::Point2F const pmin(castIfNot<Float>(0.11), castIfNot<Float>(0.11));
+  um2::Point2F const pmax(castIfNot<Float>(ntri - 0.11), castIfNot<Float>(ntri - 0.11));
+  um2::AxisAlignedBox2F const box(pmin, pmax);
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_real_distribution<Float> dis(pmin[0], pmax[0]);
@@ -188,16 +198,16 @@ TEST_CASE(faceContaining)
     makeTriangleMesh(mesh2, ntri);
     perturb(mesh2); // maximum perturbation is 0.1
     for (Int i = 0; i < npoints; ++i) {
-      um2::Point2 const pt(dis(gen), dis(gen));
+      um2::Point2F const pt(dis(gen), dis(gen));
       Int const iface = mesh2.faceContaining(pt);
       if (iface == -1) {
         ASSERT(!box.contains(pt));
       } else {
         auto const tri = mesh2.getFace(iface);
         auto const a = tri.area();
-        auto const a0 = um2::Triangle<2>(tri[0], tri[1], pt).area();
-        auto const a1 = um2::Triangle<2>(tri[1], tri[2], pt).area();
-        auto const a2 = um2::Triangle<2>(tri[2], tri[0], pt).area();
+        auto const a0 = um2::Triangle2F(tri[0], tri[1], pt).area();
+        auto const a1 = um2::Triangle2F(tri[1], tri[2], pt).area();
+        auto const a2 = um2::Triangle2F(tri[2], tri[0], pt).area();
         ASSERT_NEAR(a, a0 + a1 + a2, eps);
       }
     }
@@ -340,15 +350,15 @@ TEST_CASE(mortonSortVertices)
   ASSERT(face_conn[1] == 3);
   ASSERT(face_conn[2] == 1);
   mesh.mortonSortVertices();
-  ASSERT(mesh.getVertex(0).isApprox(um2::Point2(0, 0)));
-  ASSERT(mesh.getVertex(1).isApprox(um2::Point2(1, 0)));
-  ASSERT(mesh.getVertex(2).isApprox(um2::Point2(0, 1)));
-  ASSERT(mesh.getVertex(3).isApprox(um2::Point2(1, 1)));
-  ASSERT(mesh.getVertex(4).isApprox(um2::Point2(2, 0)));
-  ASSERT(mesh.getVertex(5).isApprox(um2::Point2(2, 1)));
-  ASSERT(mesh.getVertex(6).isApprox(um2::Point2(0, 2)));
-  ASSERT(mesh.getVertex(7).isApprox(um2::Point2(1, 2)));
-  ASSERT(mesh.getVertex(8).isApprox(um2::Point2(2, 2)));
+  ASSERT(mesh.getVertex(0).isApprox(um2::Point2F(0, 0)));
+  ASSERT(mesh.getVertex(1).isApprox(um2::Point2F(1, 0)));
+  ASSERT(mesh.getVertex(2).isApprox(um2::Point2F(0, 1)));
+  ASSERT(mesh.getVertex(3).isApprox(um2::Point2F(1, 1)));
+  ASSERT(mesh.getVertex(4).isApprox(um2::Point2F(2, 0)));
+  ASSERT(mesh.getVertex(5).isApprox(um2::Point2F(2, 1)));
+  ASSERT(mesh.getVertex(6).isApprox(um2::Point2F(0, 2)));
+  ASSERT(mesh.getVertex(7).isApprox(um2::Point2F(1, 2)));
+  ASSERT(mesh.getVertex(8).isApprox(um2::Point2F(2, 2)));
   face_conn = mesh.getFaceConn(0);
   ASSERT(face_conn[0] == 0);
   ASSERT(face_conn[1] == 1);
@@ -441,9 +451,9 @@ TEST_CASE(intersect)
   // 0------1------2
 
   // Check a few basic intersections before automated testing
-  um2::Point2 origin(castIfNot<Float>(-1), castIfNot<Float>(0.5));
+  um2::Point2F origin(castIfNot<Float>(-1), castIfNot<Float>(0.5));
   um2::Vec2F dir(1, 0);
-  um2::Ray2 const ray(origin, dir);
+  um2::Ray2F const ray(origin, dir);
   Float coords[24];
   Int offsets[24];
   Int faces[24];
@@ -474,7 +484,7 @@ TEST_CASE(intersect)
   origin[1] = castIfNot<Float>(0.5);
   dir[0] = -1;
   dir[1] = 0;
-  um2::Ray2 const ray2(origin, dir);
+  um2::Ray2F const ray2(origin, dir);
   Int const hits2 = mesh.intersect(ray2, coords);
   ASSERT(hits2 == 8);
   std::sort(coords, coords + hits2);

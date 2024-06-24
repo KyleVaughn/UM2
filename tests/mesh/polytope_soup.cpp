@@ -1,7 +1,6 @@
 #include <um2/config.hpp>
 #include <um2/mesh/polytope_soup.hpp>
 #include <um2/geometry/point.hpp>
-//#include <um2/stdlib/numeric/iota.hpp>
 #include <um2/stdlib/vector.hpp>
 #include <um2/mesh/element_types.hpp>
 #include <um2/common/cast_if_not.hpp>

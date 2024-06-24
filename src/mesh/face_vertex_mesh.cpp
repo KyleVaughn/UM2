@@ -1,9 +1,17 @@
+#include <um2/config.hpp>
 #include <um2/mesh/face_vertex_mesh.hpp>
+#include <um2/mesh/element_types.hpp>
+#include <um2/mesh/polytope_soup.hpp>
 
 #include <um2/common/logger.hpp>
 #include <um2/common/permutation.hpp>
 #include <um2/geometry/morton_sort_points.hpp>
+#include <um2/geometry/point.hpp>
 #include <um2/stdlib/utility/pair.hpp>
+#include <um2/stdlib/assert.hpp>
+#include <um2/stdlib/math/abs.hpp>
+#include <um2/stdlib/vector.hpp>
+#include <um2/math/vec.hpp>
 
 #include <algorithm> // sort
 #include <numeric> // inclusive_scan
@@ -18,8 +26,10 @@ namespace um2
 //==============================================================================
 
 // Helper function to get VTK element type from P and N.
+
+namespace {
 template <Int P, Int N>
-static constexpr auto
+constexpr auto
 getVTKElemType() -> VTKElemType
 {
   if constexpr (P == 1 && N == 3) {
@@ -33,6 +43,7 @@ getVTKElemType() -> VTKElemType
   }
   return VTKElemType::Invalid;
 }
+} // namespace
 
 template <Int P, Int N>
 FaceVertexMesh<P, N>::FaceVertexMesh(PolytopeSoup const & soup)
@@ -57,7 +68,7 @@ FaceVertexMesh<P, N>::FaceVertexMesh(PolytopeSoup const & soup)
     auto const & p = soup.getVertex(i);
     _v[i][0] = p[0];
     _v[i][1] = p[1];
-    if (um2::abs(p[2] - z) > eps_distance) {
+    if (um2::abs(p[2] - z) > epsDistance<Float>()) {
       logger::warn("Constructing a FaceVertexMesh from a PolytopeSoup with non-planar vertices");
       break;
     }
@@ -103,7 +114,7 @@ FaceVertexMesh<P, N>::mortonSortFaces() noexcept
 
   // Sort the centroid of each face using the morton encoding.
   Int const num_faces = numFaces();
-  Vector<Point2> centroids(num_faces);
+  Vector<Point2F> centroids(num_faces);
   for (Int i = 0; i < num_faces; ++i) {
     centroids[i] = getFace(i).centroid();
   }
@@ -223,8 +234,10 @@ FaceVertexMesh<P, N>::operator PolytopeSoup() const noexcept
   return soup;
 }
 
+namespace {
+
 template <Int P, Int N>
-static void
+void
 checkCCWFaces(FaceVertexMesh<P, N> & mesh)
 {
   // Check that the vertices are in counter-clockwise order.
@@ -242,7 +255,7 @@ checkCCWFaces(FaceVertexMesh<P, N> & mesh)
 }
 
 template <Int P, Int N>
-static void
+void
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 checkManifoldWatertight(FaceVertexMesh<P, N> const & mesh)
 {
@@ -402,11 +415,11 @@ checkManifoldWatertight(FaceVertexMesh<P, N> const & mesh)
 } // checkManifoldWatertight
 
 template <Int N>
-static void
+void
 checkSelfIntersections(FaceVertexMesh<2, N> const & mesh)
 {
   Int const num_faces = mesh.numFaces();
-  Point2 buffer[2 * N];
+  Point2F buffer[2 * N];
   for (Int iface = 0; iface < num_faces; ++iface) {
     if (mesh.getFace(iface).hasSelfIntersection(buffer)) {
       PolytopeSoup const soup = mesh;
@@ -418,6 +431,8 @@ checkSelfIntersections(FaceVertexMesh<2, N> const & mesh)
     }
   }
 }
+
+} // namespace
 
 // Check for:
 // - Counter-clockwise faces (warn and fix)
