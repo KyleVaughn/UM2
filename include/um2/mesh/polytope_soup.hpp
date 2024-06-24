@@ -1,13 +1,21 @@
 #pragma once
 
+#include <um2/geometry/point.hpp>
 #include <um2/geometry/axis_aligned_box.hpp>
 #include <um2/mesh/element_types.hpp>
 #include <um2/stdlib/string.hpp>
 #include <um2/stdlib/vector.hpp>
 
 // External dependencies
+#if UM2_USE_HDF5
 #include <H5Cpp.h>
+#endif
+
+#if UM2_USE_PUGIXML
 #include <pugixml.hpp>
+#endif
+
+#define UM2_HAS_XDMF (UM2_USE_HDF5 && UM2_USE_PUGIXML)
 
 namespace um2
 {
@@ -24,7 +32,7 @@ namespace um2
 class PolytopeSoup
 {
 
-  Vector<Point3> _vertices;
+  Vector<Point3F> _vertices;
   Vector<VTKElemType> _element_types;
   Vector<Int> _element_offsets; // A prefix sum of the number of vertices in each element
   Vector<Int> _element_conn;    // Vertex IDs of each element
@@ -49,7 +57,7 @@ public:
   //==============================================================================
 
   PURE [[nodiscard]] constexpr auto
-  vertices() const -> Vector<Point3> const &;
+  vertices() const -> Vector<Point3F> const &;
 
   PURE [[nodiscard]] constexpr auto
   elementTypes() const -> Vector<VTKElemType> const &;
@@ -89,14 +97,14 @@ public:
   // Getters
   //==============================================================================
 
-  PURE [[nodiscard]] constexpr auto
-  getVertex(Int i) const -> Point3 const &;
+  PURE [[nodiscard]] inline auto
+  getVertex(Int i) const -> Point3F const &;
 
   void
   getElement(Int i, VTKElemType & type, Vector<Int> & conn) const;
 
   // The unique element types in the soup
-  [[nodiscard]] constexpr auto
+  [[nodiscard]] inline auto
   getElemTypes() const -> Vector<VTKElemType>;
 
   void
@@ -113,7 +121,7 @@ public:
   addVertex(Float x, Float y, Float z = 0) -> Int;
 
   auto
-  addVertex(Point3 const & p) -> Int;
+  addVertex(Point3F const & p) -> Int;
 
   auto
   addElement(VTKElemType type, Vector<Int> const & conn) -> Int;
@@ -122,7 +130,7 @@ public:
   addElset(String const & name, Vector<Int> const & ids, Vector<Float> data = {}) -> Int;
 
   constexpr void
-  translate(Point3 const & v) noexcept;
+  translate(Point3F const & v) noexcept;
 
   void
   reserveMoreElements(VTKElemType elem_type, Int num_elems);
@@ -162,24 +170,26 @@ public:
 // Free functions
 //==============================================================================
 
+#if UM2_HAS_XDMF
 void
 writeXDMFUniformGrid(String const & name,
                      pugi::xml_node & xdomain, H5::H5File & h5file,
                      String const & h5filename, String const & h5path,
                      PolytopeSoup const & soup,
-                     Point3 const & origin = {0, 0, 0}
+                     Point3F const & origin = {0, 0, 0}
                      );
 
 void
 readXDMFUniformGrid(pugi::xml_node const & xgrid, H5::H5File const & h5file,
                     String const & h5filename, PolytopeSoup & soup);
+#endif
 
 //==============================================================================
 // Member access
 //==============================================================================
 
 PURE constexpr auto
-PolytopeSoup::vertices() const -> Vector<Point3> const &
+PolytopeSoup::vertices() const -> Vector<Point3F> const &
 {
   return _vertices;
 }
@@ -252,14 +262,14 @@ PolytopeSoup::numElsets() const -> Int
 // Getters
 //==============================================================================
 
-PURE constexpr auto
-PolytopeSoup::getVertex(Int const i) const -> Point3 const &
+PURE inline auto
+PolytopeSoup::getVertex(Int const i) const -> Point3F const &
 {
   ASSERT(i < _vertices.size());
   return _vertices[i];
 }
 
-constexpr auto
+inline auto
 PolytopeSoup::getElemTypes() const -> Vector<VTKElemType>
 {
   Vector<VTKElemType> el_types;
@@ -283,7 +293,7 @@ PolytopeSoup::getElemTypes() const -> Vector<VTKElemType>
 //==============================================================================
 
 constexpr void
-PolytopeSoup::translate(Point3 const & v) noexcept
+PolytopeSoup::translate(Point3F const & v) noexcept
 {
   for (auto & p : _vertices) {
     p += v;

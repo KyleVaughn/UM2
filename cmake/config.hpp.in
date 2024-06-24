@@ -11,16 +11,16 @@
 #cmakedefine01 UM2_ENABLE_ASSERTS
 #cmakedefine01 UM2_ENABLE_BMI2
 #cmakedefine01 UM2_ENABLE_FASTMATH
-// #cmakedefine01 UM2_ENABLE_FLOAT64
+#cmakedefine01 UM2_ENABLE_FLOAT64
 #cmakedefine01 UM2_ENABLE_SIMD_VEC
 
 // External tools/dependencies
 #cmakedefine01 UM2_USE_BLAS_LAPACK
 #cmakedefine01 UM2_USE_CUDA
 // #cmakedefine01 UM2_USE_GMSH
-// #cmakedefine01 UM2_USE_HDF5
+#cmakedefine01 UM2_USE_HDF5
 #cmakedefine01 UM2_USE_OPENMP
-// #cmakedefine01 UM2_USE_PUGIXML
+#cmakedefine01 UM2_USE_PUGIXML
 
 // Max log level for compile-time filtering of log messages
 // clang-format off
@@ -122,11 +122,11 @@
 //==============================================================================
 
 // Floating point type
-// #if UM2_ENABLE_FLOAT64
-// using Float = double;
-// #else
-// using Float = float;
-// #endif
+#if UM2_ENABLE_FLOAT64
+using Float = double;
+#else
+using Float = float;
+#endif
 
 #if UM2_USE_CUDA
 template <class T>

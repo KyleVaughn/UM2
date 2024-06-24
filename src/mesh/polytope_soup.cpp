@@ -1,12 +1,40 @@
-#include <um2/mesh/polytope_soup.hpp>
-
+#include <um2/config.hpp>
 #include <um2/common/logger.hpp>
 #include <um2/common/permutation.hpp>
 #include <um2/common/strto.hpp>
 #include <um2/stdlib/utility/pair.hpp>
+#include <um2/stdlib/utility/move.hpp>
+#include <um2/stdlib/numeric/iota.hpp>
+#include <um2/stdlib/math/abs.hpp>
+#include <um2/stdlib/string.hpp>
+#include <um2/stdlib/string_view.hpp>
 #include <um2/stdlib/algorithm/is_sorted.hpp>
+#include <um2/stdlib/algorithm/copy.hpp>
+#include <um2/stdlib/vector.hpp>
+#include <um2/stdlib/assert.hpp>
+#include <um2/stdlib/memory/addressof.hpp>
+#include <um2/math/vec.hpp>
+#include <um2/geometry/point.hpp>
+#include <um2/mesh/polytope_soup.hpp>
+#include <um2/mesh/element_types.hpp>
 
+#if UM2_USE_PUGIXML    
+#include <pugixml.hpp>    
+#endif
+
+#include <concepts>
+#include <cstdlib>
+#include <cstdio>
+#include <cstdint>
+#include <cstring>
 #include <fstream>
+#include <algorithm>
+#include <limits>
+#include <ios>
+
+// We dont have access to the header defining many of the HDF5 types, so we disable
+// the clang-tidy warning.
+// NOLINTBEGIN(misc-include-cleaner)
 
 namespace um2
 {
@@ -21,19 +49,19 @@ PolytopeSoup::PolytopeSoup(String const & filename) { read(filename); }
 // Getters
 //==============================================================================
 
-void    
-PolytopeSoup::getElement(Int const i, VTKElemType & type, Vector<Int> & conn) const    
-{    
-  ASSERT(i < _element_types.size());    
-  type = _element_types[i];    
-  auto const istart = _element_offsets[i];    
-  auto const iend = _element_offsets[i + 1];    
-  auto const n = iend - istart;    
-  conn.resize(n);    
-  for (Int j = 0; j < n; ++j) {    
-    conn[j] = _element_conn[istart + j];    
-  }       
-} 
+void
+PolytopeSoup::getElement(Int const i, VTKElemType & type, Vector<Int> & conn) const
+{
+  ASSERT(i < _element_types.size());
+  type = _element_types[i];
+  auto const istart = _element_offsets[i];
+  auto const iend = _element_offsets[i + 1];
+  auto const n = iend - istart;
+  conn.resize(n);
+  for (Int j = 0; j < n; ++j) {
+    conn[j] = _element_conn[istart + j];
+  }
+}
 
 void
 PolytopeSoup::getElset(Int const i, String & name, Vector<Int> & ids, Vector<Float> & data) const
@@ -82,7 +110,7 @@ PolytopeSoup::addVertex(Float x, Float y, Float z) -> Int
 }
 
 auto
-PolytopeSoup::addVertex(Point3 const & p) -> Int
+PolytopeSoup::addVertex(Point3F const & p) -> Int
 {
   _vertices.emplace_back(p);
   return _vertices.size() - 1;
@@ -295,9 +323,9 @@ PolytopeSoup::operator+=(PolytopeSoup const & other) noexcept -> PolytopeSoup &
     Int num_elements = 0;
     Vector<Float> data;
     // Loop over this elsets
-    for (Int j = 0; j < this_num_elsets; ++j) { 
+    for (Int j = 0; j < this_num_elsets; ++j) {
       if (_elset_names[j] == name) {
-        num_elements += _elset_offsets[j + 1] - _elset_offsets[j]; 
+        num_elements += _elset_offsets[j + 1] - _elset_offsets[j];
         for (Int k = _elset_offsets[j]; k < _elset_offsets[j + 1]; ++k) {
           new_elset_ids.emplace_back(_elset_ids[k]);
         }
@@ -318,7 +346,7 @@ PolytopeSoup::operator+=(PolytopeSoup const & other) noexcept -> PolytopeSoup &
           Int const old_size = data.size();
           data.resize(data.size() + other_data.size());
           um2::copy(other_data.cbegin(), other_data.cend(),
-                    data.begin() + old_size); 
+                    data.begin() + old_size);
         }
       }
     }
@@ -378,7 +406,7 @@ PolytopeSoup::compare(PolytopeSoup const & other) const -> int
   if (_elset_offsets != other._elset_offsets) {
     return 7;
   }
-  
+
   // Compare elset ids
   if (_elset_ids != other._elset_ids) {
     return 8;
@@ -395,7 +423,7 @@ PolytopeSoup::compare(PolytopeSoup const & other) const -> int
         return 10;
       }
       for (Int j = 0; j < _elset_data[i].size(); ++j) {
-        if (um2::abs(_elset_data[i][j] - other._elset_data[i][j]) > eps_distance) {
+        if (um2::abs(_elset_data[i][j] - other._elset_data[i][j]) > epsDistance<Float>()) {
           return 11;
         }
       }
@@ -586,7 +614,10 @@ PolytopeSoup::getSubset(String const & elset_name, PolytopeSoup & subset) const
 // IO for ABAQUS files.
 //==============================================================================
 
-static auto
+namespace
+{
+
+auto
 abaqusParseNodes(PolytopeSoup & soup, std::ifstream & file, char * const line,
     uint64_t const max_line_length) -> StringView
 {
@@ -624,7 +655,7 @@ abaqusParseNodes(PolytopeSoup & soup, std::ifstream & file, char * const line,
   return {line};
 } // abaqusParseNodes
 
-static auto
+auto
 abaqusParseElements(PolytopeSoup & soup, std::ifstream & file, char * const line,
     uint64_t const max_line_length) -> StringView
 {
@@ -695,7 +726,7 @@ abaqusParseElements(PolytopeSoup & soup, std::ifstream & file, char * const line
   return {line};
 } // abaqusParseElements
 
-static auto
+auto
 abaqusParseElsets(PolytopeSoup & soup, std::ifstream & file, char * const line,
     uint64_t const max_line_length) -> StringView
 {
@@ -739,7 +770,7 @@ abaqusParseElsets(PolytopeSoup & soup, std::ifstream & file, char * const line,
   return {line};
 } // abaqusParseElsets
 
-static void
+void
 readAbaqusFile(String const & filename, PolytopeSoup & soup)
 {
   LOG_INFO("Reading Abaqus file: ", filename);
@@ -809,11 +840,16 @@ readAbaqusFile(String const & filename, PolytopeSoup & soup)
   LOG_INFO("Finished reading Abaqus file: ", filename);
 } // readAbaqusFile
 
+} // namespace
+
 //=============================================================================
 // IO for VTK files
 //=============================================================================
 
-static void
+namespace
+{
+
+void
 vtkParseUnstructuredGrid(PolytopeSoup & soup, std::ifstream & file, char * const line,
     uint64_t const max_line_length)
 {
@@ -939,7 +975,7 @@ vtkParseUnstructuredGrid(PolytopeSoup & soup, std::ifstream & file, char * const
   ASSERT(file.good());
 } // vtkParseUnstructuredGrid
 
-static void
+void
 vtkParseCellData(PolytopeSoup & soup, std::ifstream & file, char * const line,
     uint64_t const max_line_length)
 {
@@ -1004,7 +1040,7 @@ vtkParseCellData(PolytopeSoup & soup, std::ifstream & file, char * const line,
   soup.addElset(data_name, ids, data);
 }
 
-static void
+void
 readVTKFile(String const & filename, PolytopeSoup & soup)
 {
   LOG_INFO("Reading VTK file: ", filename);
@@ -1084,12 +1120,17 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
   LOG_INFO("Finished reading VTK file: ", filename);
 } // readVTKFile
 
+} // namespace
+
+#if UM2_HAS_XDMF
 //==============================================================================
 // IO for XDMF files
 //==============================================================================
 
+namespace {
+
 template <typename T>
-static inline auto
+inline auto
 getH5DataType() -> H5::PredType
 {
   if constexpr (std::same_as<T, float>) {
@@ -1126,19 +1167,19 @@ getH5DataType() -> H5::PredType
   return H5::PredType::NATIVE_FLOAT;
 }
 
-static void
+void
 writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
                   String const & h5filename, String const & h5path,
-                  PolytopeSoup const & soup, 
-                  Point3 const & origin
+                  PolytopeSoup const & soup,
+                  Point3F const & origin
                   )
 {
-  Int const num_verts = soup.numVertices(); 
+  Int const num_verts = soup.numVertices();
   auto const & vertices = soup.vertices();
   bool const soup_is_3d =
       std::any_of(vertices.cbegin(), vertices.cend(),
-                  [](auto const & v) { return um2::abs(v[2]) > eps_distance; });
-  bool const origin_is_3d = um2::abs(origin[2]) > eps_distance;
+                  [](auto const & v) { return um2::abs(v[2]) > epsDistance<Float>(); });
+  bool const origin_is_3d = um2::abs(origin[2]) > epsDistance<Float>();
   Int const dim = (soup_is_3d || origin_is_3d) ? 3 : 2;
   // Create XDMF Geometry node
   auto xgeom = xgrid.append_child("Geometry");
@@ -1183,7 +1224,7 @@ writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
   h5dataset.write(xyz.data(), h5type, h5space);
 } // writeXDMFgeometry
 
-static void
+void
 writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
                   String const & h5filename, String const & h5path,
                   PolytopeSoup const & soup)
@@ -1283,11 +1324,11 @@ writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
   }
 } // writeXDMFTopology
 
-static void
+void
 writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
                               String const & h5filename, String const & h5path,
                               PolytopeSoup const & soup
-                              ) 
+                              )
 {
   auto const & elset_names = soup.elsetNames();
   auto const & elset_offsets = soup.elsetOffsets();
@@ -1349,12 +1390,14 @@ writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
   }
 } // writeXDMFelsets
 
+} // namespace
+
 void
 writeXDMFUniformGrid(String const & name,
                      pugi::xml_node & xdomain, H5::H5File & h5file,
                      String const & h5filename, String const & h5path,
                      PolytopeSoup const & soup,
-                     Point3 const & origin
+                     Point3F const & origin
                      )
 {
   // Grid
@@ -1371,7 +1414,9 @@ writeXDMFUniformGrid(String const & name,
   writeXDMFElsets(xgrid, h5group, h5filename, h5grouppath, soup);
 } // writeXDMFUniformGrid
 
-static void
+namespace {
+
+void
 writeXDMFFile(String const & filepath, PolytopeSoup const & soup)
 {
   LOG_INFO("Writing XDMF file: ",  filepath);
@@ -1418,7 +1463,7 @@ writeXDMFFile(String const & filepath, PolytopeSoup const & soup)
 } // writeXDMFFile
 
 template <std::floating_point T>
-static void
+void
 addNodesToSoup(PolytopeSoup & mesh, Int const num_verts, Int const num_dimensions,
                H5::DataSet const & dataset, H5::FloatType const & datatype,
                bool const xyz)
@@ -1443,7 +1488,7 @@ addNodesToSoup(PolytopeSoup & mesh, Int const num_verts, Int const num_dimension
   }
 } // addNodesToSoup
 
-static void
+void
 readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5file,
                  String const & h5filename, PolytopeSoup & soup)
 {
@@ -1535,7 +1580,7 @@ readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5file,
 }
 
 template <std::signed_integral T>
-static void
+void
 addElementsToSoup(Int const num_elements, String const & topology_type,
                   String const & dimensions, PolytopeSoup & soup,
                   H5::DataSet const & dataset, H5::IntType const & datatype)
@@ -1602,7 +1647,7 @@ addElementsToSoup(Int const num_elements, String const & topology_type,
   }
 }
 
-static void
+void
 readXDMFTopology(pugi::xml_node const & xgrid, H5::H5File const & h5file,
                  String const & h5filename, PolytopeSoup & soup)
 {
@@ -1690,7 +1735,7 @@ readXDMFTopology(pugi::xml_node const & xgrid, H5::H5File const & h5file,
 //==============================================================================
 
 template <std::signed_integral T, std::floating_point U>
-static void
+void
 addElsetToSoup(PolytopeSoup & soup, Int const num_elements, H5::DataSet const & dataset,
                H5::IntType const & datatype, String const & elset_name,
                bool const has_attribute,
@@ -1721,7 +1766,7 @@ addElsetToSoup(PolytopeSoup & soup, Int const num_elements, H5::DataSet const & 
 // readXDMFElsets
 //==============================================================================
 
-static void
+void
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5file,
                String const & h5filename, PolytopeSoup & soup)
@@ -1914,6 +1959,8 @@ readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5file,
   }
 }
 
+} // namespace
+
 //==============================================================================
 // readXDMFUniformGrid
 //==============================================================================
@@ -1931,7 +1978,9 @@ readXDMFUniformGrid(pugi::xml_node const & xgrid, H5::H5File const & h5file,
 // readXDMFFile
 //==============================================================================
 
-static void
+namespace {
+
+void
 readXDMFFile(String const & filename, PolytopeSoup & soup)
 {
   logger::info("Reading XDMF file: " + filename);
@@ -1987,6 +2036,10 @@ readXDMFFile(String const & filename, PolytopeSoup & soup)
   logger::info("Finished reading XDMF file: ", filename);
 }
 
+} // namespace
+
+#endif // UM2_HAS_XDMF
+
 //==============================================================================
 // IO
 //==============================================================================
@@ -1998,13 +2051,17 @@ PolytopeSoup::read(String const & filename)
     readAbaqusFile(filename, *this);
   } else if (filename.ends_with(".vtk")) {
     readVTKFile(filename, *this);
+#if UM2_HAS_XDMF
   } else if (filename.ends_with(".xdmf")) {
     readXDMFFile(filename, *this);
+#endif
   } else {
     logger::error("Unsupported file format.");
   }
 }
 
+
+#if UM2_HAS_XDMF
 void
 PolytopeSoup::write(String const & filename) const
 {
@@ -2014,6 +2071,7 @@ PolytopeSoup::write(String const & filename) const
     logger::error("Unsupported file format.");
   }
 }
+#endif
 
 ////==============================================================================
 //// getPowerRegions
@@ -2021,10 +2079,10 @@ PolytopeSoup::write(String const & filename) const
 //
 //auto
 //// NOLINTNEXTLINE(readability-function-cognitive-complexity)
-//getPowerRegions(PolytopeSoup const & soup) -> Vector<Pair<Float, Point3>>
+//getPowerRegions(PolytopeSoup const & soup) -> Vector<Pair<Float, Point3F>>
 //{
 //  LOG_INFO("Computing power and centroid of disjoint regions with non-zero power");
-//  Vector<Pair<Float, Point3>> subset_pc;
+//  Vector<Pair<Float, Point3F>> subset_pc;
 //  Vector<Int> ids;
 //  Vector<Float> data;
 //  soup.getElset("power", ids, data);
@@ -2161,13 +2219,13 @@ PolytopeSoup::write(String const & filename) const
 //
 //  LOG_DEBUG("Computing total powers and centroids");
 //  // We care about the numerical accuracy of the power and centroid.
-//  // Therefore, we will avoid using the naive algorithm in favor of 
+//  // Therefore, we will avoid using the naive algorithm in favor of
 //  // um2::sum, which better handles floating point error.
 //  // However, we have to do extra memory allocations to store
 //  // intermediate results.
 //  subset_pc.reserve(subset_ids.size());
 //  Vector<Float> areas;
-//  Vector<Point3> area_weighted_centroids;
+//  Vector<Point3F> area_weighted_centroids;
 //  Vector<Float> area_weighted_powers; // data[i] is power density, so data[i] * a
 //  for (auto const & subset : subset_ids) {
 //    Int const n = subset.size();
@@ -2178,14 +2236,14 @@ PolytopeSoup::write(String const & filename) const
 //    for (Int i = 0; i < n; ++i) {
 //      Int const iface = subset[i];
 //      Float const a = soup.getElementArea(iface);
-//      Point3 const c = soup.getElementCentroid(iface);
+//      Point3F const c = soup.getElementCentroid(iface);
 //      areas[i] = a;
 //      area_weighted_centroids[i] = a * c;
 //      area_weighted_powers[i] = data[iface] * a;
 //      ASSERT(data[iface] > 0);
 //    }
 //    Float const area_sum = um2::sum(areas.cbegin(), areas.cend());
-//    Point3 centroid_sum = um2::sum(area_weighted_centroids.cbegin(),
+//    Point3F centroid_sum = um2::sum(area_weighted_centroids.cbegin(),
 //                                        area_weighted_centroids.cend());
 //    Float const total_power = um2::sum(area_weighted_powers.cbegin(),
 //                                       area_weighted_powers.cend());
@@ -2199,3 +2257,5 @@ PolytopeSoup::write(String const & filename) const
 //}
 
 } // namespace um2
+
+// NOLINTEND(misc-include-cleaner)

@@ -31,6 +31,9 @@ using Point3 = Point<3, T>;
 using Point2f = Point2<float>;
 using Point2d = Point2<double>;
 
+using Point2F = Point2<Float>;
+using Point3F = Point3<Float>;
+
 //==============================================================================
 // Functions
 //==============================================================================

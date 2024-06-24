@@ -1,9 +1,16 @@
+#include <um2/config.hpp>
 #include <um2/mesh/polytope_soup.hpp>
-#include <um2/stdlib/numeric/iota.hpp>
+#include <um2/geometry/point.hpp>
+//#include <um2/stdlib/numeric/iota.hpp>
+#include <um2/stdlib/vector.hpp>
+#include <um2/mesh/element_types.hpp>
+#include <um2/common/cast_if_not.hpp>
 
 #include "./helpers/setup_polytope_soup.hpp"
 
 #include "../test_macros.hpp"
+
+#include <cstdio>
 
 TEST_CASE(addVertex)
 {
@@ -11,10 +18,10 @@ TEST_CASE(addVertex)
   ASSERT(soup.addVertex(1, 2, 3) == 0);
   ASSERT(soup.addVertex(2, 3, 4) == 1);
 
-  um2::Point3 const p0 = soup.getVertex(0);
-  ASSERT(p0.isApprox(um2::Point3(1, 2, 3)));
-  um2::Point3 const p1 = soup.getVertex(1);
-  ASSERT(p1.isApprox(um2::Point3(2, 3, 4)));
+  um2::Point3F const p0 = soup.getVertex(0);
+  ASSERT(p0.isApprox(um2::Point3F(1, 2, 3)));
+  um2::Point3F const p1 = soup.getVertex(1);
+  ASSERT(p1.isApprox(um2::Point3F(2, 3, 4)));
 }
 
 TEST_CASE(addElement)
@@ -156,9 +163,9 @@ TEST_CASE(getSubset)
 
   // (1,0), (1,1), (2,0)
   ASSERT(tri_quad_h2o.numVertices() == 3);
-  ASSERT(tri_quad_h2o.getVertex(0).isApprox(um2::Point3(1, 0, 0)));
-  ASSERT(tri_quad_h2o.getVertex(1).isApprox(um2::Point3(1, 1, 0)));
-  ASSERT(tri_quad_h2o.getVertex(2).isApprox(um2::Point3(2, 0, 0)));
+  ASSERT(tri_quad_h2o.getVertex(0).isApprox(um2::Point3F(1, 0, 0)));
+  ASSERT(tri_quad_h2o.getVertex(1).isApprox(um2::Point3F(1, 1, 0)));
+  ASSERT(tri_quad_h2o.getVertex(2).isApprox(um2::Point3F(2, 0, 0)));
 
   ASSERT(tri_quad_h2o.numElements() == 1);
   um2::VTKElemType elem_type = um2::VTKElemType::Invalid;
@@ -207,15 +214,15 @@ TEST_CASE(operator_plus_equal)
   soup += soup2;
   // Check vertices
   ASSERT(soup.numVertices() == 9);
-  ASSERT(soup.getVertex(0).isApprox(um2::Point3(0, 0, 0)));
-  ASSERT(soup.getVertex(1).isApprox(um2::Point3(1, 0, 0)));
-  ASSERT(soup.getVertex(2).isApprox(um2::Point3(1, 1, 0)));
-  ASSERT(soup.getVertex(3).isApprox(um2::Point3(0, 1, 0)));
-  ASSERT(soup.getVertex(4).isApprox(um2::Point3(1, 0, 0)));
-  ASSERT(soup.getVertex(5).isApprox(um2::Point3(2, 0, 0)));
-  ASSERT(soup.getVertex(6).isApprox(um2::Point3(3, 0, 0)));
-  ASSERT(soup.getVertex(7).isApprox(um2::Point3(2, 1, 0)));
-  ASSERT(soup.getVertex(8).isApprox(um2::Point3(1, 1, 0)));
+  ASSERT(soup.getVertex(0).isApprox(um2::Point3F(0, 0, 0)));
+  ASSERT(soup.getVertex(1).isApprox(um2::Point3F(1, 0, 0)));
+  ASSERT(soup.getVertex(2).isApprox(um2::Point3F(1, 1, 0)));
+  ASSERT(soup.getVertex(3).isApprox(um2::Point3F(0, 1, 0)));
+  ASSERT(soup.getVertex(4).isApprox(um2::Point3F(1, 0, 0)));
+  ASSERT(soup.getVertex(5).isApprox(um2::Point3F(2, 0, 0)));
+  ASSERT(soup.getVertex(6).isApprox(um2::Point3F(3, 0, 0)));
+  ASSERT(soup.getVertex(7).isApprox(um2::Point3F(2, 1, 0)));
+  ASSERT(soup.getVertex(8).isApprox(um2::Point3F(1, 1, 0)));
   // Check elements
   ASSERT(soup.numElements() == 4);
   um2::Vector<Int> conn;
@@ -278,15 +285,15 @@ TEST_CASE(operator_plus_equal)
   soup3 += soup;
   // Check vertices
   ASSERT(soup3.numVertices() == 9);
-  ASSERT(soup3.getVertex(0).isApprox(um2::Point3(0, 0, 0)));
-  ASSERT(soup3.getVertex(1).isApprox(um2::Point3(1, 0, 0)));
-  ASSERT(soup3.getVertex(2).isApprox(um2::Point3(1, 1, 0)));
-  ASSERT(soup3.getVertex(3).isApprox(um2::Point3(0, 1, 0)));
-  ASSERT(soup3.getVertex(4).isApprox(um2::Point3(1, 0, 0)));
-  ASSERT(soup3.getVertex(5).isApprox(um2::Point3(2, 0, 0)));
-  ASSERT(soup3.getVertex(6).isApprox(um2::Point3(3, 0, 0)));
-  ASSERT(soup3.getVertex(7).isApprox(um2::Point3(2, 1, 0)));
-  ASSERT(soup3.getVertex(8).isApprox(um2::Point3(1, 1, 0)));
+  ASSERT(soup3.getVertex(0).isApprox(um2::Point3F(0, 0, 0)));
+  ASSERT(soup3.getVertex(1).isApprox(um2::Point3F(1, 0, 0)));
+  ASSERT(soup3.getVertex(2).isApprox(um2::Point3F(1, 1, 0)));
+  ASSERT(soup3.getVertex(3).isApprox(um2::Point3F(0, 1, 0)));
+  ASSERT(soup3.getVertex(4).isApprox(um2::Point3F(1, 0, 0)));
+  ASSERT(soup3.getVertex(5).isApprox(um2::Point3F(2, 0, 0)));
+  ASSERT(soup3.getVertex(6).isApprox(um2::Point3F(3, 0, 0)));
+  ASSERT(soup3.getVertex(7).isApprox(um2::Point3F(2, 1, 0)));
+  ASSERT(soup3.getVertex(8).isApprox(um2::Point3F(1, 1, 0)));
   // Check elements
   ASSERT(soup3.numElements() == 4);
 
@@ -531,6 +538,7 @@ TEST_CASE(io_vtk_tri6_quad8_mesh)
   ASSERT_NEAR(elset_data[1], 2, castIfNot<Float>(1e-6));
 }
 
+#if UM2_HAS_XDMF
 TEST_CASE(io_xdmf_tri_mesh)
 {
   um2::PolytopeSoup mesh_ref;
@@ -632,6 +640,7 @@ TEST_CASE(io_xdmf_tri6_quad8_mesh)
   stat = std::remove("./tri6_quad8.h5");
   ASSERT(stat == 0);
 }
+#endif // UM2_HAS_XDMF
 
 //TEST_CASE(getPowerRegions)
 //{
@@ -661,7 +670,7 @@ TEST_CASE(io_xdmf_tri6_quad8_mesh)
 //        auto const y = castIfNot<Float>(j);
 //        mesh.addVertex(x, y);
 //      } else {
-//        mesh.addVertex(um2::Point3(i, j, 0));
+//        mesh.addVertex(um2::Point3F(i, j, 0));
 //      }
 //    }
 //  }
@@ -729,12 +738,14 @@ TEST_SUITE(PolytopeSoup)
   TEST(io_vtk_tri6_mesh);
   TEST(io_vtk_quad8_mesh);
   TEST(io_vtk_tri6_quad8_mesh);
+#if UM2_HAS_XDMF
   TEST(io_xdmf_tri_mesh);
   TEST(io_xdmf_quad_mesh);
   TEST(io_xdmf_tri_quad_mesh);
   TEST(io_xdmf_tri6_mesh);
   TEST(io_xdmf_quad8_mesh);
   TEST(io_xdmf_tri6_quad8_mesh);
+#endif
 //  TEST(getPowerRegions);
 }
 

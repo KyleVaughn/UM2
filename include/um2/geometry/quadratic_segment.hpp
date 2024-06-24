@@ -359,7 +359,7 @@ QuadraticSegment<D, T>::length() const noexcept -> T
   T const den = 8 * sa * sa * sa;
   T const result = num / den;
   ASSERT(0 <= result);
-  ASSERT(result <= inf_distance);
+  ASSERT(result <= infDistance<T>());
   return result;
 }
 
@@ -561,7 +561,7 @@ QuadraticSegment<D, T>::isLeft(Point2<T> const p) const noexcept -> bool
   q[1] = rot * q[1];
   q[2] = rot * q[2];
   // Successful rotation implies that q[1][1] == 0 and q[1][0] > 0.
-  ASSERT(um2::abs(q[1][1]) < eps_distance);
+  ASSERT(um2::abs(q[1][1]) < epsDistance<T>());
   ASSERT(q[1][0] > 0);
   auto p_r = rot * (p - _v[0]);
 

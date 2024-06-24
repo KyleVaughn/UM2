@@ -1,20 +1,25 @@
+#include <um2/config.hpp>
+#include <um2/geometry/point.hpp>
+#include <um2/geometry/axis_aligned_box.hpp>
+#include <um2/math/vec.hpp>
 #include <um2/mesh/regular_grid.hpp>
 
 #include "../test_macros.hpp"
 
-Float constexpr eps = um2::eps_distance;
+template <class T>
+T constexpr eps = um2::epsDistance<T>();
 
-template <Int D>
+template <Int D, class T>
 HOSTDEV constexpr auto
-makeGrid() -> um2::RegularGrid<D>
+makeGrid() -> um2::RegularGrid<D, T>
 {
   static_assert(1 <= D && D <= 3, "D must be in [1, 3]");
-  um2::Point<D> minima;
-  um2::Point<D> spacing;
+  um2::Point<D, T> minima;
+  um2::Point<D, T> spacing;
   um2::Vec<D, Int> num_cells;
   for (Int i = 0; i < D; ++i) {
-    minima[i] = castIfNot<Float>(i + 1);
-    spacing[i] = castIfNot<Float>(i + 1);
+    minima[i] = castIfNot<T>(i + 1);
+    spacing[i] = castIfNot<T>(i + 1);
     num_cells[i] = i + 1;
   }
   return {minima, spacing, num_cells};
@@ -30,66 +35,67 @@ factorial(Int n) -> Int
   return result;
 }
 
-template <Int D>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(accessors)
 {
-  um2::RegularGrid<D> const grid = makeGrid<D>();
+  um2::RegularGrid<D, T> const grid = makeGrid<D, T>();
   for (Int i = 0; i < D; ++i) {
-    ASSERT_NEAR(grid.minima(i), castIfNot<Float>(i + 1), eps);
-    ASSERT_NEAR(grid.spacing(i), castIfNot<Float>(i + 1), eps);
+    ASSERT_NEAR(grid.minima(i), castIfNot<T>(i + 1), eps<T>);
+    ASSERT_NEAR(grid.spacing(i), castIfNot<T>(i + 1), eps<T>);
     ASSERT(grid.numCells(i) == i + 1);
   }
   ASSERT(grid.totalNumCells() == factorial(D));
 
   for (Int i = 0; i < D; ++i) {
-    auto const i_1 = castIfNot<Float>(i + 1);
+    auto const i_1 = castIfNot<T>(i + 1);
     auto const i_1_sq = i_1 * i_1; 
-    ASSERT_NEAR(grid.extents(i), i_1_sq, eps);
-    ASSERT_NEAR(grid.maxima(i), i_1_sq + i_1, eps);
+    ASSERT_NEAR(grid.extents(i), i_1_sq, eps<T>);
+    ASSERT_NEAR(grid.maxima(i), i_1_sq + i_1, eps<T>);
   }
 }
 
-template <Int D>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(boundingBox)
 {
-  um2::RegularGrid<D> const grid = makeGrid<D>();
-  um2::AxisAlignedBox<D> const box = grid.boundingBox();
+  um2::RegularGrid<D, T> const grid = makeGrid<D, T>();
+  um2::AxisAlignedBox<D, T> const box = grid.boundingBox();
   ASSERT(box.minima().isApprox(grid.minima()));
   ASSERT(box.maxima().isApprox(grid.maxima()));
 }
 
-template <Int D>
+template <Int D, class T>
 HOSTDEV
 TEST_CASE(getCellCentroid)
 {
-  um2::RegularGrid<D> const grid = makeGrid<D>();
+  um2::RegularGrid<D, T> const grid = makeGrid<D, T>();
   if constexpr (D == 1) {
     auto const x = grid.getCellCentroid(0);
-    ASSERT_NEAR(x[0], grid.minima(0) + grid.spacing(0) / castIfNot<Float>(2), eps);
+    ASSERT_NEAR(x[0], grid.minima(0) + grid.spacing(0) / castIfNot<T>(2), eps<T>);
   }
   if constexpr (D == 2) {
     auto const xy = grid.getCellCentroid(0, 0);
-    ASSERT_NEAR(xy[1], grid.minima(1) + grid.spacing(1) / castIfNot<Float>(2), eps);
+    ASSERT_NEAR(xy[1], grid.minima(1) + grid.spacing(1) / castIfNot<T>(2), eps<T>);
   }
 }
 
+template <class T>
 HOSTDEV
 TEST_CASE(getBox)
 {
   // Declare some variables to avoid a bunch of static casts.
-  auto const three = castIfNot<Float>(3);
-  auto const two = castIfNot<Float>(2);
-  auto const one = castIfNot<Float>(1);
-  auto const ahalf = castIfNot<Float>(1) / castIfNot<Float>(2);
-  auto const forth = castIfNot<Float>(1) / castIfNot<Float>(4);
-  um2::Point2 const minima = {1, -1};
-  um2::Vec2<Float> const spacing = {ahalf, forth};
+  auto const three = castIfNot<T>(3);
+  auto const two = castIfNot<T>(2);
+  auto const one = castIfNot<T>(1);
+  auto const ahalf = castIfNot<T>(1) / castIfNot<T>(2);
+  auto const forth = castIfNot<T>(1) / castIfNot<T>(4);
+  um2::Point2<T> const minima = {1, -1};
+  um2::Vec2<T> const spacing = {ahalf, forth};
   um2::Vec2<Int> const num_cells = {4, 8};
-  um2::RegularGrid2 const grid(minima, spacing, num_cells);
-  um2::AxisAlignedBox2 box = grid.getBox(0, 0);
-  um2::AxisAlignedBox2 box_ref = {
+  um2::RegularGrid2<T> const grid(minima, spacing, num_cells);
+  um2::AxisAlignedBox2<T> box = grid.getBox(0, 0);
+  um2::AxisAlignedBox2<T> box_ref = {
       {          1,             -1},
       {one + ahalf, -three * forth}
   };
@@ -131,18 +137,19 @@ TEST_CASE(getBox)
   ASSERT(box.isApprox(box_ref));
 }
 
+template <class T>
 HOSTDEV
 TEST_CASE(getCellIndicesIntersecting)
 {
-  um2::Point2 const minima(1, -1);
-  um2::Vec2<Float> const spacing(2, 1);
+  um2::Point2<T> const minima(1, -1);
+  um2::Vec2<T> const spacing(2, 1);
   um2::Vec2<Int> const num_cells(5, 8);
   // Grid ranges from 1 to 11 in x and -1 to 7 in y.
-  um2::RegularGrid2 const grid(minima, spacing, num_cells);
+  um2::RegularGrid2<T> const grid(minima, spacing, num_cells);
 
   // A box in a single cell.
-  um2::AxisAlignedBox2 const box0({castIfNot<Float>(3.1), castIfNot<Float>(1.1)},
-                                  {castIfNot<Float>(3.9), castIfNot<Float>(1.9)});
+  um2::AxisAlignedBox2<T> const box0({castIfNot<T>(3.1), castIfNot<T>(1.1)},
+                                  {castIfNot<T>(3.9), castIfNot<T>(1.9)});
   um2::Vec<4, Int> const range0 = grid.getCellIndicesIntersecting(box0);
   ASSERT(range0[0] == 1);
   ASSERT(range0[1] == 2);
@@ -150,8 +157,8 @@ TEST_CASE(getCellIndicesIntersecting)
   ASSERT(range0[3] == 2);
 
   // A box with perfect alignment.
-  um2::AxisAlignedBox2 const box1({castIfNot<Float>(3), castIfNot<Float>(1)},
-                                  {castIfNot<Float>(5), castIfNot<Float>(2)});
+  um2::AxisAlignedBox2<T> const box1({castIfNot<T>(3), castIfNot<T>(1)},
+                                  {castIfNot<T>(5), castIfNot<T>(2)});
   um2::Vec<4, Int> const range1 = grid.getCellIndicesIntersecting(box1);
   ASSERT(range1[0] == 0 || range1[0] == 1);
   ASSERT(range1[1] == 1 || range1[1] == 2);
@@ -159,8 +166,8 @@ TEST_CASE(getCellIndicesIntersecting)
   ASSERT(range1[3] == 2 || range1[3] == 3);
 
   // A box in multiple cells.
-  um2::AxisAlignedBox2 const box2({castIfNot<Float>(3.1), castIfNot<Float>(1.1)},
-                                  {castIfNot<Float>(5.9), castIfNot<Float>(1.9)});
+  um2::AxisAlignedBox2<T> const box2({castIfNot<T>(3.1), castIfNot<T>(1.1)},
+                                  {castIfNot<T>(5.9), castIfNot<T>(1.9)});
   um2::Vec<4, Int> const range2 = grid.getCellIndicesIntersecting(box2);
   ASSERT(range2[0] == 1);
   ASSERT(range2[1] == 2);
@@ -168,8 +175,8 @@ TEST_CASE(getCellIndicesIntersecting)
   ASSERT(range2[3] == 2);
 
   // A box in 4 cells.
-  um2::AxisAlignedBox2 const box3({castIfNot<Float>(3.1), castIfNot<Float>(1.1)},
-                                  {castIfNot<Float>(5.9), castIfNot<Float>(2.9)});
+  um2::AxisAlignedBox2<T> const box3({castIfNot<T>(3.1), castIfNot<T>(1.1)},
+                                  {castIfNot<T>(5.9), castIfNot<T>(2.9)});
   um2::Vec<4, Int> const range3 = grid.getCellIndicesIntersecting(box3);
   ASSERT(range3[0] == 1);
   ASSERT(range3[1] == 2);
@@ -177,40 +184,45 @@ TEST_CASE(getCellIndicesIntersecting)
   ASSERT(range3[3] == 3);
 }
 
+template <class T>
 HOSTDEV
 TEST_CASE(getCellIndexContaining)
 {
-  um2::Point2 const minima(1, -1);
-  um2::Vec2<Float> const spacing(2, 1);
+  um2::Point2<T> const minima(1, -1);
+  um2::Vec2<T> const spacing(2, 1);
   um2::Vec2<Int> const num_cells(5, 8);
   // Grid ranges from 1 to 11 in x and -1 to 7 in y.
-  um2::RegularGrid2 const grid(minima, spacing, num_cells);
-  um2::Vec<2, Int> id = grid.getCellIndexContaining({castIfNot<Float>(1.1), castIfNot<Float>(1.1)});
+  um2::RegularGrid2<T> const grid(minima, spacing, num_cells);
+  um2::Vec<2, Int> id = grid.getCellIndexContaining({castIfNot<T>(1.1), castIfNot<T>(1.1)});
   ASSERT(id[0] == 0);
   ASSERT(id[1] == 2);
-  id = grid.getCellIndexContaining({castIfNot<Float>(4.9), castIfNot<Float>(2.1)});
+  id = grid.getCellIndexContaining({castIfNot<T>(4.9), castIfNot<T>(2.1)});
   ASSERT(id[0] == 1);
   ASSERT(id[1] == 3);
 }
 
-template <Int D>
+template <Int D, class T>
 TEST_SUITE(RegularGrid)
 {
-  TEST_HOSTDEV(accessors, D);
-  TEST_HOSTDEV(boundingBox, D);
-  TEST_HOSTDEV(getCellCentroid, D)
+  TEST_HOSTDEV(accessors, D, T);
+  TEST_HOSTDEV(boundingBox, D, T);
+  TEST_HOSTDEV(getCellCentroid, D, T)
   if constexpr (D == 2) {
-    TEST_HOSTDEV(getBox);
-    TEST_HOSTDEV(getCellIndicesIntersecting);
-    TEST_HOSTDEV(getCellIndexContaining);
+    TEST_HOSTDEV(getBox, T);
+    TEST_HOSTDEV(getCellIndicesIntersecting, T);
+    TEST_HOSTDEV(getCellIndexContaining, T);
   }
 }
 
 auto
 main() -> int
 {
-  RUN_SUITE(RegularGrid<1>);
-  RUN_SUITE(RegularGrid<2>);
-  RUN_SUITE(RegularGrid<3>);
+  RUN_SUITE((RegularGrid<1, float>));
+  RUN_SUITE((RegularGrid<2, float>));
+  RUN_SUITE((RegularGrid<3, float>));
+
+  RUN_SUITE((RegularGrid<1, double>));
+  RUN_SUITE((RegularGrid<2, double>));
+  RUN_SUITE((RegularGrid<3, double>));
   return 0;
 }

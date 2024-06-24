@@ -93,7 +93,7 @@ mortonSortPermutation(Point<D, T> const * begin, Point<D, T> const * end,
 {
   auto const n = end - begin;
   um2::iota(perm_begin, perm_begin + n, 0);
-  ASSERT(scale.squaredNorm() > eps_distance2<T>);
+  ASSERT(scale.squaredNorm() > epsDistance2<T>());
   std::sort(perm_begin, perm_begin + n, [&](Int const i, Int const j) {
     return mortonEncode(begin[i] * scale) < mortonEncode(begin[j] * scale);
   });

@@ -50,9 +50,9 @@ option(UM2_ENABLE_BMI2 "Enable BMI2 instruction set" ON)
 # result in a loss of precision.
 option(UM2_ENABLE_FASTMATH "Enable fast math optimizations on CPU and GPU" OFF)
 
-## Set the Float type to 64-bit (double) instead of 32-bit (float). This option
-## determines the precision of the floating point numbers used in UM2.
-#option(UM2_ENABLE_FLOAT64 "Enable 64-bit Float" ON)
+# Set the Float type to 64-bit (double) instead of 32-bit (float). This option
+# determines the precision of the floating point numbers used in UM2.
+option(UM2_ENABLE_FLOAT64 "Enable 64-bit Float" ON)
 
 # Enable native architecture. This option enables the -march=native flag, which
 # optimizes the code for the architecture on which it is built.
@@ -86,12 +86,16 @@ option(UM2_USE_COVERAGE      "Use coverage" OFF) # Code coverage
 option(UM2_USE_CUDA          "Use CUDA"     OFF)
 
 option(UM2_USE_GMSH          "Use Gmsh"     OFF)  # CAD geometry and meshing
-option(UM2_USE_HDF5          "Use HDF5"     OFF)  # Binary data I/O (Mesh I/O)
+
+# Use HDF5 for binary data I/O. (Used for mesh I/O)
+option(UM2_USE_HDF5          "Use HDF5"     ON)
 
 # Use OpenMP for multi-threading.
-option(UM2_USE_OPENMP        "Use OpenMP"   ON) # Multi-threading
+option(UM2_USE_OPENMP        "Use OpenMP"   ON)
 
-option(UM2_USE_PUGIXML       "Use pugixml"  OFF)  # XML parsing (Mesh I/O)
+# Use pugixml for XML parsing. (Used for mesh I/O)
+option(UM2_USE_PUGIXML       "Use pugixml"  ON)
+
 option(UM2_USE_TBB           "Use TBB"      OFF) # Parallel STL (std::execution::par, etc.)
 
 # Use valgrind for memory checking. Creates a valgrind_X target for each test.
@@ -317,6 +321,7 @@ set(UM2_SOURCES
     "src/common/settings.cpp"    
     "src/common/logger.cpp"
     "src/math/matrix.cpp"
+    "src/mesh/polytope_soup.cpp"
     #"src/um2.cpp"
     )
 

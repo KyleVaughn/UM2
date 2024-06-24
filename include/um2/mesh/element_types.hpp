@@ -1,5 +1,6 @@
 #pragma once
 
+#include <um2/config.hpp>
 #include <um2/stdlib/vector.hpp>
 
 namespace um2
@@ -43,7 +44,7 @@ enum class MeshType : int8_t {
   QuadraticTriQuad = 14
 };
 
-PURE constexpr auto
+CONST constexpr auto
 verticesPerElem(VTKElemType const type) -> Int
 {
   switch (type) {
@@ -69,7 +70,7 @@ verticesPerElem(VTKElemType const type) -> Int
 
 // We only support a few element types, so we can uniquely identify a
 // VTKElemType by its number of vertices.
-PURE constexpr auto
+CONST constexpr auto
 inferVTKElemType(Int const type) -> VTKElemType
 {
   switch (type) {
@@ -91,7 +92,7 @@ inferVTKElemType(Int const type) -> VTKElemType
   }
 }
 
-PURE constexpr auto
+CONST constexpr auto
 xdmfToVTKElemType(int8_t x) -> VTKElemType
 {
   switch (x) {
@@ -115,7 +116,7 @@ xdmfToVTKElemType(int8_t x) -> VTKElemType
   }
 }
 
-PURE constexpr auto
+CONST constexpr auto
 vtkToXDMFElemType(VTKElemType x) -> XDMFElemType
 {
   switch (x) {

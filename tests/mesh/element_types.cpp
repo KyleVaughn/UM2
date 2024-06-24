@@ -1,4 +1,5 @@
 #include <um2/mesh/element_types.hpp>
+#include <um2/stdlib/vector.hpp>
 
 #include "../test_macros.hpp"
 
