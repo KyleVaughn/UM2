@@ -337,7 +337,8 @@ set(UM2_SOURCES
     "src/gmsh/io.cpp"
     "src/gmsh/model.cpp"
     "src/gmsh/mesh.cpp"
-    #"src/um2.cpp"
+    "src/um2.cpp"
+    "src/um2c.cpp"
     )
 
 if (UM2_BUILD_SHARED_LIB)
