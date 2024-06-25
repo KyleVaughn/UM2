@@ -1,20 +1,20 @@
 #include <um2/config.hpp>
-#include <um2/mesh/face_vertex_mesh.hpp>
 #include <um2/mesh/element_types.hpp>
+#include <um2/mesh/face_vertex_mesh.hpp>
 #include <um2/mesh/polytope_soup.hpp>
 
 #include <um2/common/logger.hpp>
 #include <um2/common/permutation.hpp>
 #include <um2/geometry/morton_sort_points.hpp>
 #include <um2/geometry/point.hpp>
-#include <um2/stdlib/utility/pair.hpp>
+#include <um2/math/vec.hpp>
 #include <um2/stdlib/assert.hpp>
 #include <um2/stdlib/math/abs.hpp>
+#include <um2/stdlib/utility/pair.hpp>
 #include <um2/stdlib/vector.hpp>
-#include <um2/math/vec.hpp>
 
 #include <algorithm> // sort
-#include <numeric> // inclusive_scan
+#include <numeric>   // inclusive_scan
 
 #include <iostream> // std::cerr
 
@@ -27,7 +27,8 @@ namespace um2
 
 // Helper function to get VTK element type from P and N.
 
-namespace {
+namespace
+{
 template <Int P, Int N>
 constexpr auto
 getVTKElemType() -> VTKElemType
@@ -53,11 +54,13 @@ FaceVertexMesh<P, N>::FaceVertexMesh(PolytopeSoup const & soup)
   ASSERT(num_vertices > 0);
   ASSERT(num_faces > 0);
   auto const elem_types = soup.getElemTypes();
-  if (elem_types.size() != 1) { 
-    logger::error("Attempted to construct a FaceVertexMesh from a non-homogeneous PolytopeSoup");
+  if (elem_types.size() != 1) {
+    logger::error(
+        "Attempted to construct a FaceVertexMesh from a non-homogeneous PolytopeSoup");
   }
   if (elem_types[0] != getVTKElemType<P, N>()) {
-    logger::error("Attempted to construct a FaceVertexMesh from a PolytopeSoup with an incompatible element type");
+    logger::error("Attempted to construct a FaceVertexMesh from a PolytopeSoup with an "
+                  "incompatible element type");
   }
 
   // -- Vertices --
@@ -69,7 +72,8 @@ FaceVertexMesh<P, N>::FaceVertexMesh(PolytopeSoup const & soup)
     _v[i][0] = p[0];
     _v[i][1] = p[1];
     if (um2::abs(p[2] - z) > epsDistance<Float>()) {
-      logger::warn("Constructing a FaceVertexMesh from a PolytopeSoup with non-planar vertices");
+      logger::warn(
+          "Constructing a FaceVertexMesh from a PolytopeSoup with non-planar vertices");
       break;
     }
   }
@@ -86,7 +90,7 @@ FaceVertexMesh<P, N>::FaceVertexMesh(PolytopeSoup const & soup)
 }
 
 //==============================================================================
-// Modifiers 
+// Modifiers
 //==============================================================================
 
 template <Int P, Int N>
@@ -207,7 +211,7 @@ FaceVertexMesh<P, N>::populateVF() noexcept
 }
 
 //==============================================================================
-// Methods 
+// Methods
 //==============================================================================
 
 template <Int P, Int N>
@@ -234,7 +238,8 @@ FaceVertexMesh<P, N>::operator PolytopeSoup() const noexcept
   return soup;
 }
 
-namespace {
+namespace
+{
 
 template <Int P, Int N>
 void
@@ -426,7 +431,8 @@ checkSelfIntersections(FaceVertexMesh<2, N> const & mesh)
       soup.write("self_intersecting_mesh.xdmf");
       std::cerr << "Intersection at (" << buffer[0][0] << ", " << buffer[0][1] << ") or ("
                 << buffer[1][0] << ", " << buffer[1][1] << ")" << std::endl;
-      logger::error("Mesh has self-intersecting face at index: ", iface, ". Mesh written to self_intersecting_mesh.xdmf");
+      logger::error("Mesh has self-intersecting face at index: ", iface,
+                    ". Mesh written to self_intersecting_mesh.xdmf");
       return;
     }
   }
@@ -458,15 +464,14 @@ FaceVertexMesh<P, N>::validate()
 //==============================================================================
 
 void
-sortRayMeshIntersections(
-    Float const * RESTRICT coords,    // size >= total_hits                 
-    Int const * RESTRICT offsets,     // size >= num_faces + 1 
-    Int const * RESTRICT faces,       // size >= num_faces 
-    Float * RESTRICT sorted_coords,   // size >= total_hits    
-    Int * RESTRICT sorted_offsets,    // size >= num_faces + 1          
-    Int * RESTRICT sorted_faces,      // size >= num_faces            
-    Int * RESTRICT perm,              // size >= num_faces        
-    Vec2I hits_faces                  // (total_hits, num_faces)
+sortRayMeshIntersections(Float const * RESTRICT coords,  // size >= total_hits
+                         Int const * RESTRICT offsets,   // size >= num_faces + 1
+                         Int const * RESTRICT faces,     // size >= num_faces
+                         Float * RESTRICT sorted_coords, // size >= total_hits
+                         Int * RESTRICT sorted_offsets,  // size >= num_faces + 1
+                         Int * RESTRICT sorted_faces,    // size >= num_faces
+                         Int * RESTRICT perm,            // size >= num_faces
+                         Vec2I hits_faces                // (total_hits, num_faces)
 )
 {
   // Sort based on the intersection coordinates.
@@ -487,7 +492,7 @@ sortRayMeshIntersections(
   for (Int iface = 0; iface < num_faces; ++iface) {
     Int const offset = offsets[iface];
     Int const next_offset = offsets[iface + 1];
-    Float r0 = coords[offset]; 
+    Float r0 = coords[offset];
     Float r1 = coords[offset];
     for (Int i = offset + 1; i < next_offset; ++i) {
       Float const r = coords[i];
@@ -498,7 +503,7 @@ sortRayMeshIntersections(
         r1 = r;
       }
     }
-    sorted_coords[iface] = (r0 + r1) / 2; 
+    sorted_coords[iface] = (r0 + r1) / 2;
   }
 
   // Obtain the permutation vector.
@@ -515,7 +520,8 @@ sortRayMeshIntersections(
       sorted_coords[sorted_offsets[iface] + i] = coords[offsets[ind] + i];
     }
     // sort the coordinates for this face
-    std::sort(sorted_coords + sorted_offsets[iface], sorted_coords + sorted_offsets[iface + 1]);
+    std::sort(sorted_coords + sorted_offsets[iface],
+              sorted_coords + sorted_offsets[iface + 1]);
   }
 }
 //==============================================================================

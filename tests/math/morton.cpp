@@ -2,8 +2,10 @@
 
 #include <um2/config.hpp>
 
-#include <concepts>
 #include <cstdint>
+
+// NOLINTNEXTLINE(misc-include-cleaner)
+#include <concepts>
 
 #include "../test_macros.hpp"
 

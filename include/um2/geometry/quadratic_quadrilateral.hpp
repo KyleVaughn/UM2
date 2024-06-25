@@ -170,7 +170,7 @@ QuadraticQuadrilateral<D, T>::vertices() const noexcept -> Point<D, T> const *
 template <Int D, class T>
 PURE HOSTDEV constexpr auto
 QuadraticQuadrilateral<D, T>::operator()(T const r,
-                                      T const s) const noexcept -> Point<D, T>
+                                         T const s) const noexcept -> Point<D, T>
 {
   auto constexpr hf = castIfNot<T>(0.5);
   auto constexpr qtr = castIfNot<T>(0.25);
@@ -222,7 +222,7 @@ jacobian(QuadraticQuadrilateral<D, T> const & q, T const r,
 template <Int D, class T>
 PURE HOSTDEV constexpr auto
 QuadraticQuadrilateral<D, T>::jacobian(T const r,
-                                    T const s) const noexcept -> Mat<D, 2, T>
+                                       T const s) const noexcept -> Mat<D, 2, T>
 {
   return um2::jacobian(*this, r, s);
 }
@@ -360,7 +360,7 @@ QuadraticQuadrilateral<D, T>::meanChordLength() const noexcept -> T
 template <Int D, class T>
 HOSTDEV constexpr auto
 QuadraticQuadrilateral<D, T>::intersect(Ray2<T> const ray,
-                                     T * const buffer) const noexcept -> Int
+                                        T * const buffer) const noexcept -> Int
   requires(D == 2)
 {
   return um2::intersect(*this, ray, buffer);

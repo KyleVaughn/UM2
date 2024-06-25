@@ -1,9 +1,9 @@
 #include <um2/config.hpp>
+#include <um2/geometry/axis_aligned_box.hpp>
 #include <um2/geometry/modular_rays.hpp>
 #include <um2/geometry/point.hpp>
 #include <um2/geometry/polytope.hpp>
 #include <um2/geometry/quadratic_segment.hpp>
-#include <um2/geometry/axis_aligned_box.hpp>
 #include <um2/geometry/ray.hpp>
 #include <um2/math/mat.hpp>
 #include <um2/math/vec.hpp>
@@ -11,8 +11,8 @@
 
 #include "../../test_macros.hpp"
 
-#include <random>
 #include <cstdint>
+#include <random>
 
 // Description of the quadratic segments used in test cases
 // --------------------------------------------------------
@@ -467,8 +467,7 @@ TEST_CASE(pointClosestTo)
 //==============================================================================
 
 template <class T>
-HOSTDEV
-void
+HOSTDEV void
 testIsLeft(um2::QuadraticSegment2<T> const & q)
 {
   Int constexpr num_points = 1000;
@@ -529,9 +528,9 @@ TEST_CASE(isLeft)
   um2::Vector<um2::Point2<T>> const test_points = {
       um2::Point2<T>(castIfNot<T>(1), castIfNot<T>(3)),      // always left
       um2::Point2<T>(castIfNot<T>(1), castIfNot<T>(-3)),     // always right
-      um2::Point2<T>(castIfNot<T>(-1), ahalf<T>),                   // always left
+      um2::Point2<T>(castIfNot<T>(-1), ahalf<T>),            // always left
       um2::Point2<T>(castIfNot<T>(-1), castIfNot<T>(-0.5)),  // always right
-      um2::Point2<T>(castIfNot<T>(3), ahalf<T>),                    // always left
+      um2::Point2<T>(castIfNot<T>(3), ahalf<T>),             // always left
       um2::Point2<T>(castIfNot<T>(3), castIfNot<T>(-0.5)),   // always right
       um2::Point2<T>(castIfNot<T>(0.1), castIfNot<T>(0.9)),  // always left
       um2::Point2<T>(castIfNot<T>(0.1), castIfNot<T>(-0.9)), // always right
@@ -698,8 +697,7 @@ TEST_CASE(isLeft)
 //==============================================================================
 
 template <class T>
-HOSTDEV
-void
+HOSTDEV void
 testEdgeForIntersections(um2::QuadraticSegment2<T> const & q)
 {
   // Parameters
@@ -758,8 +756,7 @@ TEST_CASE(intersect)
 //==============================================================================
 
 template <class T>
-HOSTDEV
-void
+HOSTDEV void
 testEnclosedArea(um2::QuadraticSegment2<T> const & q)
 {
   // Shoot vertical rays from the bottom of the bounding box to
@@ -838,8 +835,7 @@ TEST_CASE(enclosedArea)
 //==============================================================================
 
 template <class T>
-HOSTDEV
-void
+HOSTDEV void
 testEnclosedCentroid(um2::QuadraticSegment2<T> const & q)
 {
   // Shoot vertical rays from the bottom of the bounding box to

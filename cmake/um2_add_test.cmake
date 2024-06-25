@@ -21,6 +21,11 @@ macro(um2_add_test FILENAME)
     set_clang_tidy_properties(${TESTNAME})    
   endif()
 
+  if (UM2_USE_COVERAGE)    
+    target_link_libraries(${TESTNAME} PRIVATE gcov)    
+    target_compile_options(${TESTNAME} PRIVATE --coverage)    
+  endif ()
+
   if (UM2_USE_CUDA)
     set_cuda_properties(${TESTNAME} ${FILENAME})
   endif()

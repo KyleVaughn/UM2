@@ -76,8 +76,9 @@ public:
 
   // Jacobian of the interpolation function.
   // [dF/dr, dF/ds]
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-      jacobian(T /*r*/, T /*s*/) const noexcept -> Mat<D, 2, T>;
+  PURE HOSTDEV
+      [[nodiscard]] constexpr auto jacobian(T /*r*/,
+                                            T /*s*/) const noexcept -> Mat<D, 2, T>;
 
   // Get the i-th edge of the polygon.
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -190,8 +191,7 @@ jacobian(Triangle<D, T> const & tri) noexcept -> Mat<D, 2, T>
 
 template <Int D, class T>
 PURE HOSTDEV constexpr auto
-Triangle<D, T>::jacobian(T const /*r*/,
-                      T const /*s*/) const noexcept -> Mat<D, 2, T>
+Triangle<D, T>::jacobian(T const /*r*/, T const /*s*/) const noexcept -> Mat<D, 2, T>
 {
   return um2::jacobian(*this);
 }

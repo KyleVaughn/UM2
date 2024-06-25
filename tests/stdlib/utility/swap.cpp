@@ -40,7 +40,7 @@ HOSTDEV
 TEST_CASE(swap_constexpr) { static_assert(foo() == 1); }
 MAKE_CUDA_KERNEL(swap_constexpr);
 
-TEST_SUITE(swap)
+TEST_SUITE(test_swap)
 {
   TEST_HOSTDEV(swap_int);
   TEST_HOSTDEV(swap_array);
@@ -50,6 +50,6 @@ TEST_SUITE(swap)
 auto
 main() -> int
 {
-  RUN_SUITE(swap);
+  RUN_SUITE(test_swap);
   return 0;
 }

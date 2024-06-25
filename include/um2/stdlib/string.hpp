@@ -419,10 +419,14 @@ String::assignLong(StringView sv) noexcept -> String &
 PURE HOSTDEV inline auto
 String::getLongSize() const noexcept -> uint64_t
 {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#ifndef __clang__
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
   return _r.l.size;
-#pragma GCC diagnostic pop
+#ifndef __clang__
+#  pragma GCC diagnostic pop
+#endif
 }
 
 PURE HOSTDEV inline auto

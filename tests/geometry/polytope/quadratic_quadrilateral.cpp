@@ -1,9 +1,9 @@
 #include <um2/config.hpp>
+#include <um2/geometry/axis_aligned_box.hpp>
+#include <um2/geometry/modular_rays.hpp>
 #include <um2/geometry/point.hpp>
 #include <um2/geometry/polytope.hpp>
-#include <um2/geometry/axis_aligned_box.hpp>
 #include <um2/math/vec.hpp>
-#include <um2/geometry/modular_rays.hpp>
 
 // NOLINTNEXTLINE(misc-include-cleaner)
 #include <um2/geometry/quadratic_quadrilateral.hpp>
@@ -264,8 +264,7 @@ TEST_CASE(meanChordLength)
 //=============================================================================
 
 template <class T>
-HOSTDEV
-void
+HOSTDEV void
 testQuadForIntersections(um2::QuadraticQuadrilateral<2, T> const quad)
 {
   // Parameters

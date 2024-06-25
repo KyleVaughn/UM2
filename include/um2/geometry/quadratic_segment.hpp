@@ -79,8 +79,7 @@ public:
 
   // Jacobian of the segment (Column vector).
   // dF/dr -> R^D
-  PURE HOSTDEV
-      [[nodiscard]] constexpr auto jacobian(T /*r*/) const noexcept -> Vec<D, T>;
+  PURE HOSTDEV [[nodiscard]] constexpr auto jacobian(T /*r*/) const noexcept -> Vec<D, T>;
 
   // Q(r) = C + rB + r²A
   // returns {C, B, A}
@@ -355,7 +354,7 @@ QuadraticSegment<D, T>::length() const noexcept -> T
   T const disc = quadraticDiscriminant(a, b, c);
   T const a2b = 2 * a + b;
   T const num = disc * um2::log((2 * sa * sc + b) / (2 * sa * sabc + a2b)) +
-                    sa * (2 * (a2b * sabc - b * sc));
+                sa * (2 * (a2b * sabc - b * sc));
   T const den = 8 * sa * sa * sa;
   T const result = num / den;
   ASSERT(0 <= result);
@@ -667,7 +666,8 @@ QuadraticSegment<D, T>::isLeft(Point2<T> const p) const noexcept -> bool
 
 template <Int D, class T>
 HOSTDEV constexpr auto
-QuadraticSegment<D, T>::intersect(Ray2<T> const ray, T * const buffer) const noexcept -> Int
+QuadraticSegment<D, T>::intersect(Ray2<T> const ray,
+                                  T * const buffer) const noexcept -> Int
   requires(D == 2)
 {
   auto const coeffs = getPolyCoeffs();
@@ -707,8 +707,8 @@ QuadraticSegment<D, T>::intersect(Ray2<T> const ray, T * const buffer) const noe
 template <class T>
 HOSTDEV constexpr auto
 // NOLINTNEXTLINE(misc-no-recursion)
-intersect(QuadraticSegment2<T> const & q1, QuadraticSegment2<T> const & q2, Point2<T> * buffer,
-          Int iters = 0) noexcept -> Int
+intersect(QuadraticSegment2<T> const & q1, QuadraticSegment2<T> const & q2,
+          Point2<T> * buffer, Int iters = 0) noexcept -> Int
 {
   // Scale each of the bounding boxes by a small amount to ensure
   // floating point errors do not cause the intersection to be missed.
@@ -869,7 +869,7 @@ intersects(QuadraticSegment2<T> const & q1, QuadraticSegment2<T> const & q2,
 template <Int D, class T>
 HOSTDEV [[nodiscard]] constexpr auto
 QuadraticSegment<D, T>::intersect(QuadraticSegment2<T> const & other,
-                               Point2<T> * buffer) const noexcept -> Int
+                                  Point2<T> * buffer) const noexcept -> Int
   requires(D == 2)
 {
   return um2::intersect(*this, other, buffer);
@@ -877,7 +877,8 @@ QuadraticSegment<D, T>::intersect(QuadraticSegment2<T> const & other,
 
 template <Int D, class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-QuadraticSegment<D, T>::intersects(QuadraticSegment2<T> const & other) const noexcept -> bool
+QuadraticSegment<D, T>::intersects(QuadraticSegment2<T> const & other) const noexcept
+    -> bool
   requires(D == 2)
 {
   return um2::intersects(*this, other);

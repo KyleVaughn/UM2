@@ -185,21 +185,19 @@ Quadrilateral<D, T>::operator()(T const r, T const s) const noexcept -> Point<D,
 
 template <Int D, class T>
 PURE HOSTDEV constexpr auto
-jacobian(Quadrilateral<D, T> const & q, T const r,
-         T const s) noexcept -> Mat<D, 2, T>
+jacobian(Quadrilateral<D, T> const & q, T const r, T const s) noexcept -> Mat<D, 2, T>
 {
   // jac.col(0) = w0 * (v1 - v0) - s (v3 - v2)
   // jac.col(1) = w2 * (v3 - v0) - r (v1 - v2)
   T const w0 = 1 - s;
   T const w2 = 1 - r;
   return Mat<D, 2, T>(w0 * (q[1] - q[0]) - s * (q[3] - q[2]),
-                          w2 * (q[3] - q[0]) - r * (q[1] - q[2]));
+                      w2 * (q[3] - q[0]) - r * (q[1] - q[2]));
 }
 
 template <Int D, class T>
 PURE HOSTDEV constexpr auto
-Quadrilateral<D, T>::jacobian(T const r,
-                           T const s) const noexcept -> Mat<D, 2, T>
+Quadrilateral<D, T>::jacobian(T const r, T const s) const noexcept -> Mat<D, 2, T>
 {
   return um2::jacobian(*this, r, s);
 }

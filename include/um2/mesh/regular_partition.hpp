@@ -57,12 +57,14 @@ public:
   //==============================================================================
 
   template <typename... Args>
-  requires(sizeof...(Args) == D) PURE HOSTDEV
-      [[nodiscard]] constexpr auto getChild(Args... args) noexcept -> P &;
+    requires(sizeof...(Args) == D)
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getChild(Args... args) noexcept -> P &;
 
   template <typename... Args>
-  requires(sizeof...(Args) == D) PURE HOSTDEV
-      [[nodiscard]] constexpr auto getChild(Args... args) const noexcept -> P const &;
+    requires(sizeof...(Args) == D)
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getChild(Args... args) const noexcept -> P const &;
 };
 
 //==============================================================================
@@ -115,17 +117,18 @@ RegularPartition<D, P>::children() const noexcept -> Vector<P> const &
 
 template <Int D, typename P>
 template <typename... Args>
-requires(sizeof...(Args) == D) PURE HOSTDEV
-    constexpr auto RegularPartition<D, P>::getChild(Args... args) noexcept -> P &
+  requires(sizeof...(Args) == D)
+PURE HOSTDEV constexpr auto
+RegularPartition<D, P>::getChild(Args... args) noexcept -> P &
 {
   return _children[_grid.getFlatIndex(args...)];
 }
 
 template <Int D, typename P>
 template <typename... Args>
-requires(sizeof...(Args) == D) PURE HOSTDEV
-    constexpr auto RegularPartition<D, P>::getChild(Args... args) const noexcept
-    -> P const &
+  requires(sizeof...(Args) == D)
+PURE HOSTDEV constexpr auto
+RegularPartition<D, P>::getChild(Args... args) const noexcept -> P const &
 {
   return _children[_grid.getFlatIndex(args...)];
 }

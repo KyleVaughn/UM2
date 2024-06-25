@@ -1,25 +1,26 @@
-#include <um2/mpact/model.hpp>
 #include <um2/common/cast_if_not.hpp>
-#include <um2/common/settings.hpp>
 #include <um2/common/color.hpp>
-#include <um2/stdlib/algorithm/fill.hpp>
-#include <um2/stdlib/vector.hpp>
-#include <um2/stdlib/string.hpp>
-#include <um2/stdlib/numbers.hpp>
+#include <um2/common/settings.hpp>
+#include <um2/common/string_to_lattice.hpp>
 #include <um2/config.hpp>
-#include <um2/physics/material.hpp>
-#include <um2/physics/cross_section_library.hpp>
-#include <um2/geometry/point.hpp>
 #include <um2/geometry/axis_aligned_box.hpp>
+#include <um2/geometry/point.hpp>
 #include <um2/math/vec.hpp>
+#include <um2/mesh/element_types.hpp>
 #include <um2/mesh/face_vertex_mesh.hpp>
-#include <um2/mesh/regular_grid.hpp>
-#include <um2/mesh/regular_partition.hpp>
+#include <um2/mesh/polytope_soup.hpp>
 #include <um2/mesh/rectilinear_grid.hpp>
 #include <um2/mesh/rectilinear_partition.hpp>
-#include <um2/mesh/element_types.hpp>
-#include <um2/mesh/polytope_soup.hpp>
-#include <um2/common/string_to_lattice.hpp>
+#include <um2/mesh/regular_grid.hpp>
+#include <um2/mesh/regular_partition.hpp>
+#include <um2/mpact/model.hpp>
+#include <um2/physics/cross_section.hpp>
+#include <um2/physics/cross_section_library.hpp>
+#include <um2/physics/material.hpp>
+#include <um2/stdlib/algorithm/fill.hpp>
+#include <um2/stdlib/numbers.hpp>
+#include <um2/stdlib/string.hpp>
+#include <um2/stdlib/vector.hpp>
 
 #include "../test_macros.hpp"
 
@@ -134,25 +135,26 @@ TEST_CASE(addCoarseCell)
   ASSERT(cell.material_ids.empty());
 
   // Add a cell with full properties
-  um2::XSLibrary const lib8(um2::settings::xs::library_path + "/" + um2::mpact::XSLIB_8G); 
+  um2::XSLibrary const lib8(um2::settings::xs::library_path + "/" + um2::mpact::XSLIB_8G);
   model.addRectangularPinMesh(dxdy, 2, 2);
-      
-  um2::XSLibrary const xslib(um2::settings::xs::library_path + "/" + um2::mpact::XSLIB_51G);    
-    
-  // Fuel    
-  um2::Material fuel;    
-  fuel.setName("Fuel");    
+
+  um2::XSLibrary const xslib(um2::settings::xs::library_path + "/" +
+                             um2::mpact::XSLIB_51G);
+
+  // Fuel
+  um2::Material fuel;
+  fuel.setName("Fuel");
   fuel.setDensity(10.42);
   fuel.setTemperature(565.0);
-  fuel.setColor(um2::forestgreen);    
-  fuel.addNuclide("U234", 6.11864e-6); // Number density in atoms/b-cm    
-  fuel.addNuclide("U235", 7.18132e-4);    
-  fuel.addNuclide("U236", 3.29861e-6);    
-  fuel.addNuclide("U238", 2.21546e-2);    
-  fuel.addNuclide("O16", 4.57642e-2);    
+  fuel.setColor(um2::forestgreen);
+  fuel.addNuclide("U234", 6.11864e-6); // Number density in atoms/b-cm
+  fuel.addNuclide("U235", 7.18132e-4);
+  fuel.addNuclide("U236", 3.29861e-6);
+  fuel.addNuclide("U238", 2.21546e-2);
+  fuel.addNuclide("O16", 4.57642e-2);
   fuel.populateXSec(xslib);
 
-    // Moderator
+  // Moderator
   um2::Material moderator;
   moderator.setName("Moderator");
   moderator.setDensity(0.743);
@@ -167,8 +169,7 @@ TEST_CASE(addCoarseCell)
   model.addMaterial(fuel);
   model.addMaterial(moderator);
   um2::Vector<MatID> const material_ids = {0, 0, 0, 1};
-  Int const id2 =
-      model.addCoarseCell(dxdy, um2::MeshType::Quad, 0, material_ids);
+  Int const id2 = model.addCoarseCell(dxdy, um2::MeshType::Quad, 0, material_ids);
   ASSERT(id2 == 1);
   ASSERT(model.numCoarseCells() == 2);
 
@@ -611,12 +612,11 @@ TEST_CASE(operator_PolytopeSoup)
   ASSERT(name == "Coarse_Cell_00002_00001");
   ASSERT(ids.size() == 1);
   ASSERT(ids[0] == 5);
-
 }
 
 TEST_CASE(io)
 {
-  // This is C5G7. We build the model, write it, read it, and check that the 
+  // This is C5G7. We build the model, write it, read it, and check that the
   // read model is the same as the original model.
   um2::mpact::Model model_out;
 
@@ -633,7 +633,7 @@ TEST_CASE(io)
   //===========================================================================
   // Geometry
   //===========================================================================
-  
+
   // Pin meshes
   //---------------------------------------------------------------------------
   auto const radius = castIfNot<Float>(0.54);
@@ -648,7 +648,7 @@ TEST_CASE(io)
   // 8 azimuthal divisions, order 2 mesh
   // The first 8 * 3 = 24 faces are the inner material
   // The next 8 * 2 + 8 = 24 faces are moderator
-  auto const cyl_pin_mesh_type = um2::MeshType::QuadraticQuad; 
+  auto const cyl_pin_mesh_type = um2::MeshType::QuadraticQuad;
   auto const cyl_pin_id = model_out.addCylindricalPinMesh(pin_pitch, radii, rings, 8, 2);
 
   // 5 by 5 mesh for the reflector
@@ -676,8 +676,8 @@ TEST_CASE(io)
 
   // Add the 1 rectangular pin
   mat_ids.resize(25);
-  um2::fill(mat_ids.begin(), mat_ids.end(), static_cast<MatID>(6)); 
-  model_out.addCoarseCell(xy_extents, rect_pin_mesh_type, rect_pin_id, mat_ids); 
+  um2::fill(mat_ids.begin(), mat_ids.end(), static_cast<MatID>(6));
+  model_out.addCoarseCell(xy_extents, rect_pin_mesh_type, rect_pin_id, mat_ids);
 
   // RTMs
   //---------------------------------------------------------------------------
@@ -734,7 +734,7 @@ TEST_CASE(io)
       1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
     )");
 
-    // Moderator lattice
+  // Moderator lattice
   um2::Vector<um2::Vector<Int>> const h2o_lattice = um2::stringToLattice<Int>(R"( 
       6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
       6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
@@ -789,7 +789,7 @@ TEST_CASE(io)
   um2::fill(lattice_ids.begin(), lattice_ids.begin() + num_fuel_slices, 1);
   model_out.addAssembly(lattice_ids, z_slices);
 
-  // moderator assembly 
+  // moderator assembly
   um2::fill(lattice_ids.begin(), lattice_ids.begin() + num_slices, 2);
   model_out.addAssembly(lattice_ids, z_slices);
 
@@ -805,7 +805,7 @@ TEST_CASE(io)
 
   model_out.addCore(ids);
 
-//  model_out.writeCMFDInfo("c5g7_cmfd_info.xdmf");
+  //  model_out.writeCMFDInfo("c5g7_cmfd_info.xdmf");
 
   // Test the numXXXXTotal functions
   ASSERT(model_out.numAssembliesTotal() == 9);
@@ -815,7 +815,8 @@ TEST_CASE(io)
   // 9 * 17 * 17 * (4 * 48 + 5 * 25) + 1 * 17 * 17 * (9 * 25)
   ASSERT(model_out.numFineCellsTotal() == 889542);
 
-  model_out.write("c5g7_out.xdmf", /*write_knudsen_data=*/false, /*write_xsec_data=*/true);
+  model_out.write("c5g7_out.xdmf", /*write_knudsen_data=*/false,
+                  /*write_xsec_data=*/true);
 
   um2::mpact::Model model_in;
   model_in.read("c5g7_out.xdmf");
@@ -834,9 +835,9 @@ TEST_CASE(io)
 
   for (Int i = 0; i < 7; ++i) {
     ASSERT(materials_in[i].getName() == materials_out[i].getName());
-//    for (Int j = 0; j < 7; ++j) {
-//      ASSERT_NEAR(materials_in[i].xsec().t(j), materials_out[i].xsec().t(j), eps);
-//    }
+    //    for (Int j = 0; j < 7; ++j) {
+    //      ASSERT_NEAR(materials_in[i].xsec().t(j), materials_out[i].xsec().t(j), eps);
+    //    }
   }
 
   // Check the pin meshes. These are duplicated if there are repeated meshes.
@@ -873,7 +874,7 @@ TEST_CASE(getCoarseCellHomogenizedXSec)
   //===========================================================================
   // Geometry
   //===========================================================================
-  
+
   // Pin meshes
   //---------------------------------------------------------------------------
   auto const radius = castIfNot<Float>(0.54);
@@ -886,7 +887,7 @@ TEST_CASE(getCoarseCellHomogenizedXSec)
   // 8 azimuthal divisions, order 2 mesh
   // The first 8 * 3 = 24 faces are the inner material
   // The next 8 * 2 + 8 = 24 faces are moderator
-  auto const cyl_pin_mesh_type = um2::MeshType::QuadraticQuad; 
+  auto const cyl_pin_mesh_type = um2::MeshType::QuadraticQuad;
   auto const cyl_pin_id = model.addCylindricalPinMesh(pin_pitch, radii, rings, 8, 2);
 
   // 5 by 5 mesh for the reflector
@@ -903,16 +904,16 @@ TEST_CASE(getCoarseCellHomogenizedXSec)
 
   // Add the 2 cylindrical pins
   um2::Vector<MatID> mat_ids(48, 6);
-  um2::fill(mat_ids.begin(), mat_ids.begin() + 24, static_cast<MatID>(0)); 
+  um2::fill(mat_ids.begin(), mat_ids.begin() + 24, static_cast<MatID>(0));
   model.addCoarseCell(xy_extents, cyl_pin_mesh_type, cyl_pin_id, mat_ids);
 
-  um2::fill(mat_ids.begin(), mat_ids.end(), static_cast<MatID>(5)); 
+  um2::fill(mat_ids.begin(), mat_ids.end(), static_cast<MatID>(5));
   model.addCoarseCell(xy_extents, cyl_pin_mesh_type, cyl_pin_id, mat_ids);
 
   // Add the 1 rectangular pin
   mat_ids.resize(25);
-  um2::fill(mat_ids.begin(), mat_ids.end(), static_cast<MatID>(6)); 
-  model.addCoarseCell(xy_extents, rect_pin_mesh_type, rect_pin_id, mat_ids); 
+  um2::fill(mat_ids.begin(), mat_ids.end(), static_cast<MatID>(6));
+  model.addCoarseCell(xy_extents, rect_pin_mesh_type, rect_pin_id, mat_ids);
 
   // Moderator cell
   auto const xsec = model.getCoarseCellHomogenizedXSec(2);
@@ -920,7 +921,7 @@ TEST_CASE(getCoarseCellHomogenizedXSec)
   ASSERT(!xsec.isFissile());
   ASSERT(xsec.numGroups() == 7);
   for (Int i = 0; i < 7; ++i) {
-    ASSERT_NEAR(xsec.t(i), materials[6].xsec().tr()[i], 100*eps);
+    ASSERT_NEAR(xsec.t(i), materials[6].xsec().tr()[i], 100 * eps);
   }
 
   auto const area_cyl = um2::pi<Float> * radius * radius;
@@ -936,12 +937,12 @@ TEST_CASE(getCoarseCellHomogenizedXSec)
   ASSERT(xsec_uo2_h.isFissile());
   ASSERT(xsec_uo2_h.numGroups() == 7);
   for (Int g = 0; g < 7; ++g) {
-    Float const a_ref = (area_cyl * xsec_uo2.a()[g] + area_mod * xsec_mod.a()[g]) / area_pin;
+    Float const a_ref =
+        (area_cyl * xsec_uo2.a()[g] + area_mod * xsec_mod.a()[g]) / area_pin;
     Float const t_ref = (area_cyl * xsec_uo2.t(g) + area_mod * xsec_mod.t(g)) / area_pin;
-    ASSERT_NEAR(xsec_uo2_h.a()[g], a_ref, 100*eps);
-    ASSERT_NEAR(xsec_uo2_h.t(g), t_ref, 100*eps);
+    ASSERT_NEAR(xsec_uo2_h.a()[g], a_ref, 100 * eps);
+    ASSERT_NEAR(xsec_uo2_h.t(g), t_ref, 100 * eps);
   }
-
 }
 
 TEST_SUITE(mpact_Model)

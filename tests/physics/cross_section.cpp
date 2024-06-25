@@ -1,7 +1,7 @@
-#include <um2/physics/cross_section.hpp>
 #include <um2/common/cast_if_not.hpp>
-#include <um2/math/stats.hpp>
 #include <um2/config.hpp>
+#include <um2/math/stats.hpp>
+#include <um2/physics/cross_section.hpp>
 
 #include "../test_macros.hpp"
 

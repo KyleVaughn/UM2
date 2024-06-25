@@ -40,7 +40,7 @@ namespace um2
 // error.
 
 template <class T>
-HOSTDEV constexpr auto 
+HOSTDEV constexpr auto
 epsDistance() -> T
 {
   if constexpr (std::same_as<T, float>) {
@@ -48,7 +48,7 @@ epsDistance() -> T
   } else if constexpr (std::same_as<T, double>) {
     return castIfNot<T>(1e-7); // 1 nm
   } else {
-    static_assert(false, "Unsupported type");
+    static_assert(always_false<T>, "Unsupported type");
   }
 }
 
@@ -292,7 +292,8 @@ public:
   // eps2 is the squared distance below which two points are considered to be
   // equal.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  isApprox(Vec<D, T> const & v, T const & eps2 = epsDistance2<T>()) const noexcept -> bool;
+  isApprox(Vec<D, T> const & v,
+           T const & eps2 = epsDistance2<T>()) const noexcept -> bool;
 
 }; // class Vec
 

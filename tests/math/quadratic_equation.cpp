@@ -6,7 +6,9 @@
 
 #include "../test_macros.hpp"
 
+// NOLINTNEXTLINE(misc-include-cleaner)
 #include <concepts>
+
 #include <cstdint>
 #include <random>
 

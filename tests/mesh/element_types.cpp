@@ -3,16 +3,16 @@
 
 #include "../test_macros.hpp"
 
-TEST_CASE(verticesPerElem)    
-{    
-  static_assert(um2::verticesPerElem(um2::VTKElemType::Vertex) == 1);    
-  static_assert(um2::verticesPerElem(um2::VTKElemType::Line) == 2);    
-  static_assert(um2::verticesPerElem(um2::VTKElemType::Triangle) == 3);    
-  static_assert(um2::verticesPerElem(um2::VTKElemType::Quad) == 4);    
-  static_assert(um2::verticesPerElem(um2::VTKElemType::QuadraticEdge) == 3);    
-  static_assert(um2::verticesPerElem(um2::VTKElemType::QuadraticTriangle) == 6);    
-  static_assert(um2::verticesPerElem(um2::VTKElemType::QuadraticQuad) == 8);    
-} 
+TEST_CASE(verticesPerElem)
+{
+  static_assert(um2::verticesPerElem(um2::VTKElemType::Vertex) == 1);
+  static_assert(um2::verticesPerElem(um2::VTKElemType::Line) == 2);
+  static_assert(um2::verticesPerElem(um2::VTKElemType::Triangle) == 3);
+  static_assert(um2::verticesPerElem(um2::VTKElemType::Quad) == 4);
+  static_assert(um2::verticesPerElem(um2::VTKElemType::QuadraticEdge) == 3);
+  static_assert(um2::verticesPerElem(um2::VTKElemType::QuadraticTriangle) == 6);
+  static_assert(um2::verticesPerElem(um2::VTKElemType::QuadraticQuad) == 8);
+}
 
 TEST_CASE(inferVTKElemType)
 {

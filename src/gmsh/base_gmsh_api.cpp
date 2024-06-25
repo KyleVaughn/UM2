@@ -1,15 +1,15 @@
 #include <um2/config.hpp>
-#include <um2/gmsh/base_gmsh_api.hpp>
 
 // NOLINTBEGIN(readability*, modernize*) justification: simply a gmsh wrapper (not our
 // code).
 
 #if UM2_USE_GMSH
+#  include <cstddef>
+#  include <functional>
 #  include <gmsh.h>
-#include <string>
-#include <vector>
-#include <cstddef>
-#include <functional>
+#  include <string>
+#  include <um2/gmsh/base_gmsh_api.hpp>
+#  include <vector>
 
 // A wrapper around the gmsh library to make namespace management with um2 gmsh
 // related code easier.

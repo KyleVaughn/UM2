@@ -1,12 +1,13 @@
-#include <um2/config.hpp>
-#include <um2/physics/nuclide.hpp>
 #include <um2/common/logger.hpp>
 #include <um2/common/strto.hpp>
+#include <um2/config.hpp>
+#include <um2/physics/cross_section.hpp>
+#include <um2/physics/nuclide.hpp>
 #include <um2/stdlib/algorithm/is_sorted.hpp>
-#include <um2/stdlib/math/roots.hpp>
-#include <um2/stdlib/string_view.hpp>
-#include <um2/stdlib/string.hpp>
 #include <um2/stdlib/assert.hpp>
+#include <um2/stdlib/math/roots.hpp>
+#include <um2/stdlib/string.hpp>
+#include <um2/stdlib/string_view.hpp>
 #include <um2/stdlib/vector.hpp>
 
 #include <cctype> // std::isalpha, std::isdigit

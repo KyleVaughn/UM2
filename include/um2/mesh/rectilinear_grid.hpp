@@ -87,8 +87,8 @@ public:
   HOSTDEV constexpr void
   clear() noexcept;
 
-  // The total number of cells in the grid.    
-  PURE HOSTDEV [[nodiscard]] constexpr auto    
+  // The total number of cells in the grid.
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   totalNumCells() const noexcept -> Int;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -104,13 +104,14 @@ public:
   getFlatIndex(Vec<D, Int> const & index) const noexcept -> Int;
 
   template <typename... Args>
-  requires(sizeof...(Args) == D) PURE HOSTDEV
-      [[nodiscard]] constexpr auto getFlatIndex(Args... args) const noexcept -> Int;
+    requires(sizeof...(Args) == D)
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getFlatIndex(Args... args) const noexcept -> Int;
 
   template <typename... Args>
-  requires(sizeof...(Args) == D) PURE HOSTDEV
-      [[nodiscard]] constexpr auto getBox(Args... args) const noexcept
-      -> AxisAlignedBox<D, T>;
+    requires(sizeof...(Args) == D)
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getBox(Args... args) const noexcept -> AxisAlignedBox<D, T>;
 
 }; // RectilinearGrid
 
@@ -144,7 +145,8 @@ constexpr RectilinearGrid<D, T>::RectilinearGrid(AxisAlignedBox<D, T> const & bo
 }
 
 template <Int D, class T>
-constexpr RectilinearGrid<D, T>::RectilinearGrid(Vector<AxisAlignedBox<D, T>> const & boxes)
+constexpr RectilinearGrid<D, T>::RectilinearGrid(
+    Vector<AxisAlignedBox<D, T>> const & boxes)
 {
   // Create _divs by finding the unique planar divisions
   T constexpr eps = epsDistance<T>();
@@ -181,7 +183,7 @@ constexpr RectilinearGrid<D, T>::RectilinearGrid(Vector<AxisAlignedBox<D, T>> co
 
 template <Int D, class T>
 constexpr RectilinearGrid<D, T>::RectilinearGrid(Vector<Vec2<T>> const & dxdy,
-                                              Vector<Vector<Int>> const & ids)
+                                                 Vector<Vector<Int>> const & ids)
   requires(D == 2)
 {
   // Convert the dxdy to AxisAlignedBoxes
@@ -354,7 +356,7 @@ RectilinearGrid<D, T>::getFlatIndex(Vec<D, Int> const & index) const noexcept ->
   if constexpr (D == 1) {
     return index[0];
   } else if constexpr (D == 2) {
-    return index[0] + index[1] * numCells(0); 
+    return index[0] + index[1] * numCells(0);
   } else if constexpr (D == 3) {
     return index[0] + numCells(0) * (index[1] + numCells(1) * index[2]);
   } else { // General case
@@ -371,8 +373,9 @@ RectilinearGrid<D, T>::getFlatIndex(Vec<D, Int> const & index) const noexcept ->
 
 template <Int D, class T>
 template <typename... Args>
-requires(sizeof...(Args) == D) PURE HOSTDEV
-    constexpr auto RectilinearGrid<D, T>::getFlatIndex(Args... args) const noexcept -> Int
+  requires(sizeof...(Args) == D)
+PURE HOSTDEV constexpr auto
+RectilinearGrid<D, T>::getFlatIndex(Args... args) const noexcept -> Int
 {
   Vec<D, Int> const index{args...};
   return getFlatIndex(index);
@@ -380,9 +383,9 @@ requires(sizeof...(Args) == D) PURE HOSTDEV
 
 template <Int D, class T>
 template <typename... Args>
-requires(sizeof...(Args) == D) PURE HOSTDEV
-    constexpr auto RectilinearGrid<D, T>::getBox(Args... args) const noexcept
-    -> AxisAlignedBox<D, T>
+  requires(sizeof...(Args) == D)
+PURE HOSTDEV constexpr auto
+RectilinearGrid<D, T>::getBox(Args... args) const noexcept -> AxisAlignedBox<D, T>
 {
   Vec<D, Int> const index{args...};
   for (Int i = 0; i < D; ++i) {

@@ -4,6 +4,7 @@
 
 #include "../test_macros.hpp"
 
+// NOLINTNEXTLINE(misc-include-cleaner)
 #include <concepts>
 
 template <Int D, class T>

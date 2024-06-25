@@ -2,9 +2,12 @@
 
 #include <um2/config.hpp>
 
-#include <um2/math/matrix.hpp>
+#define UM2_HAS_CMFD (UM2_USE_BLAS_LAPACK && UM2_USE_MPACT_XSLIBS)
+#if UM2_HAS_CMFD
 
-#include <complex>
+#  include <um2/math/matrix.hpp>
+
+#  include <complex>
 
 //======================================================================
 // CMFD
@@ -32,15 +35,14 @@ namespace um2
 
 using ComplexF = Complex<Float>;
 
-struct CMFDCellParams
-{
+struct CMFDCellParams {
   // Suspend naming conventions for this struct
-  Float w;        // Width of coarse cell
-  Int p;          // Number of fine cells per coarse cell
-  Float Sigma_t;  // Total cross section (cm^-1)
-  Float c;        // Scattering ratio
-  Int s;          // Number of sweeps
-  Float eta;      // Diffusion coefficient modifier η ∈ [0, 1/4]
+  Float w;       // Width of coarse cell
+  Int p;         // Number of fine cells per coarse cell
+  Float Sigma_t; // Total cross section (cm^-1)
+  Float c;       // Scattering ratio
+  Int s;         // Number of sweeps
+  Float eta;     // Diffusion coefficient modifier η ∈ [0, 1/4]
 
   // Computed parameters
   Float h;     // Fine cell thickness (cm)
@@ -52,7 +54,12 @@ struct CMFDCellParams
 
   // Constructor
   CMFDCellParams(Float iw, Int ip, Float iSigma_t, Float ic, Int is, Float ieta)
-    : w(iw), p(ip), Sigma_t(iSigma_t), c(ic), s(is), eta(ieta)
+      : w(iw),
+        p(ip),
+        Sigma_t(iSigma_t),
+        c(ic),
+        s(is),
+        eta(ieta)
   {
     ASSERT(0 < iw);
     ASSERT(1 <= ip);
@@ -70,14 +77,12 @@ struct CMFDCellParams
     delta = Sigma_t * w;
     D = 1.0 / (3.0 * delta) + eta;
   }
-
 };
 
 } // namespace um2
 
 namespace um2::cmfd
 {
-
 
 CONST auto
 beta_n(Float h, Float mu_n) -> Float;
@@ -86,42 +91,38 @@ void
 set_An(Matrix<ComplexF> & An, CMFDCellParams const & params, Float mu_n, Float alpha);
 
 void
-set_Bn(Matrix<ComplexF> & Bn, Matrix<ComplexF> const & An, 
-    CMFDCellParams const & params, Float mu_n, Float alpha);
+set_Bn(Matrix<ComplexF> & Bn, Matrix<ComplexF> const & An, CMFDCellParams const & params,
+       Float mu_n, Float alpha);
 
 void
 set_U(Matrix<ComplexF> & U, Matrix<ComplexF> & An, Matrix<ComplexF> & Bn,
-    CMFDCellParams const & params, Float alpha, Matrix<ComplexF> & I,
-    Vector<Int> & ipiv);
+      CMFDCellParams const & params, Float alpha, Matrix<ComplexF> & I,
+      Vector<Int> & ipiv);
 
 PURE auto
 getF(CMFDCellParams const & params, Float alpha) -> Float;
 
 void
 set_omega(Matrix<ComplexF> & omega, Matrix<ComplexF> & An, Matrix<ComplexF> & Bn,
-    Matrix<ComplexF> & U, Matrix<ComplexF> const & J, CMFDCellParams const & params, Float alpha,
-    Matrix<ComplexF> & I, Vector<Int> & ipiv); 
+          Matrix<ComplexF> & U, Matrix<ComplexF> const & J, CMFDCellParams const & params,
+          Float alpha, Matrix<ComplexF> & I, Vector<Int> & ipiv);
 
 } // namespace um2::cmfd
-
 
 namespace um2
 {
 
 PURE auto
-spectral_radius(CMFDCellParams const & params) -> ComplexF; 
+spectral_radius(CMFDCellParams const & params) -> ComplexF;
 
-auto    
-spectral_radius(CMFDCellParams const & params,    
-                Matrix<ComplexF> & An,    
-                Matrix<ComplexF> & Bn,    
-                Matrix<ComplexF> & U,    
-                Matrix<ComplexF> & omega,    
-                Matrix<ComplexF> & J,    
-                Matrix<ComplexF> & I,    
-                Vector<Int> & ipiv    
-    ) -> ComplexF;
+auto
+spectral_radius(CMFDCellParams const & params, Matrix<ComplexF> & An,
+                Matrix<ComplexF> & Bn, Matrix<ComplexF> & U, Matrix<ComplexF> & omega,
+                Matrix<ComplexF> & J, Matrix<ComplexF> & I,
+                Vector<Int> & ipiv) -> ComplexF;
 
 } // namespace um2
 
 // NOLINTEND(readability-identifier-naming)
+
+#endif // UM2_HAS_CMFD

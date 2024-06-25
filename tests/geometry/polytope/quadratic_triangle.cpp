@@ -1,17 +1,17 @@
 #include <um2/config.hpp>
+#include <um2/geometry/modular_rays.hpp>
 #include <um2/geometry/point.hpp>
 #include <um2/geometry/polytope.hpp>
-#include <um2/math/vec.hpp>
 #include <um2/math/mat.hpp>
-#include <um2/geometry/modular_rays.hpp>
+#include <um2/math/vec.hpp>
 
 // NOLINTNEXTLINE(misc-include-cleaner)
 #include <um2/geometry/quadratic_triangle.hpp>
 
 #include "../../test_macros.hpp"
 
-#include <random>
 #include <cstdint>
+#include <random>
 
 template <class T>
 T constexpr eps = um2::epsDistance<T>();
@@ -309,8 +309,7 @@ TEST_CASE(meanChordLength)
 //=============================================================================
 
 template <class T>
-HOSTDEV
-void
+HOSTDEV void
 testTriForIntersections(um2::QuadraticTriangle<2, T> const tri)
 {
   // Parameters

@@ -17,7 +17,7 @@ template <class T>
 CONST HOSTDEV [[nodiscard]] auto
 abs(Complex<T> x) noexcept -> T
 {
-  return um2::sqrt(x.real() * x.real() + x.imag() * x.imag()); 
+  return um2::sqrt(x.real() * x.real() + x.imag() * x.imag());
 }
 
 } // namespace um2

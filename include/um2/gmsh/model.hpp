@@ -23,13 +23,13 @@ namespace occ
 void
 colorMaterialPhysicalGroupEntities(std::vector<Material> const & materials);
 
-// A gmsh::model::occ::fragment that preserves the model's D-dimensional physical       
-// groups when fragmenting D-dimensional entities. All other physical groups are       
-// destroyed.       
-//       
-// In the event that two overlapping entities have material physical groups, the       
-// optional material hierarchy is used to choose a single material for the       
-// resultant overlapping entity/entities.   
+// A gmsh::model::occ::fragment that preserves the model's D-dimensional physical
+// groups when fragmenting D-dimensional entities. All other physical groups are
+// destroyed.
+//
+// In the event that two overlapping entities have material physical groups, the
+// optional material hierarchy is used to choose a single material for the
+// resultant overlapping entity/entities.
 void
 groupPreservingFragment(gmsh::vectorpair const & object_dimtags,
                         gmsh::vectorpair const & tool_dimtags,
@@ -52,15 +52,14 @@ groupPreservingIntersect(gmsh::vectorpair const & object_dimtags,
                          int tag = -1, bool remove_object = true,
                          bool remove_tool = true);
 
-
 //==============================================================================
 // Functions for user-level API. These functions should take um2::Vector, um2::String,
 // etc. Not std::vector, std::string, etc.
 //==============================================================================
 
-//auto
-//addCylindricalPin2D(Vec2d const & center, std::vector<double> const & radii,
-//                    std::vector<Material> const & materials) -> std::vector<int>;
+// auto
+// addCylindricalPin2D(Vec2d const & center, std::vector<double> const & radii,
+//                     std::vector<Material> const & materials) -> std::vector<int>;
 
 auto
 addCylindricalPin2D(Vec2F const & center, Vector<Float> const & radii,
@@ -73,16 +72,17 @@ addCylindricalPinLattice2D(Vector<Vector<Int>> const & pin_ids,
                            Vector<Vector<Material>> const & materials,
                            Vec2F const & offset = {0, 0}) -> Vector<Int>;
 
-//auto
-//addCylindricalPin(Vec3d const & center, double height, std::vector<double> const & radii,
-//                  std::vector<Material> const & materials) -> std::vector<int>;
+// auto
+// addCylindricalPin(Vec3d const & center, double height, std::vector<double> const &
+// radii,
+//                   std::vector<Material> const & materials) -> std::vector<int>;
 //
-//auto
-//addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
-//                         std::vector<std::vector<Material>> const & materials,
-//                         double height, std::vector<Vec2d> const & dxdy,
-//                         std::vector<std::vector<int>> const & pin_ids,
-//                         Vec3d const & offset = {0.0, 0.0, 0.0}) -> std::vector<int>;
+// auto
+// addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
+//                          std::vector<std::vector<Material>> const & materials,
+//                          double height, std::vector<Vec2d> const & dxdy,
+//                          std::vector<std::vector<int>> const & pin_ids,
+//                          Vec3d const & offset = {0.0, 0.0, 0.0}) -> std::vector<int>;
 
 void
 overlayCoarseGrid(mpact::Model const & model, Material const & fill_material);

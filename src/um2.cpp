@@ -1,12 +1,12 @@
-#include <um2/config.hpp>
 #include <um2.hpp>
 #include <um2/common/logger.hpp>
+#include <um2/config.hpp>
 
-#include <unistd.h> 
 #include <cstdio>
+#include <unistd.h>
 
 #if UM2_USE_GMSH
-#include <um2/gmsh/base_gmsh_api.hpp>
+#  include <um2/gmsh/base_gmsh_api.hpp>
 #endif
 
 namespace um2
@@ -27,7 +27,7 @@ initialize()
     gmsh::option::setNumber("General.NumThreads",
                             0); // System default (i.e. OMP_NUM_THREADS)
     gmsh::option::setNumber("Geometry.OCCParallel", 1); // Parallelize OCC
-    //gmsh::option::setNumber("General.Verbosity", 2);    // Errors + warnings
+    // gmsh::option::setNumber("General.Verbosity", 2);    // Errors + warnings
   }
 #endif
 }

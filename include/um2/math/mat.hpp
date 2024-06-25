@@ -64,7 +64,8 @@ public:
   constexpr Mat() noexcept = default;
 
   template <std::same_as<Col>... Cols>
-  requires(sizeof...(Cols) == N) HOSTDEV constexpr explicit Mat(Cols... cols) noexcept;
+    requires(sizeof...(Cols) == N)
+  HOSTDEV constexpr explicit Mat(Cols... cols) noexcept;
 
   //==============================================================================
   // Methods
@@ -159,7 +160,8 @@ Mat<M, N, T>::operator()(Int i, Int j) const noexcept -> T const &
 
 template <Int M, Int N, typename T>
 template <std::same_as<Vec<M, T>>... Cols>
-requires(sizeof...(Cols) == N) HOSTDEV constexpr Mat<M, N, T>::Mat(Cols... cols) noexcept
+  requires(sizeof...(Cols) == N)
+HOSTDEV constexpr Mat<M, N, T>::Mat(Cols... cols) noexcept
     : _cols{cols...}
 {
 }

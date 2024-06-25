@@ -1,9 +1,9 @@
 #include <um2/config.hpp>
+#include <um2/geometry/modular_rays.hpp>
 #include <um2/geometry/point.hpp>
 #include <um2/geometry/polytope.hpp>
 #include <um2/geometry/ray.hpp>
 #include <um2/stdlib/numbers.hpp>
-#include <um2/geometry/modular_rays.hpp>
 
 // NOLINTNEXTLINE(misc-include-cleaner) false positive
 #include <um2/geometry/line_segment.hpp>

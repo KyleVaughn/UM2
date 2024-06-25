@@ -199,8 +199,7 @@ jacobian(QuadraticTriangle<D, T> const & t6, T const r,
 
 template <Int D, class T>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D, T>::jacobian(T const r,
-                               T const s) const noexcept -> Mat<D, 2, T>
+QuadraticTriangle<D, T>::jacobian(T const r, T const s) const noexcept -> Mat<D, 2, T>
 {
   return um2::jacobian(*this, r, s);
 }
@@ -338,7 +337,7 @@ QuadraticTriangle<D, T>::meanChordLength() const noexcept -> T
 template <Int D, class T>
 HOSTDEV constexpr auto
 QuadraticTriangle<D, T>::intersect(Ray2<T> const ray,
-                                T * const buffer) const noexcept -> Int
+                                   T * const buffer) const noexcept -> Int
   requires(D == 2)
 {
   return um2::intersect(*this, ray, buffer);
@@ -359,7 +358,8 @@ QuadraticTriangle<D, T>::hasSelfIntersection() const noexcept -> bool
 
 template <Int D, class T>
 HOSTDEV constexpr auto
-QuadraticTriangle<D, T>::hasSelfIntersection(Point2<T> * const buffer) const noexcept -> bool
+QuadraticTriangle<D, T>::hasSelfIntersection(Point2<T> * const buffer) const noexcept
+    -> bool
   requires(D == 2)
 {
   return um2::hasSelfIntersection(*this, buffer);

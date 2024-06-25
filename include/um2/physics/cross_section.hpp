@@ -1,7 +1,7 @@
 #pragma once
 
-#include <um2/stdlib/vector.hpp>
 #include <um2/math/matrix.hpp>
+#include <um2/stdlib/vector.hpp>
 
 //======================================================================
 // CROSS SECTION
@@ -21,16 +21,16 @@ class XSec
   bool _is_macroscopic = false;
   bool _is_fissile = false;
   Int _num_groups = 0;
-  Vector<Float> _a; // Absorption cross section
-  Vector<Float> _f; // Fission cross section
+  Vector<Float> _a;   // Absorption cross section
+  Vector<Float> _f;   // Fission cross section
   Vector<Float> _nuf; // nu * fission cross section
-  Vector<Float> _tr; // Transport cross section
-  Vector<Float> _s; // Total scattering cross section.
-                    // s(g) = sum_{g'=0}^{G-1} \sigma_{s}(g -> g')
-                    // This is the sum of column(g) of the scattering matrix.
-  Matrix<Float> _ss; // Scattering matrix _ss(i, j) = \sigma_{s}(j -> i) 
-                     // A multiplication with a flux vector will give
-                     // the scattering source. _ss * phi = q_s
+  Vector<Float> _tr;  // Transport cross section
+  Vector<Float> _s;   // Total scattering cross section.
+                      // s(g) = sum_{g'=0}^{G-1} \sigma_{s}(g -> g')
+                      // This is the sum of column(g) of the scattering matrix.
+  Matrix<Float> _ss;  // Scattering matrix _ss(i, j) = \sigma_{s}(j -> i)
+                      // A multiplication with a flux vector will give
+                      // the scattering source. _ss * phi = q_s
 
 public:
   //======================================================================
@@ -40,13 +40,13 @@ public:
   constexpr XSec() noexcept = default;
 
   explicit XSec(Int num_groups) noexcept
-    : _num_groups(num_groups),
-      _a(num_groups, 0.0),
-      _f(num_groups, 0.0),
-      _nuf(num_groups, 0.0),
-      _tr(num_groups, 0.0),
-      _s(num_groups, 0.0),
-      _ss(num_groups, num_groups, 0.0)
+      : _num_groups(num_groups),
+        _a(num_groups, 0.0),
+        _f(num_groups, 0.0),
+        _nuf(num_groups, 0.0),
+        _tr(num_groups, 0.0),
+        _s(num_groups, 0.0),
+        _ss(num_groups, num_groups, 0.0)
   {
   }
 
@@ -109,7 +109,7 @@ public:
   // Methods
   //======================================================================
 
-  PURE [[nodiscard]] constexpr auto 
+  PURE [[nodiscard]] constexpr auto
   t(Int g) const noexcept -> Float
   {
     ASSERT(0 <= g);
@@ -123,7 +123,7 @@ public:
   // Get the 1-group "average" cross section
   // Takes the arithmetic mean of the values in each group
   // NOTE: this is not a replacement for a one-group cross section, which
-  // should perform a weighted sum which preserve the total reaction rate. 
+  // should perform a weighted sum which preserve the total reaction rate.
   PURE [[nodiscard]] auto
   collapseTo1GroupAvg() const noexcept -> XSec;
 }; // class XS

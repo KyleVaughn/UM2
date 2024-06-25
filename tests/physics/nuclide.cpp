@@ -1,7 +1,7 @@
-#include <um2/physics/nuclide.hpp>
-#include <um2/physics/cross_section.hpp>
 #include <um2/common/cast_if_not.hpp>
 #include <um2/config.hpp>
+#include <um2/physics/cross_section.hpp>
+#include <um2/physics/nuclide.hpp>
 
 #include "../test_macros.hpp"
 
@@ -106,8 +106,8 @@ TEST_CASE(interpXS)
 }
 
 TEST_SUITE(Nuclide)
-{ 
-  TEST(toZAID); 
+{
+  TEST(toZAID);
   TEST(interpXS);
 }
 

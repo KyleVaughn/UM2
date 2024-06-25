@@ -1,16 +1,18 @@
-#include <um2/config.hpp>
-#include <um2/stdlib/vector.hpp>
-#include <um2/stdlib/assert.hpp>
 #include <um2/physics/cmfd.hpp>
-#include <um2/stdlib/math/hyperbolic_functions.hpp>
-#include <um2/stdlib/math/trigonometric_functions.hpp>
-#include <um2/stdlib/math/exponential_functions.hpp>
-#include <um2/stdlib/math/abs.hpp>
-#include <um2/stdlib/numbers.hpp>
-#include <um2/stdlib/algorithm/fill.hpp>
-#include <um2/math/matrix.hpp>
 
-#include <complex>
+#if UM2_HAS_CMFD
+#  include <um2/config.hpp>
+#  include <um2/math/matrix.hpp>
+#  include <um2/stdlib/algorithm/fill.hpp>
+#  include <um2/stdlib/assert.hpp>
+#  include <um2/stdlib/math/abs.hpp>
+#  include <um2/stdlib/math/exponential_functions.hpp>
+#  include <um2/stdlib/math/hyperbolic_functions.hpp>
+#  include <um2/stdlib/math/trigonometric_functions.hpp>
+#  include <um2/stdlib/numbers.hpp>
+#  include <um2/stdlib/vector.hpp>
+
+#  include <complex>
 
 // TODO(kcvaughn): Clean up all the unnecessary memory allocations
 
@@ -29,7 +31,8 @@ beta_n(Float const h, Float const mu_n) -> Float
 
 // Equation 51. No memory allocation
 void
-set_An(Matrix<ComplexF> & An, CMFDCellParams const & params, Float const mu_n, Float const alpha)
+set_An(Matrix<ComplexF> & An, CMFDCellParams const & params, Float const mu_n,
+       Float const alpha)
 {
   // ASSUMPTIONS:
   // - An is zero everywhere but the diagonal, superdiagonal, and (p-1, 0)
@@ -57,8 +60,8 @@ set_An(Matrix<ComplexF> & An, CMFDCellParams const & params, Float const mu_n, F
 
 // Equation 52. No memory allocation
 void
-set_Bn(Matrix<ComplexF> & Bn, Matrix<ComplexF> const & An,
-    CMFDCellParams const & params, Float const mu_n, Float const alpha)
+set_Bn(Matrix<ComplexF> & Bn, Matrix<ComplexF> const & An, CMFDCellParams const & params,
+       Float const mu_n, Float const alpha)
 {
   // ASSUMPTIONS:
   // - Bn is zero everywhere but the diagonal, superdiagonal, and (p-1, 0)
@@ -89,8 +92,8 @@ set_Bn(Matrix<ComplexF> & Bn, Matrix<ComplexF> const & An,
 // Equation 54. No memory allocation
 void
 set_U(Matrix<ComplexF> & U, Matrix<ComplexF> & An, Matrix<ComplexF> & Bn,
-    CMFDCellParams const & params, Float const alpha, Matrix<ComplexF> & I,
-    Vector<Int> & ipiv)
+      CMFDCellParams const & params, Float const alpha, Matrix<ComplexF> & I,
+      Vector<Int> & ipiv)
 {
   // ASSUMPTIONS:
   // - An, Bn, and I are p by p matrices
@@ -112,71 +115,29 @@ set_U(Matrix<ComplexF> & U, Matrix<ComplexF> & An, Matrix<ComplexF> & Bn,
 
   ASSERT(params.N == 32);
   Float constexpr mu[32] = {
-    -0.9972638618494816,
-    -0.9856115115452684,
-    -0.9647622555875064,
-    -0.9349060759377397,
-    -0.8963211557660521,
-    -0.84936761373257,
-    -0.7944837959679424,
-    -0.7321821187402897,
-    -0.6630442669302152,
-    -0.5877157572407623,
-    -0.5068999089322294,
-    -0.42135127613063533,
-    -0.33186860228212767,
-    -0.23928736225213706,
-    -0.1444719615827965,
-    -0.048307665687738324,
-    0.048307665687738324,
-    0.1444719615827965,
-    0.23928736225213706,
-    0.33186860228212767,
-    0.42135127613063533,
-    0.5068999089322294,
-    0.5877157572407623,
-    0.6630442669302152,
-    0.7321821187402897,
-    0.7944837959679424,
-    0.84936761373257,
-    0.8963211557660521,
-    0.9349060759377397,
-    0.9647622555875064,
-    0.9856115115452684,
-    0.9972638618494816};
+      -0.9972638618494816,   -0.9856115115452684,  -0.9647622555875064,
+      -0.9349060759377397,   -0.8963211557660521,  -0.84936761373257,
+      -0.7944837959679424,   -0.7321821187402897,  -0.6630442669302152,
+      -0.5877157572407623,   -0.5068999089322294,  -0.42135127613063533,
+      -0.33186860228212767,  -0.23928736225213706, -0.1444719615827965,
+      -0.048307665687738324, 0.048307665687738324, 0.1444719615827965,
+      0.23928736225213706,   0.33186860228212767,  0.42135127613063533,
+      0.5068999089322294,    0.5877157572407623,   0.6630442669302152,
+      0.7321821187402897,    0.7944837959679424,   0.84936761373257,
+      0.8963211557660521,    0.9349060759377397,   0.9647622555875064,
+      0.9856115115452684,    0.9972638618494816};
   Float constexpr w[32] = {
-    0.007018610009470092,
-    0.016274394730905643,
-    0.025392065309262066,
-    0.03427386291302141,
-    0.04283589802222672,
-    0.05099805926237615,
-    0.05868409347853548,
-    0.0658222227763618,
-    0.07234579410884856,
-    0.07819389578707032,
-    0.08331192422694678,
-    0.08765209300440377,
-    0.09117387869576384,
-    0.09384439908080465,
-    0.09563872007927489,
-    0.09654008851472778,
-    0.09654008851472778,
-    0.09563872007927489,
-    0.09384439908080465,
-    0.09117387869576384,
-    0.08765209300440377,
-    0.08331192422694678,
-    0.07819389578707032,
-    0.07234579410884856,
-    0.0658222227763618,
-    0.05868409347853548,
-    0.05099805926237615,
-    0.04283589802222672,
-    0.03427386291302141,
-    0.025392065309262066,
-    0.016274394730905643,
-    0.007018610009470092};
+      0.007018610009470092, 0.016274394730905643, 0.025392065309262066,
+      0.03427386291302141,  0.04283589802222672,  0.05099805926237615,
+      0.05868409347853548,  0.0658222227763618,   0.07234579410884856,
+      0.07819389578707032,  0.08331192422694678,  0.08765209300440377,
+      0.09117387869576384,  0.09384439908080465,  0.09563872007927489,
+      0.09654008851472778,  0.09654008851472778,  0.09563872007927489,
+      0.09384439908080465,  0.09117387869576384,  0.08765209300440377,
+      0.08331192422694678,  0.07819389578707032,  0.07234579410884856,
+      0.0658222227763618,   0.05868409347853548,  0.05099805926237615,
+      0.04283589802222672,  0.03427386291302141,  0.025392065309262066,
+      0.016274394730905643, 0.007018610009470092};
 
   // Loop over the polar quadrature to compute equation 54
   // U = (c / 2) ∑_n^N wₙ * Aₙ * (Bₙ)^-1
@@ -222,8 +183,8 @@ getF(CMFDCellParams const & params, Float alpha) -> Float
 // Equation 57 (just constructing the matrix). No memory allocation
 void
 set_omega(Matrix<ComplexF> & omega, Matrix<ComplexF> & An, Matrix<ComplexF> & Bn,
-    Matrix<ComplexF> & U, Matrix<ComplexF> const & J, CMFDCellParams const & params, Float alpha,
-    Matrix<ComplexF> & I, Vector<Int> & ipiv)
+          Matrix<ComplexF> & U, Matrix<ComplexF> const & J, CMFDCellParams const & params,
+          Float alpha, Matrix<ComplexF> & I, Vector<Int> & ipiv)
 {
   // ASSUMPTIONS:
   //  - Aₙ and Bₙ are zero everywhere except the locations we will set
@@ -237,12 +198,11 @@ set_omega(Matrix<ComplexF> & omega, Matrix<ComplexF> & An, Matrix<ComplexF> & Bn
   // ω = (U^σ + F * J * (U^σ - U^(σ - 1)))
   // ω = (U + F * J * (U - I)) * U^(σ - 1)
 
-
   ComplexF const one(1, 0);
   // U' = U - I
   for (Int i = 0; i < p; ++i) {
     U(i, i) -= one;
-  } 
+  }
   // ω = J * U' = (J * (U - I))
   matmul(omega, J, U);
   // ω = F * (J * (U - I))
@@ -254,14 +214,14 @@ set_omega(Matrix<ComplexF> & omega, Matrix<ComplexF> & An, Matrix<ComplexF> & Bn
     omega(i, i) += one;
   }
 
-  //if (s > 1) {
-  //  Matrix<ComplexF> U_s1 = U; // U^1
-  //  // Don't have M^pow yet
-  //  for (Int i = 0; i < s - 2; ++i) {
-  //    U_s1 = U_s1 * U;
-  //  }
-  //  omega = omega * U_s1;
-  //}
+  // if (s > 1) {
+  //   Matrix<ComplexF> U_s1 = U; // U^1
+  //   // Don't have M^pow yet
+  //   for (Int i = 0; i < s - 2; ++i) {
+  //     U_s1 = U_s1 * U;
+  //   }
+  //   omega = omega * U_s1;
+  // }
 }
 
 } // namespace um2::cmfd
@@ -317,15 +277,10 @@ spectral_radius(CMFDCellParams const & params) -> ComplexF
 }
 
 auto
-spectral_radius(CMFDCellParams const & params,
-                Matrix<ComplexF> & An,
-                Matrix<ComplexF> & Bn,
-                Matrix<ComplexF> & U,
-                Matrix<ComplexF> & omega,
-                Matrix<ComplexF> & J,
-                Matrix<ComplexF> & I,
-                Vector<Int> & ipiv
-    ) -> ComplexF
+spectral_radius(CMFDCellParams const & params, Matrix<ComplexF> & An,
+                Matrix<ComplexF> & Bn, Matrix<ComplexF> & U, Matrix<ComplexF> & omega,
+                Matrix<ComplexF> & J, Matrix<ComplexF> & I,
+                Vector<Int> & ipiv) -> ComplexF
 {
 
   // Set up α samples. We sample α ∈ [0, π/Δ] (Equation 58)
@@ -360,3 +315,4 @@ spectral_radius(CMFDCellParams const & params,
 } // namespace um2
 
 // NOLINTEND(readability-identifier-naming)
+#endif // UM2_HAS_CMFD

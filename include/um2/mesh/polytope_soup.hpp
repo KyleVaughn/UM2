@@ -1,18 +1,18 @@
 #pragma once
 
-#include <um2/geometry/point.hpp>
 #include <um2/geometry/axis_aligned_box.hpp>
+#include <um2/geometry/point.hpp>
 #include <um2/mesh/element_types.hpp>
 #include <um2/stdlib/string.hpp>
 #include <um2/stdlib/vector.hpp>
 
 // External dependencies
 #if UM2_USE_HDF5
-#include <H5Cpp.h>
+#  include <H5Cpp.h>
 #endif
 
 #if UM2_USE_PUGIXML
-#include <pugixml.hpp>
+#  include <pugixml.hpp>
 #endif
 
 #define UM2_HAS_XDMF (UM2_USE_HDF5 && UM2_USE_PUGIXML)
@@ -38,8 +38,8 @@ class PolytopeSoup
   Vector<Int> _element_conn;    // Vertex IDs of each element
 
   Vector<String> _elset_names;
-  Vector<Int> _elset_offsets;      // A prefix sum of the number of elements in each elset
-  Vector<Int> _elset_ids;          // Element IDs of each elset (must be sorted)
+  Vector<Int> _elset_offsets; // A prefix sum of the number of elements in each elset
+  Vector<Int> _elset_ids;     // Element IDs of each elset (must be sorted)
   Vector<Vector<Float>> _elset_data; // Data associated with each elset
 
 public:
@@ -172,12 +172,9 @@ public:
 
 #if UM2_HAS_XDMF
 void
-writeXDMFUniformGrid(String const & name,
-                     pugi::xml_node & xdomain, H5::H5File & h5file,
+writeXDMFUniformGrid(String const & name, pugi::xml_node & xdomain, H5::H5File & h5file,
                      String const & h5filename, String const & h5path,
-                     PolytopeSoup const & soup,
-                     Point3F const & origin = {0, 0, 0}
-                     );
+                     PolytopeSoup const & soup, Point3F const & origin = {0, 0, 0});
 
 void
 readXDMFUniformGrid(pugi::xml_node const & xgrid, H5::H5File const & h5file,

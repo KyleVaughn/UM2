@@ -1,45 +1,45 @@
-#include <um2/mpact/model.hpp>
+#include <um2/common/cast_if_not.hpp>
 #include <um2/common/logger.hpp>
 #include <um2/common/strto.hpp>
-#include <um2/common/cast_if_not.hpp>
-#include <um2/stdlib/algorithm/is_sorted.hpp>
-#include <um2/stdlib/algorithm/fill.hpp>
-#include <um2/stdlib/algorithm/copy.hpp>
-#include <um2/stdlib/math/trigonometric_functions.hpp>
-#include <um2/stdlib/math/roots.hpp>
-#include <um2/stdlib/math/abs.hpp>
-#include <um2/stdlib/algorithm/min.hpp>
-#include <um2/stdlib/numeric/iota.hpp>
-#include <um2/stdlib/utility/pair.hpp>
-#include <um2/stdlib/utility/move.hpp>
-#include <um2/stdlib/vector.hpp>
-#include <um2/stdlib/string.hpp>
-#include <um2/stdlib/numbers.hpp>
-#include <um2/stdlib/assert.hpp>
-#include <um2/stdlib/string_view.hpp>
-#include <um2/math/stats.hpp>
-#include <um2/math/matrix.hpp>
 #include <um2/config.hpp>
-#include <um2/physics/cmfd.hpp>
-#include <um2/physics/material.hpp>
-#include <um2/geometry/point.hpp>
 #include <um2/geometry/axis_aligned_box.hpp>
+#include <um2/geometry/point.hpp>
+#include <um2/math/matrix.hpp>
+#include <um2/math/stats.hpp>
 #include <um2/math/vec.hpp>
+#include <um2/mesh/element_types.hpp>
 #include <um2/mesh/face_vertex_mesh.hpp>
-#include <um2/mesh/regular_grid.hpp>
-#include <um2/mesh/regular_partition.hpp>
+#include <um2/mesh/polytope_soup.hpp>
 #include <um2/mesh/rectilinear_grid.hpp>
 #include <um2/mesh/rectilinear_partition.hpp>
-#include <um2/mesh/element_types.hpp>
-#include <um2/mesh/polytope_soup.hpp>
+#include <um2/mesh/regular_grid.hpp>
+#include <um2/mesh/regular_partition.hpp>
+#include <um2/mpact/model.hpp>
+#include <um2/physics/cmfd.hpp>
+#include <um2/physics/material.hpp>
+#include <um2/stdlib/algorithm/copy.hpp>
+#include <um2/stdlib/algorithm/fill.hpp>
+#include <um2/stdlib/algorithm/is_sorted.hpp>
+#include <um2/stdlib/algorithm/min.hpp>
+#include <um2/stdlib/assert.hpp>
+#include <um2/stdlib/math/abs.hpp>
+#include <um2/stdlib/math/roots.hpp>
+#include <um2/stdlib/math/trigonometric_functions.hpp>
+#include <um2/stdlib/numbers.hpp>
+#include <um2/stdlib/numeric/iota.hpp>
+#include <um2/stdlib/string.hpp>
+#include <um2/stdlib/string_view.hpp>
+#include <um2/stdlib/utility/move.hpp>
+#include <um2/stdlib/utility/pair.hpp>
+#include <um2/stdlib/vector.hpp>
 
-#if UM2_USE_PUGIXML    
-#include <pugixml.hpp>    
+#if UM2_USE_PUGIXML
+#  include <pugixml.hpp>
 #endif
 
-#include <algorithm> 
+#include <algorithm>
 #include <cstring>
-#include <numeric> 
+#include <numeric>
 
 // We dont have access to the header defining many of the HDF5 types, so we disable
 // the clang-tidy warning.
@@ -89,10 +89,7 @@ flattenLattice(Vector<Vector<T>> const & ids, Vector<U> & flat_ids)
 // Constructors
 //=============================================================================
 
-Model::Model(String const & filename)
-{
-  read(filename);
-}
+Model::Model(String const & filename) { read(filename); }
 
 //=============================================================================
 // clear
@@ -135,12 +132,9 @@ Model::addMaterial(Material const & material, bool const validate) -> Int
 
 auto
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
-Model::addCylindricalPinMesh(
-    Float const pitch,
-    Vector<Float> const & radii,
-    Vector<Int> const & num_rings,
-    Int const num_azimuthal,
-    Int const mesh_order) -> Int
+Model::addCylindricalPinMesh(Float const pitch, Vector<Float> const & radii,
+                             Vector<Int> const & num_rings, Int const num_azimuthal,
+                             Int const mesh_order) -> Int
 {
 
   Int mesh_id = -1;
@@ -170,7 +164,8 @@ Model::addCylindricalPinMesh(
     return -1;
   }
 
-  if (std::any_of(radii.begin(), radii.end(), [pitch](Float r) { return r > pitch / 2; })) {
+  if (std::any_of(radii.begin(), radii.end(),
+                  [pitch](Float r) { return r > pitch / 2; })) {
     logger::error("The radii must be less than half the pitch");
     return -1;
   }
@@ -202,7 +197,8 @@ Model::addCylindricalPinMesh(
   // Ai = pi * (ri^2 - ri-1^2)
   radial_region_areas[0] = pi<Float> * radii[0] * radii[0];
   for (Int i = 1; i < num_radial_regions - 1; ++i) {
-    radial_region_areas[i] = pi<Float> * (radii[i] * radii[i] - radii[i - 1] * radii[i - 1]);
+    radial_region_areas[i] =
+        pi<Float> * (radii[i] * radii[i] - radii[i - 1] * radii[i - 1]);
   }
   radial_region_areas[num_radial_regions - 1] =
       pitch * pitch - radial_region_areas[num_radial_regions - 2];
@@ -229,22 +225,21 @@ Model::addCylindricalPinMesh(
         radial_region_areas[ireg] / static_cast<Float>(num_rings_in_region);
     for (Int iring = 0; iring < num_rings_in_region; ++iring, ++ctr) {
       ring_areas[ctr] = area_per_ring;
-      ring_radii[ctr] =
-          um2::sqrt(area_per_ring / pi<Float> + ring_radii[ctr - 1] * ring_radii[ctr - 1]);
+      ring_radii[ctr] = um2::sqrt(area_per_ring / pi<Float> +
+                                  ring_radii[ctr - 1] * ring_radii[ctr - 1]);
     }
   }
   // Outside of the last ring
   ring_areas[ctr] = pitch * pitch - pi<Float> * ring_radii.back() * ring_radii.back();
   // Log the radii and areas in debug mode
   for (Int i = 0; i < total_rings; ++i) {
-    LOG_DEBUG("Ring ", i ," radius: ", ring_radii[i]);
-    LOG_DEBUG("Ring ", i ," area: ", ring_areas[i]);
+    LOG_DEBUG("Ring ", i, " radius: ", ring_radii[i]);
+    LOG_DEBUG("Ring ", i, " area: ", ring_areas[i]);
   }
   LOG_DEBUG("The area outside of the last ring is ", ring_areas[ctr]);
 #if UM2_ENABLE_ASSERTS
   // Ensure the sum of the ring areas is equal to pitch^2
-  Float const sum_ring_areas =
-      std::reduce(ring_areas.begin(), ring_areas.end());
+  Float const sum_ring_areas = std::reduce(ring_areas.begin(), ring_areas.end());
   ASSERT_NEAR(sum_ring_areas, pitch * pitch, eps);
 #endif
   auto const num_azimuthal_t = static_cast<Float>(num_azimuthal);
@@ -626,7 +621,7 @@ Model::addCylindricalPinMesh(
     // Print the faces
     for (Int i = 0; i < num_faces; ++i) {
       LOG_DEBUG("Face ", i, ":", faces[i][0], faces[i][1], faces[i][2], faces[i][3],
-                  faces[i][4], faces[i][5], faces[i][6], faces[i][7]);
+                faces[i][4], faces[i][5], faces[i][6], faces[i][7]);
     }
 
     // Shift such that the lower left corner is at the origin
@@ -645,7 +640,8 @@ Model::addCylindricalPinMesh(
     LOG_DEBUG("Finished creating mesh");
     return mesh_id;
   }
-  logger::error("Only linear and quadratic meshes are supported for a cylindrical pin mesh");
+  logger::error(
+      "Only linear and quadratic meshes are supported for a cylindrical pin mesh");
   return -1;
 }
 
@@ -654,15 +650,14 @@ Model::addCylindricalPinMesh(
 //=============================================================================
 
 auto
-Model::addCylindricalPinCell(Float const pitch,
-                      Vector<Float> const & radii,
-                      Vector<Material> const & materials,
-                      Vector<Int> const & num_rings,
-                      Int const num_azimuthal,
-                      Int const mesh_order) -> Int
+Model::addCylindricalPinCell(Float const pitch, Vector<Float> const & radii,
+                             Vector<Material> const & materials,
+                             Vector<Int> const & num_rings, Int const num_azimuthal,
+                             Int const mesh_order) -> Int
 {
   // Make the mesh
-  Int const mesh_id = addCylindricalPinMesh(pitch, radii, num_rings, num_azimuthal, mesh_order);
+  Int const mesh_id =
+      addCylindricalPinMesh(pitch, radii, num_rings, num_azimuthal, mesh_order);
 
   // We need 1 more material than the number of rings
   if (materials.size() != num_rings.size() + 1) {
@@ -715,7 +710,8 @@ Model::addCylindricalPinCell(Float const pitch,
 //=============================================================================
 
 auto
-Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int const ny_faces) -> Int
+Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces,
+                             Int const ny_faces) -> Int
 {
   Int const mesh_id = _quads.size();
   logger::info("Adding rectangular pin mesh ", mesh_id);
@@ -816,10 +812,8 @@ Model::addQuad8Mesh(Quad8FVM const & mesh) -> Int
 
 auto
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
-Model::addCoarseCell(Vec2F const xy_extents,
-    MeshType const mesh_type,
-    Int const mesh_id,
-    Vector<MatID> const & material_ids) -> Int
+Model::addCoarseCell(Vec2F const xy_extents, MeshType const mesh_type, Int const mesh_id,
+                     Vector<MatID> const & material_ids) -> Int
 {
   Int const cc_id = _coarse_cells.size();
   logger::info("Adding coarse cell ", cc_id);
@@ -1020,8 +1014,8 @@ Model::addAssembly(Vector<Int> const & lat_ids, Vector<Float> const & z) -> Int
   // Unless this is the 2D special case, ensure all z-coordinates are positive
   auto const ahalf = castIfNot<Float>(0.5);
   // Check if z = {-ahalf, ahalf} for the 2D special case
-  if (um2::abs(z.front() + ahalf) > epsDistance<Float>()
-      || um2::abs(z.back() - ahalf) > epsDistance<Float>()) {
+  if (um2::abs(z.front() + ahalf) > epsDistance<Float>() ||
+      um2::abs(z.back() - ahalf) > epsDistance<Float>()) {
     if (um2::abs(z.front()) > epsDistance<Float>()) {
       logger::error("The first z-plane must be at 0");
       return -1;
@@ -1156,7 +1150,6 @@ Model::addCoarseGrid(Vec2F const xy_extents, Vec2I const xy_num_cells)
 
   // Add the core with the assembly
   addCore({{0}});
-
 }
 
 //=============================================================================
@@ -1321,7 +1314,8 @@ Model::operator PolytopeSoup() const noexcept
       Int const asy_id_ctr = ++asy_found[asy_id];
 
       // Get the assembly name
-      String const asy_name = "Assembly_" + getASCIINumber(asy_id) + "_" + getASCIINumber(asy_id_ctr);
+      String const asy_name =
+          "Assembly_" + getASCIINumber(asy_id) + "_" + getASCIINumber(asy_id_ctr);
       LOG_DEBUG("Assembly name: ", asy_name);
 
       // Get the assembly offset (lower left corner)
@@ -1349,7 +1343,8 @@ Model::operator PolytopeSoup() const noexcept
         Int const lat_id_ctr = ++lat_found[lat_id];
 
         // Get the lattice name
-        String const lat_name = "Lattice_" + getASCIINumber(lat_id) + "_" + getASCIINumber(lat_id_ctr);
+        String const lat_name =
+            "Lattice_" + getASCIINumber(lat_id) + "_" + getASCIINumber(lat_id_ctr);
         LOG_DEBUG("Lattice name: ", lat_name);
 
         // Get the lattice offset (z direction)
@@ -1382,7 +1377,8 @@ Model::operator PolytopeSoup() const noexcept
             Int const rtm_id_ctr = ++rtm_found[rtm_id];
 
             // Get the RTM name
-            String const rtm_name = "RTM_" + getASCIINumber(rtm_id) + "_" + getASCIINumber(rtm_id_ctr);
+            String const rtm_name =
+                "RTM_" + getASCIINumber(rtm_id) + "_" + getASCIINumber(rtm_id_ctr);
             LOG_DEBUG("RTM name: ", rtm_name);
 
             // Get the RTM offset (lower left corner)
@@ -1412,7 +1408,8 @@ Model::operator PolytopeSoup() const noexcept
                 Int const cell_id_ctr = ++cc_found[cell_id];
 
                 // Get the coarse cell name
-                String const cell_name = "Coarse_Cell_" + getASCIINumber(cell_id) + "_" + getASCIINumber(cell_id_ctr);
+                String const cell_name = "Coarse_Cell_" + getASCIINumber(cell_id) + "_" +
+                                         getASCIINumber(cell_id_ctr);
                 LOG_DEBUG("Coarse cell name: ", cell_name);
 
                 // Get the cell offset (lower left corner)
@@ -1426,7 +1423,6 @@ Model::operator PolytopeSoup() const noexcept
                 Int const mesh_id = coarse_cell.mesh_id;
 
                 Vector<Float> mcls(coarse_cell.numFaces());
-
 
                 switch (mesh_type) {
                 case MeshType::Tri:
@@ -1504,15 +1500,15 @@ Model::operator PolytopeSoup() const noexcept
                 cell_soup.sortElsets();
                 rtm_soup += cell_soup;
               } // for (ixcell)
-            }   // for (iycell)
+            } // for (iycell)
             lattice_soup += rtm_soup;
-          }   // for (ixrtm)
-        }     // for (iyrtm)
+          } // for (ixrtm)
+        } // for (iyrtm)
         assembly_soup += lattice_soup;
       } // for (izlat)
       core_soup += assembly_soup;
     } // for (ixasy)
-  }   // for (iyasy)
+  } // for (iyasy)
   if (core_soup.numElsets() != 0) {
     core_soup.sortElsets();
   }
@@ -1529,7 +1525,7 @@ namespace
 void
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 writeXDMFFile(String const & filepath, Model const & model,
-    bool const write_knudsen_data = false, bool const write_xsec_data = false)
+              bool const write_knudsen_data = false, bool const write_xsec_data = false)
 {
   LOG_INFO("Writing MPACT model to XDMF file: ", filepath);
 
@@ -1674,8 +1670,8 @@ writeXDMFFile(String const & filepath, Model const & model,
             auto const & xsec = materials[mat_id].xsec();
             mg_xsec_data[icell] = xsec.t(ig);
           }
-          cell_soup.addElset("Group_" + getASCIINumber(ig) + "_Total_XS",
-              cell_ids, mg_xsec_data);
+          cell_soup.addElset("Group_" + getASCIINumber(ig) + "_Total_XS", cell_ids,
+                             mg_xsec_data);
         }
       }
 
@@ -1778,7 +1774,8 @@ writeXDMFFile(String const & filepath, Model const & model,
       Int const asy_id_ctr = ++asy_found[asy_id];
 
       // Get the assembly name
-      String const asy_name = "Assembly_" + getASCIINumber(asy_id) + "_" + getASCIINumber(asy_id_ctr);
+      String const asy_name =
+          "Assembly_" + getASCIINumber(asy_id) + "_" + getASCIINumber(asy_id_ctr);
       LOG_DEBUG("Assembly name: ", asy_name);
 
       // Create the assembly group
@@ -1818,7 +1815,8 @@ writeXDMFFile(String const & filepath, Model const & model,
         Int const lat_id_ctr = ++lat_found[lat_id];
 
         // Get the lattice name
-        String const lat_name = "Lattice_" + getASCIINumber(lat_id) + "_" + getASCIINumber(lat_id_ctr);
+        String const lat_name =
+            "Lattice_" + getASCIINumber(lat_id) + "_" + getASCIINumber(lat_id_ctr);
         LOG_DEBUG("Lattice name: ", lat_name);
 
         // Create the lattice group
@@ -1827,7 +1825,6 @@ writeXDMFFile(String const & filepath, Model const & model,
         xlat_grid.append_attribute("GridType") = "Tree";
         String const h5lat_grouppath = h5asy_grouppath + "/" + lat_name;
         H5::Group const h5lat_group = h5file.createGroup(h5lat_grouppath.data());
-
 
         // Get the lattice offset (z direction)
         // The midplane is the location that the geometry was sampled at.
@@ -1838,7 +1835,8 @@ writeXDMFFile(String const & filepath, Model const & model,
         // Add the lattice "Z" information
         pugi::xml_node xlat_info = xlat_grid.append_child("Information");
         xlat_info.append_attribute("Name") = "Z";
-        String const lat_z_str = String(low_z) + ", " + String(lat_z) + ", " + String(high_z);
+        String const lat_z_str =
+            String(low_z) + ", " + String(lat_z) + ", " + String(high_z);
         xlat_info.append_child(pugi::node_pcdata).set_value(lat_z_str.data());
 
         // Get the lattice
@@ -1870,7 +1868,8 @@ writeXDMFFile(String const & filepath, Model const & model,
             Int const rtm_id_ctr = ++rtm_found[rtm_id];
 
             // Get the RTM name
-            String const rtm_name = "RTM_" + getASCIINumber(rtm_id) + "_" + getASCIINumber(rtm_id_ctr);
+            String const rtm_name =
+                "RTM_" + getASCIINumber(rtm_id) + "_" + getASCIINumber(rtm_id_ctr);
             LOG_DEBUG("RTM name: ", rtm_name);
 
             // Create the RTM group
@@ -1912,7 +1911,8 @@ writeXDMFFile(String const & filepath, Model const & model,
                 Int const cell_id_ctr = ++cc_found[cell_id];
 
                 // Get the coarse cell name
-                String const cell_name = "Coarse_Cell_" + getASCIINumber(cell_id) + "_" + getASCIINumber(cell_id_ctr);
+                String const cell_name = "Coarse_Cell_" + getASCIINumber(cell_id) + "_" +
+                                         getASCIINumber(cell_id_ctr);
                 LOG_DEBUG("Coarse cell name: ", cell_name);
 
                 // Get the cell offset (lower left corner)
@@ -1926,15 +1926,15 @@ writeXDMFFile(String const & filepath, Model const & model,
                 auto const & cell_soup = coarse_cell_soups[cell_id];
 
                 writeXDMFUniformGrid(cell_name, xrtm_grid, h5file, h5filename,
-                    h5rtm_grouppath, cell_soup, global_offset);
+                                     h5rtm_grouppath, cell_soup, global_offset);
 
               } // for (ixcell)
-            }   // for (iycell)
-          }   // for (ixrtm)
-        }     // for (iyrtm)
+            } // for (iycell)
+          } // for (ixrtm)
+        } // for (iyrtm)
       } // for (izlat)
     } // for (ixasy)
-  }   // for (iyasy)
+  } // for (iyasy)
 
   // Write the XML file
   xdoc.save_file(filepath.data(), "  ");
@@ -1945,7 +1945,6 @@ writeXDMFFile(String const & filepath, Model const & model,
   LOG_INFO("XDMF file written successfully");
 } // writeXDMFFile
 
-
 } // namespace
 
 //==============================================================================
@@ -1953,10 +1952,8 @@ writeXDMFFile(String const & filepath, Model const & model,
 //==============================================================================
 
 void
-Model::write(
-    String const & filename,
-    bool const write_knudsen_data,
-    bool const write_xsec_data) const
+Model::write(String const & filename, bool const write_knudsen_data,
+             bool const write_xsec_data) const
 {
   if (filename.ends_with(".xdmf")) {
     writeXDMFFile(filename, *this, write_knudsen_data, write_xsec_data);
@@ -2035,7 +2032,7 @@ readXDMFFile(String const & filename, Model & model)
 {
   LOG_INFO("Reading MPACT model from XDMF file: ", filename);
 
-    // Open HDF5 file
+  // Open HDF5 file
   Int last_slash = filename.find_last_of('/');
   if (last_slash == String::npos) {
     last_slash = 0;
@@ -2053,7 +2050,7 @@ readXDMFFile(String const & filename, Model & model)
   pugi::xml_parse_result const result = xdoc.load_file(filename.data());
   if (!result) {
     logger::error("XDMF XML parse error: ", result.description(),
-               ", character pos= ", result.offset);
+                  ", character pos= ", result.offset);
     return;
   }
   pugi::xml_node const xroot = xdoc.child("Xdmf");
@@ -2181,9 +2178,9 @@ readXDMFFile(String const & filename, Model & model)
   // 2D map of coarse cell IDs in each RTM
   Vector<Vector<Vector<Int>>> rtm_coarse_cell_ids;
 
-  Vector<Int> assembly_ids; // IDs of all unique assemblies
-  Vector<Int> lattice_ids; // IDs of all unique lattices
-  Vector<Int> rtm_ids; // IDs of all unique RTMs
+  Vector<Int> assembly_ids;    // IDs of all unique assemblies
+  Vector<Int> lattice_ids;     // IDs of all unique lattices
+  Vector<Int> rtm_ids;         // IDs of all unique RTMs
   Vector<Int> coarse_cell_ids; // IDs of all unique coarse cells
 
   Vector<Pair<MeshType, Int>> mesh_types_ids;
@@ -2338,7 +2335,8 @@ readXDMFFile(String const & filename, Model & model)
       Int lattice_ny = 0;
       // Do this one manually
       {
-        pugi::xml_node const xlat_nxny = lattice_node.child("Information").next_sibling("Information");
+        pugi::xml_node const xlat_nxny =
+            lattice_node.child("Information").next_sibling("Information");
         pugi::xml_attribute const xlatname = xlat_nxny.attribute("Name");
         if (strcmp("NX_by_NY", xlatname.value()) != 0) {
           logger::error("XDMF XML information name is not NX_by_NY");
@@ -2380,7 +2378,8 @@ readXDMFFile(String const & filename, Model & model)
         end = nullptr;
 
         // Write the RTM ID to lattice_rtm_ids
-        auto const lattice_ij = mapFlatIndexToLattice2D(rtm_count, lattice_nx, lattice_ny);
+        auto const lattice_ij =
+            mapFlatIndexToLattice2D(rtm_count, lattice_nx, lattice_ny);
         lattice_rtm_ids.back()[lattice_ij[1]][lattice_ij[0]] = rtm_id;
         ++rtm_count;
 
@@ -2458,66 +2457,58 @@ readXDMFFile(String const & filename, Model & model)
           ASSERT(mesh_type != MeshType::QuadraticTriQuad);
 
           // Create the FVM and get the ID
-          switch(mesh_type) {
-            case MeshType::Tri:
-              {
-              TriFVM mesh(soup);
-              auto const bb = mesh.boundingBox();
-              auto const minima = bb.minima();
-              for (auto & vert : mesh.vertices()) {
-                vert -= minima;
-              }
-              xy_extents.emplace_back(bb.extents());
-              model.addTriMesh(mesh);
-              mesh_types_ids.emplace_back(mesh_type, tris_count);
-              ++tris_count;
-              }
-              break;
-            case MeshType::Quad:
-              {
-              QuadFVM mesh(soup);
-              auto const bb = mesh.boundingBox();
-              auto const minima = bb.minima();
-              for (auto & vert : mesh.vertices()) {
-                vert -= minima;
-              }
-              xy_extents.emplace_back(bb.extents());
-              model.addQuadMesh(mesh);
-              mesh_types_ids.emplace_back(mesh_type, quads_count);
-              ++quads_count;
-              }
-              break;
-            case MeshType::QuadraticTri:
-              {
-              Tri6FVM mesh(soup);
-              auto const bb = mesh.boundingBox();
-              auto const minima = bb.minima();
-              for (auto & vert : mesh.vertices()) {
-                vert -= minima;
-              }
-              xy_extents.emplace_back(bb.extents());
-              model.addTri6Mesh(mesh);
-              mesh_types_ids.emplace_back(mesh_type, tri6s_count);
-              ++tri6s_count;
-              }
-              break;
-            case MeshType::QuadraticQuad:
-              {
-              Quad8FVM mesh(soup);
-              auto const bb = mesh.boundingBox();
-              auto const minima = bb.minima();
-              for (auto & vert : mesh.vertices()) {
-                vert -= minima;
-              }
-              xy_extents.emplace_back(bb.extents());
-              model.addQuad8Mesh(mesh);
-              mesh_types_ids.emplace_back(mesh_type, quad8s_count);
-              ++quad8s_count;
-              }
-              break;
-            default:
-              logger::error("Unsupported mesh type");
-              return;
+          switch (mesh_type) {
+          case MeshType::Tri: {
+            TriFVM mesh(soup);
+            auto const bb = mesh.boundingBox();
+            auto const minima = bb.minima();
+            for (auto & vert : mesh.vertices()) {
+              vert -= minima;
+            }
+            xy_extents.emplace_back(bb.extents());
+            model.addTriMesh(mesh);
+            mesh_types_ids.emplace_back(mesh_type, tris_count);
+            ++tris_count;
+          } break;
+          case MeshType::Quad: {
+            QuadFVM mesh(soup);
+            auto const bb = mesh.boundingBox();
+            auto const minima = bb.minima();
+            for (auto & vert : mesh.vertices()) {
+              vert -= minima;
+            }
+            xy_extents.emplace_back(bb.extents());
+            model.addQuadMesh(mesh);
+            mesh_types_ids.emplace_back(mesh_type, quads_count);
+            ++quads_count;
+          } break;
+          case MeshType::QuadraticTri: {
+            Tri6FVM mesh(soup);
+            auto const bb = mesh.boundingBox();
+            auto const minima = bb.minima();
+            for (auto & vert : mesh.vertices()) {
+              vert -= minima;
+            }
+            xy_extents.emplace_back(bb.extents());
+            model.addTri6Mesh(mesh);
+            mesh_types_ids.emplace_back(mesh_type, tri6s_count);
+            ++tri6s_count;
+          } break;
+          case MeshType::QuadraticQuad: {
+            Quad8FVM mesh(soup);
+            auto const bb = mesh.boundingBox();
+            auto const minima = bb.minima();
+            for (auto & vert : mesh.vertices()) {
+              vert -= minima;
+            }
+            xy_extents.emplace_back(bb.extents());
+            model.addQuad8Mesh(mesh);
+            mesh_types_ids.emplace_back(mesh_type, quad8s_count);
+            ++quad8s_count;
+          } break;
+          default:
+            logger::error("Unsupported mesh type");
+            return;
           }
 
           // Get the material IDs (an elset as Floats)
@@ -2572,8 +2563,9 @@ readXDMFFile(String const & filename, Model & model)
           //   if (!material.hasXSec()) {
           //     missing_mat_indices.emplace_back(imat);
           //     material.xsec().t().resize(num_groups);
-          //     // Set the values to -infDistance<Float>() to indicate that the data is missing
-          //     um2::fill(material.xsec().t().begin(), material.xsec().t().end(), -infDistance<Float>());
+          //     // Set the values to -infDistance<Float>() to indicate that the data is
+          //     missing um2::fill(material.xsec().t().begin(), material.xsec().t().end(),
+          //     -infDistance<Float>());
           //   }
           // }
 
@@ -2593,7 +2585,8 @@ readXDMFFile(String const & filename, Model & model)
           //   if (cell_idx == -1) {
           //     continue;
           //   }
-          //   LOG_INFO("Found cross section data for material ID: ", static_cast<Int>(imat));
+          //   LOG_INFO("Found cross section data for material ID: ",
+          //   static_cast<Int>(imat));
 
           //   // We have found a cell with the material ID. Get the elset data for each
           //   // energy group and emplace back into the corresponding material.
@@ -2603,8 +2596,8 @@ readXDMFFile(String const & filename, Model & model)
           //   Vector<Int> elset_ids;
           //   Vector<Float> elset_data;
           //   for (Int igroup = 0; igroup < num_groups; ++igroup) {
-          //     String const elset_name = "Group_" + getASCIINumber(igroup) + "_Total_XS";
-          //     soup.getElset(elset_name, elset_ids, elset_data);
+          //     String const elset_name = "Group_" + getASCIINumber(igroup) +
+          //     "_Total_XS"; soup.getElset(elset_name, elset_ids, elset_data);
           //     ASSERT(elset_ids.size() == soup.numElements());
           //     ASSERT(elset_data.size() == soup.numElements());
           //     material.xsec().t(igroup) = elset_data[cell_idx];
@@ -2714,101 +2707,105 @@ Model::read(String const & filename)
 // getCoarseCellOpticalThickness
 //==============================================================================
 
-//template <Int P, Int N>
-//static void
-//computeCellOpticalThickness(
-//    FaceVertexMesh<P, N> const & fvm,
-//    Vec2F const xy_extents,
-//    Vector<MatID> const & material_ids,
-//    Vector<Material> const & materials,
-//    Vector<Float> & taus)
+// template <Int P, Int N>
+// static void
+// computeCellOpticalThickness(
+//     FaceVertexMesh<P, N> const & fvm,
+//     Vec2F const xy_extents,
+//     Vector<MatID> const & material_ids,
+//     Vector<Material> const & materials,
+//     Vector<Float> & taus)
 //{
-//  // In a domain \Omega, with boundary \partial\Omega, the mean optical thickness
-//  // in energy group g over the domain is defined as:
-//  //    \tau_g = \frac{\pi}{P_{\partial\Omega}} * \sum_{i=1}^N A_i * \Sigma_{i,g}
-//  //
-//  // where:
-//  //  P_{\partial\Omega} is the perimeter of the boundary of the domain
-//  //  N is the number of faces of the mesh which fills \Omega
-//  //  A_i is the area of the i-th face
-//  //  \Sigma_{i,g} is the macroscopic cross section of the i-th face at energy group g
+//   // In a domain \Omega, with boundary \partial\Omega, the mean optical thickness
+//   // in energy group g over the domain is defined as:
+//   //    \tau_g = \frac{\pi}{P_{\partial\Omega}} * \sum_{i=1}^N A_i * \Sigma_{i,g}
+//   //
+//   // where:
+//   //  P_{\partial\Omega} is the perimeter of the boundary of the domain
+//   //  N is the number of faces of the mesh which fills \Omega
+//   //  A_i is the area of the i-th face
+//   //  \Sigma_{i,g} is the macroscopic cross section of the i-th face at energy group g
 //
 //
-//  // Setup taus
-//  Int const num_groups = materials[0].xsec().t().size();
-//  Float constexpr zero = 0;
-//  taus.resize(num_groups);
-//  um2::fill(taus.begin(), taus.end(), zero);
+//   // Setup taus
+//   Int const num_groups = materials[0].xsec().t().size();
+//   Float constexpr zero = 0;
+//   taus.resize(num_groups);
+//   um2::fill(taus.begin(), taus.end(), zero);
 //
-//  Int const num_faces = fvm.numFaces();
-//  for (Int iface = 0; iface < num_faces; ++iface) {
-//    auto const a_i = fvm.getFace(iface).area();
-//    auto const mat_id = material_ids[iface];
-//    auto const & xsec = materials[static_cast<Int>(mat_id)].xsec();
-//    for (Int ig = 0; ig < num_groups; ++ig) {
-//      taus[ig] += a_i * xsec.t(ig);
-//    }
-//  }
+//   Int const num_faces = fvm.numFaces();
+//   for (Int iface = 0; iface < num_faces; ++iface) {
+//     auto const a_i = fvm.getFace(iface).area();
+//     auto const mat_id = material_ids[iface];
+//     auto const & xsec = materials[static_cast<Int>(mat_id)].xsec();
+//     for (Int ig = 0; ig < num_groups; ++ig) {
+//       taus[ig] += a_i * xsec.t(ig);
+//     }
+//   }
 //
-//  Float const pi_over_p = um2::pi_2<Float> / (xy_extents[0] + xy_extents[1]);
-//  for (Int ig = 0; ig < num_groups; ++ig) {
-//    taus[ig] *= pi_over_p;
-//  }
-//}
+//   Float const pi_over_p = um2::pi_2<Float> / (xy_extents[0] + xy_extents[1]);
+//   for (Int ig = 0; ig < num_groups; ++ig) {
+//     taus[ig] *= pi_over_p;
+//   }
+// }
 
-//void
-//Model::getCoarseCellOpticalThickness(Int const cc_id, Vector<Float> & taus) const
+// void
+// Model::getCoarseCellOpticalThickness(Int const cc_id, Vector<Float> & taus) const
 //{
-//  // Check that the coarse cell exists
-//  ASSERT(cc_id >= 0);
-//  ASSERT(cc_id < _coarse_cells.size());
+//   // Check that the coarse cell exists
+//   ASSERT(cc_id >= 0);
+//   ASSERT(cc_id < _coarse_cells.size());
 //
-//  // Get the coarse cell
-//  auto const & cc = _coarse_cells[cc_id];
+//   // Get the coarse cell
+//   auto const & cc = _coarse_cells[cc_id];
 //
-//  // Call the appropriate function based on the mesh type
-//  switch (cc.mesh_type) {
-//    case MeshType::Tri:
-//      {
-//      auto const & tri_mesh = getTriMesh(cc.mesh_id);
-//      computeCellOpticalThickness(tri_mesh, cc.xy_extents, cc.material_ids, _materials, taus);
-//      }
-//      break;
-//    case MeshType::Quad:
-//      {
-//      auto const & quad_mesh = getQuadMesh(cc.mesh_id);
-//      computeCellOpticalThickness(quad_mesh, cc.xy_extents, cc.material_ids, _materials, taus);
-//      }
-//      break;
-//    case MeshType::QuadraticTri:
-//      {
-//      auto const & tri6_mesh = getTri6Mesh(cc.mesh_id);
-//      computeCellOpticalThickness(tri6_mesh, cc.xy_extents, cc.material_ids, _materials, taus);
-//      }
-//      break;
-//    case MeshType::QuadraticQuad:
-//      {
-//      auto const & quad8_mesh = getQuad8Mesh(cc.mesh_id);
-//      computeCellOpticalThickness(quad8_mesh, cc.xy_extents, cc.material_ids, _materials, taus);
-//      }
-//      break;
-//    default:
-//      logger::error("Unsupported mesh type");
-//  }
-//}
+//   // Call the appropriate function based on the mesh type
+//   switch (cc.mesh_type) {
+//     case MeshType::Tri:
+//       {
+//       auto const & tri_mesh = getTriMesh(cc.mesh_id);
+//       computeCellOpticalThickness(tri_mesh, cc.xy_extents, cc.material_ids, _materials,
+//       taus);
+//       }
+//       break;
+//     case MeshType::Quad:
+//       {
+//       auto const & quad_mesh = getQuadMesh(cc.mesh_id);
+//       computeCellOpticalThickness(quad_mesh, cc.xy_extents, cc.material_ids,
+//       _materials, taus);
+//       }
+//       break;
+//     case MeshType::QuadraticTri:
+//       {
+//       auto const & tri6_mesh = getTri6Mesh(cc.mesh_id);
+//       computeCellOpticalThickness(tri6_mesh, cc.xy_extents, cc.material_ids,
+//       _materials, taus);
+//       }
+//       break;
+//     case MeshType::QuadraticQuad:
+//       {
+//       auto const & quad8_mesh = getQuad8Mesh(cc.mesh_id);
+//       computeCellOpticalThickness(quad8_mesh, cc.xy_extents, cc.material_ids,
+//       _materials, taus);
+//       }
+//       break;
+//     default:
+//       logger::error("Unsupported mesh type");
+//   }
+// }
 
 //==============================================================================
 // getCoarseCellHomogenizedXSec
 //==============================================================================
 
-namespace {
+namespace
+{
 
 template <Int P, Int N>
-auto 
-computeCellHomogenizedXSec(
-    FaceVertexMesh<P, N> const & fvm,
-    Vector<MatID> const & material_ids,
-    Vector<Material> const & materials) -> XSec
+auto
+computeCellHomogenizedXSec(FaceVertexMesh<P, N> const & fvm,
+                           Vector<MatID> const & material_ids,
+                           Vector<Material> const & materials) -> XSec
 {
   Int const num_groups = materials[0].xsec().numGroups();
   Float constexpr zero = 0;
@@ -2822,7 +2819,7 @@ computeCellHomogenizedXSec(
   }
 
   XSec result(num_groups);
-  // For each material with non-zero area, reduce into result 
+  // For each material with non-zero area, reduce into result
   for (Int imat = 0; imat < materials.size(); ++imat) {
     // Want exact comparison to zero
 #pragma GCC diagnostic push
@@ -2879,48 +2876,45 @@ Model::getCoarseCellHomogenizedXSec(Int cc_id) const -> XSec
   // weighting to compute the homogenized cross section.
   ASSERT(cc_id >= 0);
   ASSERT(cc_id < _coarse_cells.size());
- 
+
   // Get the coarse cell
   auto const & cc = _coarse_cells[cc_id];
- 
+
   // Call the appropriate function based on the mesh type
   switch (cc.mesh_type) {
-    case MeshType::Tri:
-      {
-        auto const & tri_mesh = getTriMesh(cc.mesh_id);
-        return computeCellHomogenizedXSec(tri_mesh, cc.material_ids, _materials);
-      }
-    case MeshType::Quad:
-      {
-        auto const & quad_mesh = getQuadMesh(cc.mesh_id);
-        return computeCellHomogenizedXSec(quad_mesh, cc.material_ids, _materials);
-      }
-    case MeshType::QuadraticTri:
-      {
-       auto const & tri6_mesh = getTri6Mesh(cc.mesh_id);
-       return computeCellHomogenizedXSec(tri6_mesh, cc.material_ids, _materials);
-      }
-    case MeshType::QuadraticQuad:
-      {
-       auto const & quad8_mesh = getQuad8Mesh(cc.mesh_id);
-       return computeCellHomogenizedXSec(quad8_mesh, cc.material_ids, _materials);
-      }
-    default:
-       logger::error("Unsupported mesh type");
-   }
-   return {}; 
+  case MeshType::Tri: {
+    auto const & tri_mesh = getTriMesh(cc.mesh_id);
+    return computeCellHomogenizedXSec(tri_mesh, cc.material_ids, _materials);
+  }
+  case MeshType::Quad: {
+    auto const & quad_mesh = getQuadMesh(cc.mesh_id);
+    return computeCellHomogenizedXSec(quad_mesh, cc.material_ids, _materials);
+  }
+  case MeshType::QuadraticTri: {
+    auto const & tri6_mesh = getTri6Mesh(cc.mesh_id);
+    return computeCellHomogenizedXSec(tri6_mesh, cc.material_ids, _materials);
+  }
+  case MeshType::QuadraticQuad: {
+    auto const & quad8_mesh = getQuad8Mesh(cc.mesh_id);
+    return computeCellHomogenizedXSec(quad8_mesh, cc.material_ids, _materials);
+  }
+  default:
+    logger::error("Unsupported mesh type");
+  }
+  return {};
 }
 
 //==============================================================================
 // writeCMFDInfo
 //==============================================================================
 
+#if UM2_HAS_CMFD
 void
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 Model::writeCMFDInfo(String const & filename) const
 {
   // Use capital letters for matrices
-// NOLINTBEGIN(readability-identifier-naming)
+  // NOLINTBEGIN(readability-identifier-naming)
   LOG_INFO("Writing MPACT model CMFD data to ", filename);
 
   PolytopeSoup soup;
@@ -2946,8 +2940,8 @@ Model::writeCMFDInfo(String const & filename) const
 
   // Store:
   //  group-wise homogenized xsecs for each coarse cell
-//  //  group-wise optical thicknesses for each coarse cell 
-//  //    (pi * area * homogenized xsec / perimeter) 
+  //  //  group-wise optical thicknesses for each coarse cell
+  //  //    (pi * area * homogenized xsec / perimeter)
   //  vector of face IDs for each coarse cell
   Int const num_coarse_cells = coarse_cells.size();
   Vector<XSec> coarse_cell_xsecs(num_coarse_cells);
@@ -3048,7 +3042,8 @@ Model::writeCMFDInfo(String const & filename) const
                 // Add the quad to the soup
                 Point3F const v0(xy_offset[0], xy_offset[1], lat_z);
                 Point3F const v1(xy_offset[0] + cell_extents[0], xy_offset[1], lat_z);
-                Point3F const v2(xy_offset[0] + cell_extents[0], xy_offset[1] + cell_extents[1], lat_z);
+                Point3F const v2(xy_offset[0] + cell_extents[0],
+                                 xy_offset[1] + cell_extents[1], lat_z);
                 Point3F const v3(xy_offset[0], xy_offset[1] + cell_extents[1], lat_z);
 
                 conn[0] = soup.addVertex(v0);
@@ -3063,12 +3058,12 @@ Model::writeCMFDInfo(String const & filename) const
                 cc_face_ids.emplace_back(face_id);
 
               } // for (ixcell)
-            }   // for (iycell)
-          }   // for (ixrtm)
-        }     // for (iyrtm)
+            } // for (iycell)
+          } // for (ixrtm)
+        } // for (iyrtm)
       } // for (izlat)
     } // for (ixasy)
-  }   // for (iyasy)
+  } // for (iyasy)
 
   // add elsets for each coarse cell
   for (Int icc = 0; icc < num_coarse_cells; ++icc) {
@@ -3082,7 +3077,7 @@ Model::writeCMFDInfo(String const & filename) const
   um2::iota(ids.begin(), ids.end(), 0);
   Vector<Float> data(num_faces);
 
-  // Construct the group g total cross section elsets 
+  // Construct the group g total cross section elsets
   for (Int ig = 0; ig < num_groups; ++ig) {
     um2::fill(data.begin(), data.end(), -infDistance<Float>());
     String const elset_name = "Homogenized_Total_XS_Group_" + getASCIINumber(ig);
@@ -3094,12 +3089,12 @@ Model::writeCMFDInfo(String const & filename) const
       }
     }
     soup.addElset(elset_name, ids, data);
-#if UM2_ENABLE_ASSERTS
+#  if UM2_ENABLE_ASSERTS
     // check that all data has been filled
     for (auto const & d : data) {
       ASSERT(d > -infDistance<Float>());
     }
-#endif
+#  endif
   }
 
   // Construct the group g scattering ratio elsets
@@ -3116,14 +3111,13 @@ Model::writeCMFDInfo(String const & filename) const
       }
     }
     soup.addElset(elset_name, ids, data);
-#if UM2_ENABLE_ASSERTS
+#  if UM2_ENABLE_ASSERTS
     // check that all data has been filled
     for (auto const & d : data) {
       ASSERT(d > -infDistance<Float>());
     }
-#endif
+#  endif
   }
-
 
   Int constexpr p = 4;
   Matrix<ComplexF> An(p, p);
@@ -3142,7 +3136,7 @@ Model::writeCMFDInfo(String const & filename) const
     um2::fill(data.begin(), data.end(), -infDistance<Float>());
     String const elset_name = "1D_odCMFD_Spectral_Radius_Group_" + getASCIINumber(ig);
     for (Int icc = 0; icc < num_coarse_cells; ++icc) {
-      //LOG_INFO("Computing spectral radius for coarse cell ", icc, " group ", ig);
+      // LOG_INFO("Computing spectral radius for coarse cell ", icc, " group ", ig);
       auto const sigma_t = coarse_cell_xsecs[icc].t(ig);
       auto const sigma_s = coarse_cell_xsecs[icc].s()[ig];
       auto const c = sigma_s / sigma_t;
@@ -3153,23 +3147,17 @@ Model::writeCMFDInfo(String const & filename) const
       auto const & xy_extents = cc.xy_extents;
       auto const w = (xy_extents[0] + xy_extents[1]) / 2;
       // Fix number of cells at 4
-      Int const s = 1; // number of sweeps
+      Int const s = 1;        // number of sweeps
       Float const eta = 0.25; // odcmfd
 
       Complex<Float> rho(-1, 0);
       if (c > 1) {
-        LOG_WARN("Scattering ratio is greater than 1 for coarse cell ", icc, " group ", ig, ". Setting rho to -1.");
+        LOG_WARN("Scattering ratio is greater than 1 for coarse cell ", icc, " group ",
+                 ig, ". Setting rho to -1.");
       } else {
         CMFDCellParams const params(w, p, sigma_t, c, s, eta);
-//        rho = spectral_radius(params);
-        rho = spectral_radius(params,
-                An,
-                Bn,
-                U,
-                omega,
-                J,
-                I,
-                ipiv);
+        //        rho = spectral_radius(params);
+        rho = spectral_radius(params, An, Bn, U, omega, J, I, ipiv);
       }
       auto const & face_ids = coarse_cell_face_ids[icc];
       for (auto const & face_id : face_ids) {
@@ -3177,18 +3165,20 @@ Model::writeCMFDInfo(String const & filename) const
       }
     }
     soup.addElset(elset_name, ids, data);
-#if UM2_ENABLE_ASSERTS
+#  if UM2_ENABLE_ASSERTS
     // check that all data has been filled
     for (auto const & d : data) {
       ASSERT(d > -infDistance<Float>());
     }
-#endif
+#  endif
   }
 
   soup.write(filename);
-// NOLINTEND(readability-identifier-naming)
+  // NOLINTEND(readability-identifier-naming)
 } // writeCMFDInfo
 
+#endif // UM2_HAS_CMFD
+
 } // namespace um2::mpact
-  
+
 // NOLINTEND(misc-include-cleaner)

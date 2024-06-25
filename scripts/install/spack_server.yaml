@@ -1,0 +1,11 @@
+spack:
+  specs:
+    - cmake%gcc@12.3
+    - hdf5%gcc@12.3
+    - pugixml%gcc@12.3
+  view: true    
+  concretizer:    
+    unify: true 
+  packages:    
+    hdf5:    
+      require: +cxx+fortran~mpi    

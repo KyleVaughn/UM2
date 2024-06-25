@@ -1,8 +1,8 @@
-#include <um2/config.hpp>
 #include <um2.hpp>
+#include <um2/config.hpp>
 
 #if UM2_USE_GMSH
-#include <um2/gmsh/base_gmsh_api.hpp>
+#  include <um2/gmsh/base_gmsh_api.hpp>
 #endif
 
 #include "../test_macros.hpp"

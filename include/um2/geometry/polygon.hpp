@@ -70,7 +70,8 @@ getEdge(LinearPolygon<N, D, T> const & lp, Int const i) noexcept -> LineSegment<
 
 template <Int N, Int D, class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-getEdge(QuadraticPolygon<N, D, T> const & qp, Int const i) noexcept -> QuadraticSegment<D, T>
+getEdge(QuadraticPolygon<N, D, T> const & qp,
+        Int const i) noexcept -> QuadraticSegment<D, T>
 {
   STATIC_ASSERT_VALID_POLYGON;
   Int constexpr m = polygonNumEdges<2, N>();

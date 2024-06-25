@@ -1,9 +1,9 @@
-#include <um2/config.hpp>
-#include <um2c.h>
-#include <um2/stdlib/algorithm/is_sorted.hpp>
-#include <um2/mpact/model.hpp>
 #include <um2/common/cast_if_not.hpp>
+#include <um2/config.hpp>
 #include <um2/math/vec.hpp>
+#include <um2/mpact/model.hpp>
+#include <um2/stdlib/algorithm/is_sorted.hpp>
+#include <um2c.h>
 
 #include "../test_macros.hpp"
 
@@ -13,7 +13,7 @@ TEST_CASE(data_sizes)
 {
   int n = -1;
   um2SizeOfInt(&n);
-  ASSERT(n == sizeof(Int)); 
+  ASSERT(n == sizeof(Int));
   n = -1;
   um2SizeOfFloat(&n);
   ASSERT(n == sizeof(Float));
@@ -125,7 +125,7 @@ TEST_CASE(mpact_get_child)
   void * sp = nullptr;
   um2ReadMPACTModel("./api_mesh_files/1a_nogap.xdmf", &sp);
   Int id = -1;
-  
+
   // Core
   um2MPACTCoreGetChild(sp, 0, 0, &id);
   ASSERT(id == 0);
@@ -160,10 +160,10 @@ TEST_CASE(coarse_cell_functions)
   // numFaces
   Int n = -1;
   um2MPACTCoarseCellNumFaces(sp, 0, &n);
-  ASSERT(n == 48); 
+  ASSERT(n == 48);
   n = -1;
 
-  // width, height 
+  // width, height
   Float dx = -1;
   auto const expected_dx = castIfNot<Float>(1.26);
   auto const test_eps = um2::epsDistance<Float>();
@@ -204,10 +204,10 @@ TEST_CASE(coarse_cell_functions)
   }
 
   // Coarse cell face areas
-  Float areas[48]; 
+  Float areas[48];
   um2MPACTCoarseCellFaceAreas(sp, 0, areas);
   for (Int i = 0; i < 24; ++i) {
-    ASSERT_NEAR(areas[i], castIfNot<Float>(0.02196132438887047), test_eps); 
+    ASSERT_NEAR(areas[i], castIfNot<Float>(0.02196132438887047), test_eps);
   }
   Float area_sum = 0;
   for (auto area : areas) {
@@ -226,32 +226,32 @@ TEST_CASE(coarse_cell_functions)
   auto x = castIfNot<Float>(0.7);
   auto const y = castIfNot<Float>(0.64);
   Int face_id = -2;
-  um2MPACTCoarseCellFaceContaining(sp, 0, x, y, &face_id); 
-  ASSERT(face_id == 0); 
+  um2MPACTCoarseCellFaceContaining(sp, 0, x, y, &face_id);
+  ASSERT(face_id == 0);
   face_id = -2;
 
   x = castIfNot<Float>(0.9);
-  um2MPACTCoarseCellFaceContaining(sp, 0, x, y, &face_id); 
+  um2MPACTCoarseCellFaceContaining(sp, 0, x, y, &face_id);
   ASSERT(face_id == 8);
   face_id = -2;
 
   x = castIfNot<Float>(1.0);
-  um2MPACTCoarseCellFaceContaining(sp, 0, x, y, &face_id); 
+  um2MPACTCoarseCellFaceContaining(sp, 0, x, y, &face_id);
   ASSERT(face_id == 16);
   face_id = -2;
-  
+
   x = castIfNot<Float>(1.0723);
-  um2MPACTCoarseCellFaceContaining(sp, 0, x, y, &face_id); 
+  um2MPACTCoarseCellFaceContaining(sp, 0, x, y, &face_id);
   ASSERT(face_id == 24);
   face_id = -2;
-  
+
   x = castIfNot<Float>(1.155);
-  um2MPACTCoarseCellFaceContaining(sp, 0, x, y, &face_id); 
+  um2MPACTCoarseCellFaceContaining(sp, 0, x, y, &face_id);
   ASSERT(face_id == 32);
   face_id = -2;
-  
+
   x = castIfNot<Float>(1.2325);
-  um2MPACTCoarseCellFaceContaining(sp, 0, x, y, &face_id); 
+  um2MPACTCoarseCellFaceContaining(sp, 0, x, y, &face_id);
   ASSERT(face_id == 40);
   face_id = -2;
 
@@ -275,8 +275,8 @@ TEST_CASE(coarse_cell_functions)
   Int num_faces = -1;
   Float * vertices = nullptr;
   Int * faces = nullptr;
-  um2MPACTCoarseCellFaceData(sp, 0, &mesh_type, &num_vertices, &num_faces,
-      &vertices, &faces);
+  um2MPACTCoarseCellFaceData(sp, 0, &mesh_type, &num_vertices, &num_faces, &vertices,
+                             &faces);
   ASSERT(mesh_type == 8);
   ASSERT(num_faces == 48);
   ASSERT(vertices != nullptr);

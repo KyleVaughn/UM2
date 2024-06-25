@@ -3,6 +3,7 @@
 #include <um2/mesh/face_vertex_mesh.hpp>
 #include <um2/mesh/rectilinear_partition.hpp>
 #include <um2/mesh/regular_partition.hpp>
+#include <um2/physics/cmfd.hpp>
 #include <um2/physics/material.hpp>
 
 namespace um2::mpact
@@ -61,8 +62,8 @@ public:
   struct CoarseCell {
     Vec2F xy_extents;
     MeshType mesh_type = MeshType::Invalid;
-    Int mesh_id = -1;            // index into the corresponding mesh array
-    Vector<MatID> material_ids;  // size = mesh.numFaces()
+    Int mesh_id = -1;           // index into the corresponding mesh array
+    Vector<MatID> material_ids; // size = mesh.numFaces()
 
     PURE [[nodiscard]] constexpr auto
     numFaces() const noexcept -> Int
@@ -77,7 +78,6 @@ public:
   using Core = RectilinearPartition2<Int>;
 
 private:
-
   // Spatial hierarchy
   Core _core;
   Vector<Assembly> _assemblies;     // Unique assemblies
@@ -223,10 +223,8 @@ public:
   addMaterial(Material const & material, bool validate = true) -> Int;
 
   auto
-  addCylindricalPinMesh(Float pitch,
-                        Vector<Float> const & radii,
-                        Vector<Int> const & num_rings,
-                        Int num_azimuthal,
+  addCylindricalPinMesh(Float pitch, Vector<Float> const & radii,
+                        Vector<Int> const & num_rings, Int num_azimuthal,
                         Int mesh_order = 1) -> Int;
 
   auto
@@ -245,18 +243,13 @@ public:
   addQuad8Mesh(Quad8FVM const & mesh) -> Int;
 
   auto
-  addCylindricalPinCell(Float pitch,
-                        Vector<Float> const & radii,
-                        Vector<Material> const & materials,
-                        Vector<Int> const & num_rings,
-                        Int num_azimuthal,
-                        Int mesh_order = 1) -> Int;
+  addCylindricalPinCell(Float pitch, Vector<Float> const & radii,
+                        Vector<Material> const & materials, Vector<Int> const & num_rings,
+                        Int num_azimuthal, Int mesh_order = 1) -> Int;
 
   auto
-  addCoarseCell(Vec2F xy_extents,
-      MeshType mesh_type = MeshType::Invalid,
-      Int mesh_id = -1,
-      Vector<MatID> const & material_ids = {}) -> Int;
+  addCoarseCell(Vec2F xy_extents, MeshType mesh_type = MeshType::Invalid,
+                Int mesh_id = -1, Vector<MatID> const & material_ids = {}) -> Int;
 
   auto
   addRTM(Vector<Vector<Int>> const & cc_ids) -> Int;
@@ -269,14 +262,16 @@ public:
   addAssembly(Vector<Int> const & lat_ids, Vector<Float> const & z = {-0.5, 0.5}) -> Int;
 #else
   auto
-  addAssembly(Vector<Int> const & lat_ids, Vector<Float> const & z = {-0.5F, 0.5F}) -> Int;
+  addAssembly(Vector<Int> const & lat_ids,
+              Vector<Float> const & z = {-0.5F, 0.5F}) -> Int;
 #endif
 
   auto
   addCore(Vector<Vector<Int>> const & asy_ids) -> Int;
 
   // A convenience function to cover an area with a regular grid of coarse cells.
-  // This method maps each coarse cell to a unique RTM and places all the RTMs in a lattice.
+  // This method maps each coarse cell to a unique RTM and places all the RTMs in a
+  // lattice.
   void
   addCoarseGrid(Vec2F xy_extents, Vec2I xy_num_cells);
 
@@ -288,28 +283,30 @@ public:
   //============================================================================
 
   // This can be very slow for large models. Used for debugging.
-  explicit operator PolytopeSoup() const noexcept;
+  explicit
+  operator PolytopeSoup() const noexcept;
 
   void
   read(String const & filename);
 
   void
-  write(String const & filename,
-      bool write_knudsen_data = false, 
-      bool write_xsec_data = false) const;
+  write(String const & filename, bool write_knudsen_data = false,
+        bool write_xsec_data = false) const;
 
   // Return a vector of group-wise optical thicknesses for the coarse cell.
-  //void 
-  //getCoarseCellOpticalThickness(Int cc_id, Vector<Float> & taus) const;
+  // void
+  // getCoarseCellOpticalThickness(Int cc_id, Vector<Float> & taus) const;
 
   // Homogenize the material and return the resulting cross section.
-  // for each face i in 0, 1, ... num_faces - 1, 
+  // for each face i in 0, 1, ... num_faces - 1,
   // Sigma_x = (sum_{i} A_i * Sigma_x_i) / sum_{i} A_i
   PURE [[nodiscard]] auto
   getCoarseCellHomogenizedXSec(Int cc_id) const -> XSec;
 
+#if UM2_HAS_CMFD
   void
   writeCMFDInfo(String const & filename) const;
+#endif
 
 }; // struct Model
 

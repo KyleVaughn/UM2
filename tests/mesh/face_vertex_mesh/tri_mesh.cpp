@@ -1,14 +1,15 @@
-#include <um2/config.hpp>
-#include <um2/mesh/face_vertex_mesh.hpp>
-#include <um2/mesh/polytope_soup.hpp>
-#include <um2/common/logger.hpp>
 #include <um2/common/cast_if_not.hpp>
-#include <um2/stdlib/vector.hpp>
+#include <um2/common/logger.hpp>
+#include <um2/config.hpp>
 #include <um2/geometry/axis_aligned_box.hpp>
 #include <um2/geometry/point.hpp>
+#include <um2/geometry/polytope.hpp>
 #include <um2/geometry/ray.hpp>
 #include <um2/math/vec.hpp>
-#include <um2/geometry/polytope.hpp>
+#include <um2/mesh/face_vertex_mesh.hpp>
+#include <um2/mesh/polytope_soup.hpp>
+#include <um2/stdlib/string_view.hpp>
+#include <um2/stdlib/vector.hpp>
 
 #include "../helpers/setup_mesh.hpp"
 #include "../helpers/setup_polytope_soup.hpp"
@@ -237,8 +238,8 @@ TEST_CASE(validate)
   ASSERT(mesh_ccw.getFace(1).isCCW());
   auto sv = um2::logger::getLastMessage();
   // Check warning message
-  ASSERT(sv.find_first_of("Some faces were flipped to ensure counter-clockwise order")
-      != um2::StringView::npos);
+  ASSERT(sv.find_first_of("Some faces were flipped to ensure counter-clockwise order") !=
+         um2::StringView::npos);
 
   // Check that the mesh's boundary edges form a single closed loop
   // This should account for:
@@ -302,20 +303,20 @@ TEST_CASE(validate)
       mesh2.addVertex({i, j});
     }
   }
-  mesh2.addFace({0, 1, 4}); // 0
-  mesh2.addFace({1, 5, 4}); // 1
-  mesh2.addFace({1, 2, 5}); // 2
-  mesh2.addFace({2, 6, 5}); // 3
-  mesh2.addFace({2, 3, 6}); // 4
-  mesh2.addFace({3, 7, 6}); // 5
-  mesh2.addFace({4, 5, 8}); // 6
-  mesh2.addFace({5, 9, 8}); // 7
-  mesh2.addFace({5, 6, 9}); // 8
-  mesh2.addFace({6, 7, 10}); // 9
-  mesh2.addFace({7, 11, 10}); // 10
-  mesh2.addFace({8, 9, 12}); // 11
-  mesh2.addFace({9, 13, 12}); // 12
-  mesh2.addFace({9, 10, 13}); // 13
+  mesh2.addFace({0, 1, 4});    // 0
+  mesh2.addFace({1, 5, 4});    // 1
+  mesh2.addFace({1, 2, 5});    // 2
+  mesh2.addFace({2, 6, 5});    // 3
+  mesh2.addFace({2, 3, 6});    // 4
+  mesh2.addFace({3, 7, 6});    // 5
+  mesh2.addFace({4, 5, 8});    // 6
+  mesh2.addFace({5, 9, 8});    // 7
+  mesh2.addFace({5, 6, 9});    // 8
+  mesh2.addFace({6, 7, 10});   // 9
+  mesh2.addFace({7, 11, 10});  // 10
+  mesh2.addFace({8, 9, 12});   // 11
+  mesh2.addFace({9, 13, 12});  // 12
+  mesh2.addFace({9, 10, 13});  // 13
   mesh2.addFace({10, 14, 13}); // 14
   mesh2.addFace({10, 11, 14}); // 15
   mesh2.addFace({11, 15, 14}); // 16
@@ -515,9 +516,8 @@ TEST_CASE(intersect)
   Int sorted_offsets[24];
   Int sorted_faces[24];
   Int perm[24];
-  um2::sortRayMeshIntersections(coords, offsets, faces,
-                                sorted_coords, sorted_offsets, sorted_faces,
-                                perm, hits_faces2);
+  um2::sortRayMeshIntersections(coords, offsets, faces, sorted_coords, sorted_offsets,
+                                sorted_faces, perm, hits_faces2);
   ASSERT(sorted_faces[0] == 3);
   ASSERT(sorted_faces[1] == 2);
   ASSERT(sorted_faces[2] == 1);
@@ -533,16 +533,15 @@ TEST_CASE(intersect)
   ASSERT_NEAR(sorted_coords[5], castIfNot<Float>(2.5), eps);
   ASSERT_NEAR(sorted_coords[6], castIfNot<Float>(2.5), eps);
   ASSERT_NEAR(sorted_coords[7], castIfNot<Float>(3.0), eps);
-
 }
 
 TEST_CASE(operator_PolytopeSoup)
 {
-   um2::TriFVM const tri_mesh = makeTriReferenceMesh();
-   um2::PolytopeSoup tri_poly_soup_ref;
-   makeReferenceTriPolytopeSoup(tri_poly_soup_ref);
-   um2::PolytopeSoup const tri_poly_soup = tri_mesh;
-   ASSERT(tri_poly_soup.compare(tri_poly_soup_ref) == 6);
+  um2::TriFVM const tri_mesh = makeTriReferenceMesh();
+  um2::PolytopeSoup tri_poly_soup_ref;
+  makeReferenceTriPolytopeSoup(tri_poly_soup_ref);
+  um2::PolytopeSoup const tri_poly_soup = tri_mesh;
+  ASSERT(tri_poly_soup.compare(tri_poly_soup_ref) == 6);
 }
 
 TEST_CASE(PolytopeSoup_constructor)

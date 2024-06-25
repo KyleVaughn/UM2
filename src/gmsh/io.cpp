@@ -8,17 +8,17 @@
 
 #if UM2_USE_GMSH
 
-#include <um2/gmsh/io.hpp>
-#include <um2/gmsh/base_gmsh_api.hpp>
-#include <um2/common/color.hpp>
-#include <um2/common/logger.hpp>
-#include <um2/stdlib/assert.hpp>
+#  include <um2/common/color.hpp>
+#  include <um2/common/logger.hpp>
+#  include <um2/gmsh/base_gmsh_api.hpp>
+#  include <um2/gmsh/io.hpp>
+#  include <um2/stdlib/assert.hpp>
 
-#include <algorithm> 
-#include <cstddef>
-#include <fstream>
-#include <vector>
-#include <string>
+#  include <algorithm>
+#  include <cstddef>
+#  include <fstream>
+#  include <string>
+#  include <vector>
 
 namespace um2::gmsh
 {
@@ -48,7 +48,7 @@ write(std::string const & filename, bool const extra_info)
   gmsh::vectorpair dimtags;
   gmsh::model::getPhysicalGroups(dimtags);
   size_t const num_groups = dimtags.size();
-  info_file << "PHYSICAL_GROUPS " << num_groups << '\n'; 
+  info_file << "PHYSICAL_GROUPS " << num_groups << '\n';
   for (auto const & dimtag : dimtags) {
     int const dim = dimtag.first;
     int const tag = dimtag.second;

@@ -91,9 +91,9 @@ public:
 
   // Get the grid cell at the given index.
   template <typename... Args>
-  requires(sizeof...(Args) == D) PURE HOSTDEV
-      [[nodiscard]] constexpr auto getBox(Args... args) const noexcept
-      -> AxisAlignedBox<D, T>;
+    requires(sizeof...(Args) == D)
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getBox(Args... args) const noexcept -> AxisAlignedBox<D, T>;
 
   // Get the flat index of the grid cell at the given multidimensional index.
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -101,14 +101,15 @@ public:
 
   // Get the flat index of the grid cell at the given multidimensional index.
   template <typename... Args>
-  requires(sizeof...(Args) == D) PURE HOSTDEV
-      [[nodiscard]] constexpr auto getFlatIndex(Args... args) const noexcept -> Int;
+    requires(sizeof...(Args) == D)
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getFlatIndex(Args... args) const noexcept -> Int;
 
   // Get the centroid of the grid cell at the given multidimensional index.
   template <typename... Args>
-  requires(sizeof...(Args) == D) PURE HOSTDEV
-      [[nodiscard]] constexpr auto getCellCentroid(Args... args) const noexcept
-      -> Point<D, T>;
+    requires(sizeof...(Args) == D)
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getCellCentroid(Args... args) const noexcept -> Point<D, T>;
 
   // Return (ix0, iy0, iz0, ix1, iy1, iz1) where (ix0, iy0, iz0) is the smallest
   // index of a cell that intersects the given box and (ix1, iy1, iz1) is the
@@ -148,8 +149,8 @@ using RegularGrid2F = RegularGrid2<Float>;
 
 template <Int D, class T>
 HOSTDEV constexpr RegularGrid<D, T>::RegularGrid(Point<D, T> const & minima,
-                                              Vec<D, T> const & spacing,
-                                              Vec<D, Int> const & num_cells) noexcept
+                                                 Vec<D, T> const & spacing,
+                                                 Vec<D, Int> const & num_cells) noexcept
     : _minima(minima),
       _spacing(spacing),
       _num_cells(num_cells)
@@ -288,9 +289,9 @@ RegularGrid<D, T>::boundingBox() const noexcept -> AxisAlignedBox<D, T>
 
 template <Int D, class T>
 template <typename... Args>
-requires(sizeof...(Args) == D) PURE HOSTDEV
-    constexpr auto RegularGrid<D, T>::getBox(Args... args) const noexcept
-    -> AxisAlignedBox<D, T>
+  requires(sizeof...(Args) == D)
+PURE HOSTDEV constexpr auto
+RegularGrid<D, T>::getBox(Args... args) const noexcept -> AxisAlignedBox<D, T>
 {
   Vec<D, Int> const index{args...};
   for (Int i = 0; i < D; ++i) {
@@ -331,8 +332,9 @@ RegularGrid<D, T>::getFlatIndex(Vec<D, Int> const & index) const noexcept -> Int
 
 template <Int D, class T>
 template <typename... Args>
-requires(sizeof...(Args) == D) PURE HOSTDEV
-    constexpr auto RegularGrid<D, T>::getFlatIndex(Args... args) const noexcept -> Int
+  requires(sizeof...(Args) == D)
+PURE HOSTDEV constexpr auto
+RegularGrid<D, T>::getFlatIndex(Args... args) const noexcept -> Int
 {
   Vec<D, Int> const index{args...};
   return getFlatIndex(index);
@@ -340,9 +342,9 @@ requires(sizeof...(Args) == D) PURE HOSTDEV
 
 template <Int D, class T>
 template <typename... Args>
-requires(sizeof...(Args) == D) PURE HOSTDEV
-    constexpr auto RegularGrid<D, T>::getCellCentroid(Args... args) const noexcept
-    -> Point<D, T>
+  requires(sizeof...(Args) == D)
+PURE HOSTDEV constexpr auto
+RegularGrid<D, T>::getCellCentroid(Args... args) const noexcept -> Point<D, T>
 {
   T constexpr half = static_cast<T>(1) / static_cast<T>(2);
   Vec<D, Int> const index{args...};
@@ -358,8 +360,8 @@ requires(sizeof...(Args) == D) PURE HOSTDEV
 
 template <Int D, class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-RegularGrid<D, T>::getCellIndicesIntersecting(AxisAlignedBox<D, T> const & box) const noexcept
-    -> Vec<2 * D, Int>
+RegularGrid<D, T>::getCellIndicesIntersecting(
+    AxisAlignedBox<D, T> const & box) const noexcept -> Vec<2 * D, Int>
 {
   Vec<2 * D, Int> result;
   Int const zero = 0;
@@ -386,7 +388,8 @@ RegularGrid<D, T>::getCellIndicesIntersecting(AxisAlignedBox<D, T> const & box) 
 
 template <Int D, class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-RegularGrid<D, T>::getCellIndexContaining(Point<D, T> const & point) const noexcept -> Vec<D, Int>
+RegularGrid<D, T>::getCellIndexContaining(Point<D, T> const & point) const noexcept
+    -> Vec<D, Int>
 {
   Vec<D, Int> result;
   Int const zero = 0;

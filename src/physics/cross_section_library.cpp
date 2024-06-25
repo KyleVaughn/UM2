@@ -1,14 +1,16 @@
-#include <um2/config.hpp>
-#include <um2/physics/cross_section_library.hpp>
 #include <um2/common/logger.hpp>
 #include <um2/common/strto.hpp>
-#include <um2/stdlib/string_view.hpp>
-#include <um2/stdlib/string.hpp>
+#include <um2/config.hpp>
+#include <um2/physics/cross_section.hpp>
+#include <um2/physics/cross_section_library.hpp>
+#include <um2/physics/nuclide.hpp>
 #include <um2/stdlib/assert.hpp>
+#include <um2/stdlib/string.hpp>
+#include <um2/stdlib/string_view.hpp>
 #include <um2/stdlib/vector.hpp>
 
-#include <cstdint>
 #include <cctype>
+#include <cstdint>
 #include <fstream>
 
 namespace um2
@@ -354,7 +356,7 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
           }
           xsec.f()[ig] = fission;
 
-          // nu-fission 
+          // nu-fission
           token = line_view.getTokenAndShrink();
           Float const nu_fission = strto<Float>(token.data(), &end);
           ASSERT(end != nullptr);
@@ -423,8 +425,8 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
             xsec.ss()(ig, min_col0 + icol) = value;
           }
         } // if (!absorption_only)
-      }   // for (Int itemp = 0; itemp < num_temps; ++itemp)
-    }     // for (Int ig = 0; ig < num_groups; ++ig)
+      } // for (Int itemp = 0; itemp < num_temps; ++itemp)
+    } // for (Int ig = 0; ig < num_groups; ++ig)
 
     nuclide.validate();
 

@@ -1,13 +1,15 @@
-#include <um2/physics/cmfd.hpp>
-#include <um2/common/cast_if_not.hpp>
-#include <um2/stdlib/algorithm/fill.hpp>
-#include <um2/stdlib/vector.hpp>
-#include <um2/math/matrix.hpp>
 #include <um2/config.hpp>
+#include <um2/physics/cmfd.hpp>
 
-#include "../test_macros.hpp"
+#if UM2_HAS_CMFD
+#  include <um2/common/cast_if_not.hpp>
+#  include <um2/math/matrix.hpp>
+#  include <um2/stdlib/algorithm/fill.hpp>
+#  include <um2/stdlib/vector.hpp>
 
-#include <cstddef>
+#  include "../test_macros.hpp"
+
+#  include <cstddef>
 
 // NOLINTBEGIN(readability-identifier-naming)
 
@@ -44,7 +46,7 @@ TEST_CASE(set_An)
   ASSERT_NEAR(An(0, 0).real(), d, 1e-6);
   for (Int i = 1; i < p; ++i) {
     ASSERT_NEAR(An(i - 1, i).real(), u, 1e-6);
-    ASSERT_NEAR(An(i, i).real(), d, 1e-6); 
+    ASSERT_NEAR(An(i, i).real(), d, 1e-6);
   }
   ASSERT_NEAR(An(p - 1, 0).real(), u, 1e-6);
 }
@@ -77,7 +79,7 @@ TEST_CASE(set_Bn)
   ASSERT_NEAR(Bn(0, 0).real(), d, 1e-6);
   for (Int i = 1; i < p; ++i) {
     ASSERT_NEAR(Bn(i - 1, i).real(), u, 1e-6);
-    ASSERT_NEAR(Bn(i, i).real(), d, 1e-6); 
+    ASSERT_NEAR(Bn(i, i).real(), d, 1e-6);
   }
   ASSERT_NEAR(Bn(p - 1, 0).real(), u, 1e-6);
 }
@@ -162,10 +164,10 @@ TEST_CASE(set_omega)
   um2::fill(J.data(), J.data() + static_cast<ptrdiff_t>(p * p), ComplexF(1.0, 0.0));
   um2::cmfd::set_omega(omega, An, Bn, U, J, params, alpha, I, ipiv);
   auto constexpr eps = castIfNot<Float>(1e-6);
-  ASSERT_NEAR(omega(0, 0).real(), 0.2747858969852661, eps); 
+  ASSERT_NEAR(omega(0, 0).real(), 0.2747858969852661, eps);
   ASSERT_NEAR(omega(0, 0).imag(), 0, eps);
 
-  ASSERT_NEAR(omega(0, 1).real(), -0.04764850428299747, eps); 
+  ASSERT_NEAR(omega(0, 1).real(), -0.04764850428299747, eps);
   ASSERT_NEAR(omega(0, 1).imag(), 0, eps);
 
   ASSERT_NEAR(omega(1, 0).real(), -0.04764850428299747, eps);
@@ -191,7 +193,7 @@ TEST_CASE(spectral_radius)
 }
 
 TEST_SUITE(cmfd)
-{ 
+{
   TEST(beta_n);
   TEST(set_An);
   TEST(set_Bn);
@@ -200,12 +202,21 @@ TEST_SUITE(cmfd)
   TEST(set_omega);
   TEST(spectral_radius);
 }
+#endif // UM2_HAS_CMFD
 
+#if UM2_HAS_CMFD
 auto
 main() -> int
 {
   RUN_SUITE(cmfd);
   return 0;
 }
+#else
+CONST auto
+main() -> int
+{
+  return 0;
+}
 
+#endif // UM2_HAS_CMFD
 // NOLINTEND(readability-identifier-naming)

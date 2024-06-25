@@ -5,11 +5,11 @@
 //==============================================================================
 // Mandatory includes
 //==============================================================================
-#include <um2/physics/material.hpp>
-#include <um2/mpact/model.hpp>
 #include <um2/common/logger.hpp>
 #include <um2/common/settings.hpp>
 #include <um2/common/string_to_lattice.hpp>
+#include <um2/mpact/model.hpp>
+#include <um2/physics/material.hpp>
 
 //==============================================================================
 // Optional includes

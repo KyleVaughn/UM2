@@ -2,21 +2,21 @@
 
 #if UM2_USE_GMSH
 
-#include <um2/gmsh/mesh.hpp>
-#include <um2/gmsh/base_gmsh_api.hpp>
-#include <um2/common/logger.hpp>
-#include <um2/stdlib/numbers.hpp>
-#include <um2/stdlib/vector.hpp>
-#include <um2/stdlib/assert.hpp>
-#include <um2/mesh/element_types.hpp>
-#include <um2/physics/material.hpp>
-#include <um2/physics/cross_section.hpp>
-#include <um2/stdlib/math/roots.hpp>
+#  include <um2/common/logger.hpp>
+#  include <um2/gmsh/base_gmsh_api.hpp>
+#  include <um2/gmsh/mesh.hpp>
+#  include <um2/mesh/element_types.hpp>
+#  include <um2/physics/cross_section.hpp>
+#  include <um2/physics/material.hpp>
+#  include <um2/stdlib/assert.hpp>
+#  include <um2/stdlib/math/roots.hpp>
+#  include <um2/stdlib/numbers.hpp>
+#  include <um2/stdlib/vector.hpp>
 
-#include <algorithm>
-#include <cstddef>
-#include <vector>
-#include <string>
+#  include <algorithm>
+#  include <cstddef>
+#  include <string>
+#  include <vector>
 
 namespace um2::gmsh::model::mesh
 {
@@ -43,7 +43,7 @@ generateMesh(MeshType const mesh_type, int const smooth_iters)
 {
   gmsh::option::setNumber("Mesh.SecondOrderIncomplete", 1);
   gmsh::option::setNumber("Mesh.Smoothing", smooth_iters);
-//  Int constexpr mesh_from_curvature = 12;
+  //  Int constexpr mesh_from_curvature = 12;
   switch (mesh_type) {
   case MeshType::Tri:
     LOG_INFO("Generating triangle mesh");
@@ -62,8 +62,8 @@ generateMesh(MeshType const mesh_type, int const smooth_iters)
   case MeshType::QuadraticTri:
     LOG_INFO("Generating quadratic triangle mesh");
     gmsh::option::setNumber("Mesh.Algorithm", 5);
-//    gmsh::option::setNumber("Mesh.MeshSizeFromCurvature", mesh_from_curvature); 
-//    LOG_WARN("Setting mesh size from curvature to ", mesh_from_curvature);
+    //    gmsh::option::setNumber("Mesh.MeshSizeFromCurvature", mesh_from_curvature);
+    //    LOG_WARN("Setting mesh size from curvature to ", mesh_from_curvature);
     gmsh::model::mesh::generate(2);
     gmsh::option::setNumber("Mesh.HighOrderOptimize", 2); // elastic + opt
     gmsh::model::mesh::setOrder(2);
@@ -72,7 +72,7 @@ generateMesh(MeshType const mesh_type, int const smooth_iters)
     LOG_INFO("Generating quadratic quadrilateral mesh");
     gmsh::option::setNumber("Mesh.RecombineAll", 1);
     gmsh::option::setNumber("Mesh.Algorithm", 8); // Frontal-Delaunay for quads.
-//    gmsh::option::setNumber("Mesh.SubdivisionAlgorithm", 1);   // All quads
+    //    gmsh::option::setNumber("Mesh.SubdivisionAlgorithm", 1);   // All quads
     gmsh::option::setNumber("Mesh.RecombinationAlgorithm", 2); // simple full-quad
     gmsh::model::mesh::generate(2);
     gmsh::option::setNumber("Mesh.HighOrderOptimize", 2); // elastic + opt
@@ -87,8 +87,8 @@ generateMesh(MeshType const mesh_type, int const smooth_iters)
 //// setMeshFieldFromGroups
 ////=============================================================================
 //
-//auto
-//setMeshFieldFromGroups(int const dim, std::vector<std::string> const & groups,
+// auto
+// setMeshFieldFromGroups(int const dim, std::vector<std::string> const & groups,
 //                       std::vector<double> const & sizes) -> int
 //{
 //  // Get all group dimtags for use later
@@ -139,7 +139,7 @@ generateMesh(MeshType const mesh_type, int const smooth_iters)
 //    }   // existing_group_dimtag : dimtags
 //    if (!found) {
 //      LOG_ERROR("The model does not contain a ", dim,
-//                "-dimensional group with name: ", group_name); 
+//                "-dimensional group with name: ", group_name);
 //    }
 //  } // for (size_t i = 0; i < groups.size()) {
 //  // Create a field that takes the min of each and set as background mesh
@@ -164,8 +164,7 @@ auto
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & materials,
                               double const kn_target, double const fuel_mfp_threshold,
-                              double const fuel_mfp_scale,
-                              double const abs_mfp_threshold,
+                              double const fuel_mfp_scale, double const abs_mfp_threshold,
                               double const abs_mfp_scale) -> int
 {
   //-----------------------------------------------------------------------
@@ -197,7 +196,8 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
   // Get the names of all materials in the form of "Material_XXX"
   std::vector<std::string> material_names(num_materials);
   for (size_t i = 0; i < num_materials; ++i) {
-    material_names[i] = std::string("Material_") + materials[static_cast<Int>(i)].getName().data();
+    material_names[i] =
+        std::string("Material_") + materials[static_cast<Int>(i)].getName().data();
   }
 
   // Check that the names match
@@ -213,7 +213,8 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
   }
   for (size_t i = 0; i < num_materials; ++i) {
     if (index_of_material_in_gmsh[i] == 10000) {
-      LOG_ERROR(materials[static_cast<Int>(i)].getName(), " does not exist as a physical group");
+      LOG_ERROR(materials[static_cast<Int>(i)].getName(),
+                " does not exist as a physical group");
       return -1;
     }
   }
@@ -265,7 +266,8 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
       is_absorber[i] = 1;
     }
     auto const & material_name = materials[static_cast<Int>(i)].getName();
-    LOG_INFO("Material ", material_name, ": lc = ", lcs[i], " cm, sigma_t = ", sigma_t, " cm^-1");
+    LOG_INFO("Material ", material_name, ": lc = ", lcs[i], " cm, sigma_t = ", sigma_t,
+             " cm^-1");
   }
 
   // Create the base fields, which are constant in each material
@@ -278,7 +280,8 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
     // Populate each of the fields with the entities in the
     // physical group
     std::vector<int> ent_tags;
-    gmsh::model::getEntitiesForPhysicalGroup(dim, material_group_tags[index_of_material_in_gmsh[i]], ent_tags);
+    gmsh::model::getEntitiesForPhysicalGroup(
+        dim, material_group_tags[index_of_material_in_gmsh[i]], ent_tags);
     ASSERT(!ent_tags.empty());
     std::vector<double> const double_ent_tags(ent_tags.begin(), ent_tags.end());
     switch (dim) {
@@ -297,18 +300,20 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
     default:
       LOG_ERROR("Invalid dimension");
     } // dim switch
-  }   // for (size_t i = 0; i < num_materials; ++i)
+  } // for (size_t i = 0; i < num_materials; ++i)
 
   // We now have the target characteristic length for each material. If
-  // fuel_mfp_threshold >= 0.0, then for non-fuel, non-absorber materials, we wish to scale
-  // the characteristic length by the distance to the nearest fuel material,
-  // after some threshold MFPs
+  // fuel_mfp_threshold >= 0.0, then for non-fuel, non-absorber materials, we wish to
+  // scale the characteristic length by the distance to the nearest fuel material, after
+  // some threshold MFPs
   if (fuel_mfp_threshold >= 0.0) {
-    LOG_INFO("Using fuel MFP threshold: ", fuel_mfp_threshold, " and MFP scale: ", fuel_mfp_scale);
+    LOG_INFO("Using fuel MFP threshold: ", fuel_mfp_threshold,
+             " and MFP scale: ", fuel_mfp_scale);
     ASSERT(fuel_mfp_scale >= 1.0);
     ASSERT(is_fissile.size() == num_materials);
     // ASSERT that there is at least one fuel material
-    if (std::all_of(is_fissile.begin(), is_fissile.end(), [](int const x) { return x == 0; })) {
+    if (std::all_of(is_fissile.begin(), is_fissile.end(),
+                    [](int const x) { return x == 0; })) {
       LOG_ERROR("No fuel materials found");
       return -1;
     }
@@ -317,7 +322,8 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
     for (size_t i = 0; i < num_materials; ++i) {
       if (is_fissile[i] == 1) {
         std::vector<int> ent_tags;
-        gmsh::model::getEntitiesForPhysicalGroup(dim, material_group_tags[index_of_material_in_gmsh[i]], ent_tags);
+        gmsh::model::getEntitiesForPhysicalGroup(
+            dim, material_group_tags[index_of_material_in_gmsh[i]], ent_tags);
         fuel_ent_tags.insert(fuel_ent_tags.end(), ent_tags.begin(), ent_tags.end());
       }
     }
@@ -368,8 +374,8 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
     // |-----x-----------------> sigma_t * d_fuel (mfps)
     // 0   fuel_mfp_threshold
     //
-    // lc_linear = lc * sigma_t * fuel_mfp_scale * d_fuel +  
-    //    lc * (1 - fuel_mfp_threshold * fuel_mfp_scale) 
+    // lc_linear = lc * sigma_t * fuel_mfp_scale * d_fuel +
+    //    lc * (1 - fuel_mfp_threshold * fuel_mfp_scale)
     // Then, create a field which takes the max(lc, lc_linear)
     for (size_t i = 0; i < num_materials; ++i) {
       if (is_fissile[i] == 0 && is_absorber[i] == 0) {
@@ -384,7 +390,8 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
         } else {
           math_expr += " - " + std::to_string(-offset);
         }
-        LOG_INFO("Creating linear field for ", materials[static_cast<Int>(i)].getName(), ": ", math_expr.c_str());
+        LOG_INFO("Creating linear field for ", materials[static_cast<Int>(i)].getName(),
+                 ": ", math_expr.c_str());
         gmsh::model::mesh::field::setString(fid, "F", math_expr);
         int const max_fid = gmsh::model::mesh::field::add("Max");
         std::vector<double> const field_ids_d = {static_cast<double>(field_ids[i]),
@@ -400,11 +407,13 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
   // the characteristic length by the distance to the boundary of the absorber
   // after some threshold MFPs
   if (abs_mfp_threshold >= 0.0) {
-    LOG_INFO("Using abs MFP threshold: ", abs_mfp_threshold, " and MFP scale: ", abs_mfp_scale);
+    LOG_INFO("Using abs MFP threshold: ", abs_mfp_threshold,
+             " and MFP scale: ", abs_mfp_scale);
     ASSERT(abs_mfp_scale >= 1.0);
     ASSERT(is_absorber.size() == num_materials);
     // ASSERT that there is at least one absorber material
-    if (std::all_of(is_absorber.begin(), is_absorber.end(), [](int const x) { return x == 0; })) {
+    if (std::all_of(is_absorber.begin(), is_absorber.end(),
+                    [](int const x) { return x == 0; })) {
       LOG_ERROR("No absorber materials found");
       return -1;
     }
@@ -416,7 +425,8 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
     for (size_t i = 0; i < num_materials; ++i) {
       if (is_absorber[i] == 1) {
         abs_ent_tags.resize(0);
-        gmsh::model::getEntitiesForPhysicalGroup(dim, material_group_tags[index_of_material_in_gmsh[i]], abs_ent_tags);
+        gmsh::model::getEntitiesForPhysicalGroup(
+            dim, material_group_tags[index_of_material_in_gmsh[i]], abs_ent_tags);
 
         abs_ent_tags_d1.resize(0);
         // For each entity in abs_ent_tags
@@ -436,13 +446,15 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
           }
           // Insert the downward entities into abs_ent_tags_d1
           for (auto const & d1 : downward) {
-            if (std::find(abs_ent_tags_d1.begin(), abs_ent_tags_d1.end(), d1) == abs_ent_tags_d1.end()) {
+            if (std::find(abs_ent_tags_d1.begin(), abs_ent_tags_d1.end(), d1) ==
+                abs_ent_tags_d1.end()) {
               abs_ent_tags_d1.push_back(d1);
             }
           }
         } // for (auto const & abs_ent_tag : abs_ent_tags)
         std::sort(abs_ent_tags_d1.begin(), abs_ent_tags_d1.end());
-        std::vector<double> const boundary_tags(abs_ent_tags_d1.begin(), abs_ent_tags_d1.end());
+        std::vector<double> const boundary_tags(abs_ent_tags_d1.begin(),
+                                                abs_ent_tags_d1.end());
 
         // Create the abs distance field
         int const abs_distance_fid = gmsh::model::mesh::field::add("Distance");
@@ -457,7 +469,7 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
           break;
         case 2:
           gmsh::model::mesh::field::setNumbers(abs_distance_fid, "SurfacesList",
-                                                boundary_tags);
+                                               boundary_tags);
           break;
         default:
           LOG_ERROR("Invalid dimension");
@@ -465,7 +477,7 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
         } // dim switch
 
         std::string const abs_distance_name = 'F' + std::to_string(abs_distance_fid);
-        
+
         // Create a field that multiplies the base field by the distance to the abs
         // material boundary
         int const fid = gmsh::model::mesh::field::add("MathEval");
@@ -477,7 +489,8 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
         } else {
           math_expr += " - " + std::to_string(-offset);
         }
-        LOG_INFO("Creating linear field for ", materials[static_cast<Int>(i)].getName(), ": ", math_expr.c_str());
+        LOG_INFO("Creating linear field for ", materials[static_cast<Int>(i)].getName(),
+                 ": ", math_expr.c_str());
         gmsh::model::mesh::field::setString(fid, "F", math_expr);
         int const max_fid = gmsh::model::mesh::field::add("Max");
         std::vector<double> const field_ids_d = {static_cast<double>(field_ids[i]),

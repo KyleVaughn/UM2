@@ -30,7 +30,7 @@ option(UM2_BUILD_SHARED_LIB "Build UM2 as a shared library" ON)
 option(UM2_BUILD_TESTS "Build tests" ON)
 
 # Build tutorial. This is a tutorial that demonstrates how to use UM2.
-option(UM2_BUILD_TUTORIAL "Build tutorial" OFF)
+option(UM2_BUILD_TUTORIAL "Build tutorial" ON)
 
 # Features
 #------------------------------------------------------------------------------
@@ -71,16 +71,17 @@ option(UM2_ENABLE_SIMD_VEC "Enable GCC vector extensions for the Vec class" ON)
 
 # Use BLAS/LAPACK for linear algebra.
 # NOTE: this is required for CMFD spectral radius calculations.
-option(UM2_USE_BLAS_LAPACK    "Use BLAS/LAPACK" ON)
+option(UM2_USE_BLAS_LAPACK    "Use BLAS/LAPACK" OFF)
 
 # Use clang-format for code formatting. This option enables the format-check
 # and format-fix targets, which check and fix the formatting of the code.
-option(UM2_USE_CLANG_FORMAT "Use clang-format" ON)
+option(UM2_USE_CLANG_FORMAT "Use clang-format" OFF)
 
 # Use clang-tidy for static analysis. Enable clang-tidy on all targets.
-option(UM2_USE_CLANG_TIDY "Use clang-tidy" ON)
+option(UM2_USE_CLANG_TIDY "Use clang-tidy" OFF)
 
-option(UM2_USE_COVERAGE      "Use coverage" OFF) # Code coverage
+# Use gcov for code coverage analysis.
+option(UM2_USE_COVERAGE      "Use coverage" OFF)
 
 # Use CUDA for GPU acceleration.
 option(UM2_USE_CUDA          "Use CUDA"     OFF)

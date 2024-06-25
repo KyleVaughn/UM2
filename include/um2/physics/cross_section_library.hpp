@@ -90,7 +90,6 @@ public:
 
   PURE [[nodiscard]] auto
   getNuclide(Int zaid) const noexcept -> Nuclide const &;
-
 };
 
 } // namespace um2

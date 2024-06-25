@@ -1,6 +1,6 @@
 #include <um2/config.hpp>
-#include <um2/geometry/point.hpp>
 #include <um2/geometry/axis_aligned_box.hpp>
+#include <um2/geometry/point.hpp>
 #include <um2/math/vec.hpp>
 #include <um2/mesh/rectilinear_grid.hpp>
 #include <um2/stdlib/vector.hpp>

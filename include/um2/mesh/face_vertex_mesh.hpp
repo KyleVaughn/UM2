@@ -1,10 +1,10 @@
 #pragma once
 
-#include <um2/mesh/polytope_soup.hpp>
-#include <um2/geometry/triangle.hpp>
-#include <um2/geometry/quadrilateral.hpp>
-#include <um2/geometry/quadratic_triangle.hpp>
 #include <um2/geometry/quadratic_quadrilateral.hpp>
+#include <um2/geometry/quadratic_triangle.hpp>
+#include <um2/geometry/quadrilateral.hpp>
+#include <um2/geometry/triangle.hpp>
+#include <um2/mesh/polytope_soup.hpp>
 
 //=============================================================================
 // FACE-VERTEX MESH
@@ -65,10 +65,10 @@ public:
 private:
   bool _is_morton_ordered = false;
   bool _has_vf = false;
-  Vector<Vertex> _v;        // vertices
-  Vector<FaceConn> _fv;     // face-vertex connectivity
-  Vector<Int> _vf_offsets;  // index into _vf
-  Vector<Int> _vf;          // vertex-face connectivity
+  Vector<Vertex> _v;       // vertices
+  Vector<FaceConn> _fv;    // face-vertex connectivity
+  Vector<Int> _vf_offsets; // index into _vf
+  Vector<Int> _vf;         // vertex-face connectivity
 
 public:
   //===========================================================================
@@ -189,8 +189,8 @@ public:
   // Store the IDs of the intersected faces in faces.
   // Return the (number of intersections, number of faces).
   auto
-  intersect(Ray2F ray, Float * coords, Int * RESTRICT offsets, Int * RESTRICT faces) const noexcept -> Vec2I;
-
+  intersect(Ray2F ray, Float * coords, Int * RESTRICT offsets,
+            Int * RESTRICT faces) const noexcept -> Vec2I;
 };
 
 //==============================================================================
@@ -221,15 +221,14 @@ using Quad8FVM = QuadraticFVM<8>;
 // use additional buffers to store sorted coords, sorted offsets, and faces,
 // as well as a permutation array.
 void
-sortRayMeshIntersections(
-    Float const * RESTRICT coords,    // size >= total_hits
-    Int const * RESTRICT offsets,     // size >= num_faces + 1
-    Int const * RESTRICT faces,       // size >= num_faces
-    Float * RESTRICT sorted_coords,   // size >= total_hits
-    Int * RESTRICT sorted_offsets,    // size >= num_faces + 1
-    Int * RESTRICT sorted_faces,      // size >= num_faces
-    Int * RESTRICT perm,              // size >= num_faces
-    Vec2I hits_faces                  // (total_hits, num_faces)
+sortRayMeshIntersections(Float const * RESTRICT coords,  // size >= total_hits
+                         Int const * RESTRICT offsets,   // size >= num_faces + 1
+                         Int const * RESTRICT faces,     // size >= num_faces
+                         Float * RESTRICT sorted_coords, // size >= total_hits
+                         Int * RESTRICT sorted_offsets,  // size >= num_faces + 1
+                         Int * RESTRICT sorted_faces,    // size >= num_faces
+                         Int * RESTRICT perm,            // size >= num_faces
+                         Vec2I hits_faces                // (total_hits, num_faces)
 );
 
 //==============================================================================
@@ -333,14 +332,13 @@ FaceVertexMesh<P, N>::getEdge(Int iface, Int iedge) const noexcept -> Edge
   auto const & conn = _fv[iface];
   if constexpr (P == 1) {
     // equivalent to getEdge(LinearPolygon<N, 2> const & p, Int iedge)
-    return (iedge < num_edges - 1) ?
-              Edge(_v[conn[iedge]], _v[conn[iedge + 1]])
-            : Edge(_v[conn[N - 1]], _v[conn[0]]);
+    return (iedge < num_edges - 1) ? Edge(_v[conn[iedge]], _v[conn[iedge + 1]])
+                                   : Edge(_v[conn[N - 1]], _v[conn[0]]);
   } else if constexpr (P == 2) {
     // equivalent to getEdge(QuadraticPolygon<N, 2> const & p, Int iedge)
-    return (iedge < num_edges - 1) ?
-              Edge(_v[conn[iedge]], _v[conn[iedge + 1]], _v[conn[iedge + num_edges]])
-            : Edge(_v[conn[num_edges - 1]], _v[conn[0]], _v[conn[N - 1]]);
+    return (iedge < num_edges - 1)
+               ? Edge(_v[conn[iedge]], _v[conn[iedge + 1]], _v[conn[iedge + num_edges]])
+               : Edge(_v[conn[num_edges - 1]], _v[conn[0]], _v[conn[N - 1]]);
   } else {
     __builtin_unreachable();
   }
@@ -359,14 +357,13 @@ FaceVertexMesh<P, N>::getEdgeConn(Int iface, Int iedge) const noexcept -> EdgeCo
   auto const & conn = _fv[iface];
   if constexpr (P == 1) {
     // equivalent to getEdge(LinearPolygon<N, 2> const & p, Int iedge)
-    return (iedge < num_edges - 1) ?
-              EdgeConn(conn[iedge], conn[iedge + 1])
-            : EdgeConn(conn[N - 1], conn[0]);
+    return (iedge < num_edges - 1) ? EdgeConn(conn[iedge], conn[iedge + 1])
+                                   : EdgeConn(conn[N - 1], conn[0]);
   } else if constexpr (P == 2) {
     // equivalent to getEdge(QuadraticPolygon<N, 2> const & p, Int iedge)
-    return (iedge < num_edges - 1) ?
-              EdgeConn(conn[iedge], conn[iedge + 1], conn[iedge + num_edges])
-            : EdgeConn(conn[num_edges - 1], conn[0], conn[N - 1]);
+    return (iedge < num_edges - 1)
+               ? EdgeConn(conn[iedge], conn[iedge + 1], conn[iedge + num_edges])
+               : EdgeConn(conn[num_edges - 1], conn[0], conn[N - 1]);
   } else {
     __builtin_unreachable();
   }
@@ -472,7 +469,8 @@ FaceVertexMesh<P, N>::faceContaining(Point2F const p) const noexcept -> Int
 
 template <Int P, Int N>
 auto
-FaceVertexMesh<P, N>::intersect(Ray2F const ray, Float * const coords) const noexcept -> Int
+FaceVertexMesh<P, N>::intersect(Ray2F const ray,
+                                Float * const coords) const noexcept -> Int
 {
   Int hits = 0;
   for (Int i = 0; i < numFaces(); ++i) {
@@ -483,10 +481,8 @@ FaceVertexMesh<P, N>::intersect(Ray2F const ray, Float * const coords) const noe
 
 template <Int P, Int N>
 auto
-FaceVertexMesh<P, N>::intersect(Ray2F const ray,
-    Float * coords,
-    Int * RESTRICT offsets,
-    Int * RESTRICT faces) const noexcept -> Vec2I
+FaceVertexMesh<P, N>::intersect(Ray2F const ray, Float * coords, Int * RESTRICT offsets,
+                                Int * RESTRICT faces) const noexcept -> Vec2I
 {
   *offsets++ = 0;
   Int total_hits = 0;

@@ -1,6 +1,6 @@
 #include <um2/config.hpp>
-#include <um2/geometry/point.hpp>
 #include <um2/geometry/axis_aligned_box.hpp>
+#include <um2/geometry/point.hpp>
 #include <um2/math/vec.hpp>
 #include <um2/mesh/regular_grid.hpp>
 
@@ -49,7 +49,7 @@ TEST_CASE(accessors)
 
   for (Int i = 0; i < D; ++i) {
     auto const i_1 = castIfNot<T>(i + 1);
-    auto const i_1_sq = i_1 * i_1; 
+    auto const i_1_sq = i_1 * i_1;
     ASSERT_NEAR(grid.extents(i), i_1_sq, eps<T>);
     ASSERT_NEAR(grid.maxima(i), i_1_sq + i_1, eps<T>);
   }
@@ -149,7 +149,7 @@ TEST_CASE(getCellIndicesIntersecting)
 
   // A box in a single cell.
   um2::AxisAlignedBox2<T> const box0({castIfNot<T>(3.1), castIfNot<T>(1.1)},
-                                  {castIfNot<T>(3.9), castIfNot<T>(1.9)});
+                                     {castIfNot<T>(3.9), castIfNot<T>(1.9)});
   um2::Vec<4, Int> const range0 = grid.getCellIndicesIntersecting(box0);
   ASSERT(range0[0] == 1);
   ASSERT(range0[1] == 2);
@@ -158,7 +158,7 @@ TEST_CASE(getCellIndicesIntersecting)
 
   // A box with perfect alignment.
   um2::AxisAlignedBox2<T> const box1({castIfNot<T>(3), castIfNot<T>(1)},
-                                  {castIfNot<T>(5), castIfNot<T>(2)});
+                                     {castIfNot<T>(5), castIfNot<T>(2)});
   um2::Vec<4, Int> const range1 = grid.getCellIndicesIntersecting(box1);
   ASSERT(range1[0] == 0 || range1[0] == 1);
   ASSERT(range1[1] == 1 || range1[1] == 2);
@@ -167,7 +167,7 @@ TEST_CASE(getCellIndicesIntersecting)
 
   // A box in multiple cells.
   um2::AxisAlignedBox2<T> const box2({castIfNot<T>(3.1), castIfNot<T>(1.1)},
-                                  {castIfNot<T>(5.9), castIfNot<T>(1.9)});
+                                     {castIfNot<T>(5.9), castIfNot<T>(1.9)});
   um2::Vec<4, Int> const range2 = grid.getCellIndicesIntersecting(box2);
   ASSERT(range2[0] == 1);
   ASSERT(range2[1] == 2);
@@ -176,7 +176,7 @@ TEST_CASE(getCellIndicesIntersecting)
 
   // A box in 4 cells.
   um2::AxisAlignedBox2<T> const box3({castIfNot<T>(3.1), castIfNot<T>(1.1)},
-                                  {castIfNot<T>(5.9), castIfNot<T>(2.9)});
+                                     {castIfNot<T>(5.9), castIfNot<T>(2.9)});
   um2::Vec<4, Int> const range3 = grid.getCellIndicesIntersecting(box3);
   ASSERT(range3[0] == 1);
   ASSERT(range3[1] == 2);
@@ -193,7 +193,8 @@ TEST_CASE(getCellIndexContaining)
   um2::Vec2<Int> const num_cells(5, 8);
   // Grid ranges from 1 to 11 in x and -1 to 7 in y.
   um2::RegularGrid2<T> const grid(minima, spacing, num_cells);
-  um2::Vec<2, Int> id = grid.getCellIndexContaining({castIfNot<T>(1.1), castIfNot<T>(1.1)});
+  um2::Vec<2, Int> id =
+      grid.getCellIndexContaining({castIfNot<T>(1.1), castIfNot<T>(1.1)});
   ASSERT(id[0] == 0);
   ASSERT(id[1] == 2);
   id = grid.getCellIndexContaining({castIfNot<T>(4.9), castIfNot<T>(2.1)});

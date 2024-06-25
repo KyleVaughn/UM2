@@ -1,8 +1,8 @@
 #pragma once
 
 #include <um2/common/color.hpp>
-#include <um2/physics/nuclide.hpp>
 #include <um2/physics/cross_section_library.hpp>
+#include <um2/physics/nuclide.hpp>
 #include <um2/stdlib/string.hpp>
 #include <um2/stdlib/vector.hpp>
 
@@ -26,7 +26,7 @@ class Material
   Float _temperature{};       // [K]
   Float _density{};           // [g/cm^3]
   Vector<Float> _num_density; // [atoms/b-cm]
-  Vector<Int> _zaid;        // ZZAAA
+  Vector<Int> _zaid;          // ZZAAA
   XSec _xsec;
 
 public:
@@ -48,9 +48,9 @@ public:
 
   void
   setName(String const & name) noexcept
-  {    
+  {
     ASSERT(!name.empty());
-    _name = name;    
+    _name = name;
   }
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -100,7 +100,7 @@ public:
   {
     return _num_density;
   }
-  
+
   PURE HOSTDEV [[nodiscard]] constexpr auto
   numDensities() const noexcept -> Vector<Float> const &
   {
@@ -114,7 +114,7 @@ public:
   }
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  numDensity(Int i) const noexcept -> Float 
+  numDensity(Int i) const noexcept -> Float
   {
     return _num_density[i];
   }
@@ -182,7 +182,6 @@ public:
 
   void
   populateXSec(XSLibrary const & xsec_lib) noexcept;
-
 };
 
 //======================================================================

@@ -1,0 +1,17 @@
+spack:
+  specs:
+    - cmake%gcc@12.3
+    - hdf5%gcc@12.3
+    - pugixml%gcc@12.3
+    - gmsh@4.12%gcc@12.3
+  view: true    
+  concretizer:    
+    unify: true 
+  packages:    
+    hdf5:    
+      require: +cxx+fortran~mpi    
+    gmsh:    
+      # Should be able to do ^opencascade~visualization~draw~application_framework    
+      require: +openmp+cairo+fltk+opencascade+eigen ^scotch~mpi    
+    opengl:    
+      buildable: false 

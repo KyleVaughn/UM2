@@ -1,40 +1,40 @@
-#include <um2/config.hpp>
 #include <um2/common/logger.hpp>
 #include <um2/common/permutation.hpp>
 #include <um2/common/strto.hpp>
-#include <um2/stdlib/utility/pair.hpp>
-#include <um2/stdlib/utility/move.hpp>
-#include <um2/stdlib/numeric/iota.hpp>
+#include <um2/config.hpp>
+#include <um2/geometry/point.hpp>
+#include <um2/math/vec.hpp>
+#include <um2/mesh/element_types.hpp>
+#include <um2/mesh/polytope_soup.hpp>
+#include <um2/stdlib/algorithm/copy.hpp>
+#include <um2/stdlib/algorithm/is_sorted.hpp>
+#include <um2/stdlib/assert.hpp>
 #include <um2/stdlib/math/abs.hpp>
+#include <um2/stdlib/memory/addressof.hpp>
+#include <um2/stdlib/numeric/iota.hpp>
 #include <um2/stdlib/string.hpp>
 #include <um2/stdlib/string_view.hpp>
-#include <um2/stdlib/algorithm/is_sorted.hpp>
-#include <um2/stdlib/algorithm/copy.hpp>
+#include <um2/stdlib/utility/move.hpp>
+#include <um2/stdlib/utility/pair.hpp>
 #include <um2/stdlib/vector.hpp>
-#include <um2/stdlib/assert.hpp>
-#include <um2/stdlib/memory/addressof.hpp>
-#include <um2/math/vec.hpp>
-#include <um2/geometry/point.hpp>
-#include <um2/mesh/polytope_soup.hpp>
-#include <um2/mesh/element_types.hpp>
 
-#if UM2_USE_PUGIXML    
-#include <pugixml.hpp>    
+#if UM2_USE_PUGIXML
+#  include <pugixml.hpp>
 #endif
 
-#include <concepts>
-#include <cstdlib>
-#include <cstdio>
+#include <algorithm>
 #include <cstdint>
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <fstream>
-#include <algorithm>
-#include <limits>
 #include <ios>
+#include <limits>
 
 // We dont have access to the header defining many of the HDF5 types, so we disable
 // the clang-tidy warning.
 // NOLINTBEGIN(misc-include-cleaner)
+#include <concepts>
 
 namespace um2
 {
@@ -64,7 +64,8 @@ PolytopeSoup::getElement(Int const i, VTKElemType & type, Vector<Int> & conn) co
 }
 
 void
-PolytopeSoup::getElset(Int const i, String & name, Vector<Int> & ids, Vector<Float> & data) const
+PolytopeSoup::getElset(Int const i, String & name, Vector<Int> & ids,
+                       Vector<Float> & data) const
 {
   ASSERT(i < _elset_names.size());
   name = _elset_names[i];
@@ -132,7 +133,8 @@ PolytopeSoup::addElement(VTKElemType const type, Vector<Int> const & conn) -> In
 }
 
 auto
-PolytopeSoup::addElset(String const & name, Vector<Int> const & ids, Vector<Float> data) -> Int
+PolytopeSoup::addElset(String const & name, Vector<Int> const & ids,
+                       Vector<Float> data) -> Int
 {
   LOG_DEBUG("Adding elset: ", name);
 
@@ -345,8 +347,7 @@ PolytopeSoup::operator+=(PolytopeSoup const & other) noexcept -> PolytopeSoup &
         if (!other_data.empty()) {
           Int const old_size = data.size();
           data.resize(data.size() + other_data.size());
-          um2::copy(other_data.cbegin(), other_data.cend(),
-                    data.begin() + old_size);
+          um2::copy(other_data.cbegin(), other_data.cend(), data.begin() + old_size);
         }
       }
     }
@@ -423,7 +424,8 @@ PolytopeSoup::compare(PolytopeSoup const & other) const -> int
         return 10;
       }
       for (Int j = 0; j < _elset_data[i].size(); ++j) {
-        if (um2::abs(_elset_data[i][j] - other._elset_data[i][j]) > epsDistance<Float>()) {
+        if (um2::abs(_elset_data[i][j] - other._elset_data[i][j]) >
+            epsDistance<Float>()) {
           return 11;
         }
       }
@@ -462,7 +464,7 @@ PolytopeSoup::getSubset(String const & elset_name, PolytopeSoup & subset) const
   auto const subset_elset_end = _elset_offsets[elset_index + 1];
   auto const subset_num_elements = subset_elset_end - subset_elset_start;
   Vector<Int> const element_ids(_elset_ids.cbegin() + subset_elset_start,
-                          _elset_ids.cbegin() + subset_elset_end);
+                                _elset_ids.cbegin() + subset_elset_end);
 
   if (!um2::is_sorted(element_ids.cbegin(), element_ids.cend())) {
     LOG_ERROR("getSubset: Elset IDs are not sorted. Use sortElsets() to correct this.");
@@ -572,8 +574,8 @@ PolytopeSoup::getSubset(String const & elset_name, PolytopeSoup & subset) const
     auto const * const elset_ids_end = elset_ids_begin + (elset_end - elset_start);
     ASSERT(um2::is_sorted(elset_ids_begin, elset_ids_end));
     Int * intersection_end =
-      std::set_intersection(element_ids.begin(), element_ids.end(), elset_ids_begin,
-                          elset_ids_end, intersection);
+        std::set_intersection(element_ids.begin(), element_ids.end(), elset_ids_begin,
+                              elset_ids_end, intersection);
     // No intersection
     if (intersection_end == intersection) {
       continue;
@@ -619,7 +621,7 @@ namespace
 
 auto
 abaqusParseNodes(PolytopeSoup & soup, std::ifstream & file, char * const line,
-    uint64_t const max_line_length) -> StringView
+                 uint64_t const max_line_length) -> StringView
 {
   // line starts with "*NODE"
   auto const smax_line_length = static_cast<int64_t>(max_line_length);
@@ -657,7 +659,7 @@ abaqusParseNodes(PolytopeSoup & soup, std::ifstream & file, char * const line,
 
 auto
 abaqusParseElements(PolytopeSoup & soup, std::ifstream & file, char * const line,
-    uint64_t const max_line_length) -> StringView
+                    uint64_t const max_line_length) -> StringView
 {
   //  "*ELEMENT, type=CPS" is 18 characters
   //  CPS3 is a 3-node triangle
@@ -728,7 +730,7 @@ abaqusParseElements(PolytopeSoup & soup, std::ifstream & file, char * const line
 
 auto
 abaqusParseElsets(PolytopeSoup & soup, std::ifstream & file, char * const line,
-    uint64_t const max_line_length) -> StringView
+                  uint64_t const max_line_length) -> StringView
 {
   StringView const info_line_view(line);
   ASSERT(info_line_view.starts_with("*ELSET,ELSET="));
@@ -851,7 +853,7 @@ namespace
 
 void
 vtkParseUnstructuredGrid(PolytopeSoup & soup, std::ifstream & file, char * const line,
-    uint64_t const max_line_length)
+                         uint64_t const max_line_length)
 {
   // line starts with "UNSTRUCTURED_GRID"
   auto const smax_line_length = static_cast<int64_t>(max_line_length);
@@ -977,7 +979,7 @@ vtkParseUnstructuredGrid(PolytopeSoup & soup, std::ifstream & file, char * const
 
 void
 vtkParseCellData(PolytopeSoup & soup, std::ifstream & file, char * const line,
-    uint64_t const max_line_length)
+                 uint64_t const max_line_length)
 {
   // line starts with "CELL_DATA"
   auto const smax_line_length = static_cast<int64_t>(max_line_length);
@@ -1009,7 +1011,8 @@ vtkParseCellData(PolytopeSoup & soup, std::ifstream & file, char * const line,
 
   // Ensure float/double data type
   if (!line_view.starts_with("float") && !line_view.starts_with("double")) {
-    LOG_WARN("Skipping data set of unsupported type. Name: ", data_name, ", type: ", line_view);
+    LOG_WARN("Skipping data set of unsupported type. Name: ", data_name,
+             ", type: ", line_view);
     return;
   }
   ASSERT(line_view.starts_with("float") || line_view.starts_with("double"));
@@ -1127,7 +1130,8 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 // IO for XDMF files
 //==============================================================================
 
-namespace {
+namespace
+{
 
 template <typename T>
 inline auto
@@ -1168,11 +1172,9 @@ getH5DataType() -> H5::PredType
 }
 
 void
-writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
-                  String const & h5filename, String const & h5path,
-                  PolytopeSoup const & soup,
-                  Point3F const & origin
-                  )
+writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group, String const & h5filename,
+                  String const & h5path, PolytopeSoup const & soup,
+                  Point3F const & origin)
 {
   Int const num_verts = soup.numVertices();
   auto const & vertices = soup.vertices();
@@ -1192,8 +1194,7 @@ writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
   // Create XDMF DataItem node
   auto xdata = xgeom.append_child("DataItem");
   xdata.append_attribute("DataType") = "Float";
-  xdata.append_attribute("Dimensions") =
-      (String(num_verts) + " " + String(dim)).data();
+  xdata.append_attribute("Dimensions") = (String(num_verts) + " " + String(dim)).data();
   xdata.append_attribute("Precision") = sizeof(Float);
   xdata.append_attribute("Format") = "HDF";
   String const h5geompath = h5filename + ":" + h5path + "/Geometry";
@@ -1225,9 +1226,8 @@ writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
 } // writeXDMFgeometry
 
 void
-writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
-                  String const & h5filename, String const & h5path,
-                  PolytopeSoup const & soup)
+writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group, String const & h5filename,
+                  String const & h5path, PolytopeSoup const & soup)
 {
   // Create XDMF Topology node
   auto xtopo = xgrid.append_child("Topology");
@@ -1325,10 +1325,8 @@ writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
 } // writeXDMFTopology
 
 void
-writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
-                              String const & h5filename, String const & h5path,
-                              PolytopeSoup const & soup
-                              )
+writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group, String const & h5filename,
+                String const & h5path, PolytopeSoup const & soup)
 {
   auto const & elset_names = soup.elsetNames();
   auto const & elset_offsets = soup.elsetOffsets();
@@ -1393,12 +1391,9 @@ writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
 } // namespace
 
 void
-writeXDMFUniformGrid(String const & name,
-                     pugi::xml_node & xdomain, H5::H5File & h5file,
+writeXDMFUniformGrid(String const & name, pugi::xml_node & xdomain, H5::H5File & h5file,
                      String const & h5filename, String const & h5path,
-                     PolytopeSoup const & soup,
-                     Point3F const & origin
-                     )
+                     PolytopeSoup const & soup, Point3F const & origin)
 {
   // Grid
   pugi::xml_node xgrid = xdomain.append_child("Grid");
@@ -1414,12 +1409,13 @@ writeXDMFUniformGrid(String const & name,
   writeXDMFElsets(xgrid, h5group, h5filename, h5grouppath, soup);
 } // writeXDMFUniformGrid
 
-namespace {
+namespace
+{
 
 void
 writeXDMFFile(String const & filepath, PolytopeSoup const & soup)
 {
-  LOG_INFO("Writing XDMF file: ",  filepath);
+  LOG_INFO("Writing XDMF file: ", filepath);
   ASSERT(filepath.ends_with(".xdmf"));
 
   // Setup HDF5 file
@@ -1551,13 +1547,13 @@ readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5file,
   // Read the data
   H5::DataSet const dataset =
       h5file.openDataSet(h5dataset.substr(h5filename.size() + 1).data());
-#if UM2_ENABLE_ASSERTS
+#  if UM2_ENABLE_ASSERTS
   H5T_class_t const type_class = dataset.getTypeClass();
   ASSERT(type_class == H5T_FLOAT);
-#endif
+#  endif
   H5::FloatType const datatype = dataset.getFloatType();
   size_t const datatype_size = datatype.getSize();
-#if UM2_ENABLE_ASSERTS
+#  if UM2_ENABLE_ASSERTS
   ASSERT(datatype_size == strto<size_t>(precision.data(), &end));
   ASSERT(end != nullptr);
   end = nullptr;
@@ -1569,7 +1565,7 @@ readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5file,
   ASSERT(ndims == 2);
   ASSERT(dims[0] == static_cast<hsize_t>(num_verts));
   ASSERT(dims[1] == static_cast<hsize_t>(num_dimensions));
-#endif
+#  endif
   if (datatype_size == 4) {
     addNodesToSoup<float>(soup, num_verts, num_dimensions, dataset, datatype,
                           geometry_type == "XYZ");
@@ -1660,7 +1656,8 @@ readXDMFTopology(pugi::xml_node const & xgrid, H5::H5File const & h5file,
   String const topology_type(xtopology.attribute("TopologyType").value());
   // Get the number of elements
   char * end = nullptr;
-  Int const num_elements = strto<Int>(xtopology.attribute("NumberOfElements").value(), &end);
+  Int const num_elements =
+      strto<Int>(xtopology.attribute("NumberOfElements").value(), &end);
   ASSERT(end != nullptr);
   end = nullptr;
   // Get the DataItem node
@@ -1692,13 +1689,13 @@ readXDMFTopology(pugi::xml_node const & xgrid, H5::H5File const & h5file,
   // Read the data
   H5::DataSet const dataset =
       h5file.openDataSet(h5dataset.substr(h5filename.size() + 1).data());
-#if UM2_ENABLE_ASSERTS
+#  if UM2_ENABLE_ASSERTS
   H5T_class_t const type_class = dataset.getTypeClass();
   ASSERT(type_class == H5T_INTEGER);
-#endif
+#  endif
   H5::IntType const datatype = dataset.getIntType();
   size_t const datatype_size = datatype.getSize();
-#if UM2_ENABLE_ASSERTS
+#  if UM2_ENABLE_ASSERTS
   ASSERT(datatype_size == strto<size_t>(precision.data(), &end));
   ASSERT(end != nullptr);
   end = nullptr;
@@ -1715,7 +1712,7 @@ readXDMFTopology(pugi::xml_node const & xgrid, H5::H5File const & h5file,
     int const ndims = dataspace.getSimpleExtentDims(dims, nullptr);
     ASSERT(ndims == 2);
   }
-#endif
+#  endif
   // Get the dimensions
   String const dimensions(xdataitem.attribute("Dimensions").value());
   if (datatype_size == 4) {
@@ -1738,8 +1735,7 @@ template <std::signed_integral T, std::floating_point U>
 void
 addElsetToSoup(PolytopeSoup & soup, Int const num_elements, H5::DataSet const & dataset,
                H5::IntType const & datatype, String const & elset_name,
-               bool const has_attribute,
-               H5::DataSet const & attribute_dataset,
+               bool const has_attribute, H5::DataSet const & attribute_dataset,
                H5::FloatType const & attribute_datatype)
 {
   Vector<T> data_vec(num_elements);
@@ -1819,34 +1815,34 @@ readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5file,
     // Read the data
     H5::DataSet const dataset =
         h5file.openDataSet(h5dataset.substr(h5filename.size() + 1).data());
-#if UM2_ENABLE_ASSERTS
+#  if UM2_ENABLE_ASSERTS
     H5T_class_t const type_class = dataset.getTypeClass();
     ASSERT(type_class == H5T_INTEGER);
     char * end = nullptr;
-#endif
+#  endif
     H5::IntType const datatype = dataset.getIntType();
     size_t const datatype_size = datatype.getSize();
     ASSERT(datatype_size == strto<size_t>(precision.data(), &end));
     ASSERT(end != nullptr);
     H5::DataSpace const dataspace = dataset.getSpace();
-#if UM2_ENABLE_ASSERTS
+#  if UM2_ENABLE_ASSERTS
     end = nullptr;
     int const rank = dataspace.getSimpleExtentNdims();
     ASSERT(rank == 1);
-#endif
+#  endif
 
     hsize_t dims[1];
-#if UM2_ENABLE_ASSERTS
+#  if UM2_ENABLE_ASSERTS
     int const ndims = dataspace.getSimpleExtentDims(dims, nullptr);
     ASSERT(ndims == 1);
     String const dimensions(xdataitem.attribute("Dimensions").value());
-#else
+#  else
     dataspace.getSimpleExtentDims(dims, nullptr);
-#endif
+#  endif
     auto const num_elements = static_cast<Int>(dims[0]);
     ASSERT(num_elements == strto<Int>(dimensions.data(), &end));
     ASSERT(end != nullptr);
-//    end = nullptr;
+    //    end = nullptr;
 
     // Check if there is an associated data set
     // Get the Attribute node
@@ -1900,36 +1896,35 @@ readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5file,
       // Get the h5 dataset path
       String const h5attdataset(xattdataitem.child_value());
       // Read the data
-      att_dataset =
-          h5file.openDataSet(h5attdataset.substr(h5filename.size() + 1).data());
-#if UM2_ENABLE_ASSERTS
+      att_dataset = h5file.openDataSet(h5attdataset.substr(h5filename.size() + 1).data());
+#  if UM2_ENABLE_ASSERTS
       H5T_class_t const att_type_class = att_dataset.getTypeClass();
       ASSERT(att_type_class == H5T_FLOAT);
       char * att_end = nullptr;
-#endif
+#  endif
       att_datatype = att_dataset.getFloatType();
       att_datatype_size = att_datatype.getSize();
       ASSERT(att_datatype_size == strto<size_t>(att_precision.data(), &att_end));
       ASSERT(att_end != nullptr);
       H5::DataSpace const att_dataspace = att_dataset.getSpace();
-#if UM2_ENABLE_ASSERTS
+#  if UM2_ENABLE_ASSERTS
       att_end = nullptr;
       int const att_rank = att_dataspace.getSimpleExtentNdims();
       ASSERT(att_rank == 1);
-#endif
+#  endif
 
       hsize_t att_dims[1];
-#if UM2_ENABLE_ASSERTS
+#  if UM2_ENABLE_ASSERTS
       int const att_ndims = att_dataspace.getSimpleExtentDims(att_dims, nullptr);
       ASSERT(att_ndims == 1);
       String const att_dimensions(xattdataitem.attribute("Dimensions").value());
       auto const att_num_elements = static_cast<Int>(dims[0]);
-#else
+#  else
       att_dataspace.getSimpleExtentDims(att_dims, nullptr);
-#endif
+#  endif
       ASSERT(att_num_elements == strto<Int>(att_dimensions.data(), &att_end));
       ASSERT(att_end != nullptr);
-//      att_end = nullptr;
+      //      att_end = nullptr;
       ASSERT(att_num_elements == num_elements);
     } // if (strcmp(xattribute.name(), "Attribute") == 0)
 
@@ -1938,20 +1933,20 @@ readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5file,
     if (datatype_size == 4) {
       if (att_datatype_size == 4) {
         addElsetToSoup<int32_t, float>(soup, num_elements, dataset, datatype, name,
-               has_attribute, att_dataset, att_datatype);
+                                       has_attribute, att_dataset, att_datatype);
       } else if (att_datatype_size == 8) {
         addElsetToSoup<int32_t, double>(soup, num_elements, dataset, datatype, name,
-               has_attribute, att_dataset, att_datatype);
+                                        has_attribute, att_dataset, att_datatype);
       } else {
         logger::error("Unsupported attribute data type size");
       }
     } else if (datatype_size == 8) {
       if (att_datatype_size == 4) {
         addElsetToSoup<int64_t, float>(soup, num_elements, dataset, datatype, name,
-               has_attribute, att_dataset, att_datatype);
+                                       has_attribute, att_dataset, att_datatype);
       } else if (att_datatype_size == 8) {
         addElsetToSoup<int64_t, double>(soup, num_elements, dataset, datatype, name,
-               has_attribute, att_dataset, att_datatype);
+                                        has_attribute, att_dataset, att_datatype);
       } else {
         logger::error("Unsupported attribute data type size");
       }
@@ -1978,7 +1973,8 @@ readXDMFUniformGrid(pugi::xml_node const & xgrid, H5::H5File const & h5file,
 // readXDMFFile
 //==============================================================================
 
-namespace {
+namespace
+{
 
 void
 readXDMFFile(String const & filename, PolytopeSoup & soup)
@@ -2003,7 +1999,7 @@ readXDMFFile(String const & filename, PolytopeSoup & soup)
   pugi::xml_parse_result const result = xdoc.load_file(filename.data());
   if (!result) {
     logger::error("XDMF XML parse error: ", result.description(),
-               ", character pos= ", result.offset);
+                  ", character pos= ", result.offset);
     return;
   }
   pugi::xml_node const xroot = xdoc.child("Xdmf");
@@ -2060,7 +2056,6 @@ PolytopeSoup::read(String const & filename)
   }
 }
 
-
 #if UM2_HAS_XDMF
 void
 PolytopeSoup::write(String const & filename) const
@@ -2077,184 +2072,184 @@ PolytopeSoup::write(String const & filename) const
 //// getPowerRegions
 ////==============================================================================
 //
-//auto
+// auto
 //// NOLINTNEXTLINE(readability-function-cognitive-complexity)
-//getPowerRegions(PolytopeSoup const & soup) -> Vector<Pair<Float, Point3F>>
+// getPowerRegions(PolytopeSoup const & soup) -> Vector<Pair<Float, Point3F>>
 //{
-//  LOG_INFO("Computing power and centroid of disjoint regions with non-zero power");
-//  Vector<Pair<Float, Point3F>> subset_pc;
-//  Vector<Int> ids;
-//  Vector<Float> data;
-//  soup.getElset("power", ids, data);
-//  if (ids.size() != data.size()) {
-//    logger::error("Mismatch in number of ids and data");
-//    return subset_pc;
-//  }
-//  if (ids.empty()) {
-//    logger::error("No power data found");
-//    return subset_pc;
-//  }
-//  if (ids.size() != soup.numElements()) {
-//    logger::error("Mismatch in number of ids and elements");
-//    return subset_pc;
-//  }
-//  if (!um2::is_sorted(ids.cbegin(), ids.cend())) {
-//    logger::error("Ids are not sorted");
-//    return subset_pc;
-//  }
-//  Int const num_elems = soup.numElements();
-//  Vector<Int> nonzero_ids;
-//  // Only compute non-zero aabbs, but allocate for all
-//  // elements so that we don't have to find the indices
-//  Vector<AxisAlignedBox2> aabbs(num_elems);
+//   LOG_INFO("Computing power and centroid of disjoint regions with non-zero power");
+//   Vector<Pair<Float, Point3F>> subset_pc;
+//   Vector<Int> ids;
+//   Vector<Float> data;
+//   soup.getElset("power", ids, data);
+//   if (ids.size() != data.size()) {
+//     logger::error("Mismatch in number of ids and data");
+//     return subset_pc;
+//   }
+//   if (ids.empty()) {
+//     logger::error("No power data found");
+//     return subset_pc;
+//   }
+//   if (ids.size() != soup.numElements()) {
+//     logger::error("Mismatch in number of ids and elements");
+//     return subset_pc;
+//   }
+//   if (!um2::is_sorted(ids.cbegin(), ids.cend())) {
+//     logger::error("Ids are not sorted");
+//     return subset_pc;
+//   }
+//   Int const num_elems = soup.numElements();
+//   Vector<Int> nonzero_ids;
+//   // Only compute non-zero aabbs, but allocate for all
+//   // elements so that we don't have to find the indices
+//   Vector<AxisAlignedBox2> aabbs(num_elems);
 //
-//  nonzero_ids.reserve(num_elems);
-//  for (Int i = 0; i < num_elems; ++i) {
-//    if (data[i] > 0) {
-//      nonzero_ids.emplace_back(i);
-//      AxisAlignedBox3 const aabb = soup.getElementBoundingBox(i);
-//      Point2 const minima(aabb.minima(0), aabb.minima(1));
-//      Point2 const maxima(aabb.maxima(0), aabb.maxima(1));
-//      aabbs[i] = AxisAlignedBox2(minima, maxima);
-//      // Scale the box up by 1% to avoid intersection issues
-//      auto constexpr scale = castIfNot<Float>(1.01);
-//      aabbs[i].scale(scale);
-//      ASSERT(ids[i] == i);
-//    }
-//  }
-//  if (nonzero_ids.empty()) {
-//    logger::error("No nonzero power data found");
-//    return subset_pc;
-//  }
+//   nonzero_ids.reserve(num_elems);
+//   for (Int i = 0; i < num_elems; ++i) {
+//     if (data[i] > 0) {
+//       nonzero_ids.emplace_back(i);
+//       AxisAlignedBox3 const aabb = soup.getElementBoundingBox(i);
+//       Point2 const minima(aabb.minima(0), aabb.minima(1));
+//       Point2 const maxima(aabb.maxima(0), aabb.maxima(1));
+//       aabbs[i] = AxisAlignedBox2(minima, maxima);
+//       // Scale the box up by 1% to avoid intersection issues
+//       auto constexpr scale = castIfNot<Float>(1.01);
+//       aabbs[i].scale(scale);
+//       ASSERT(ids[i] == i);
+//     }
+//   }
+//   if (nonzero_ids.empty()) {
+//     logger::error("No nonzero power data found");
+//     return subset_pc;
+//   }
 //
-//  LOG_DEBUG("Grouping faces into subsets");
-//  // Now we wist to sort the ids into connected subsets
-//  Vector<Vector<Int>> subset_ids;
-//  Vector<AxisAlignedBox2> subset_aabbs;
-//  for (auto const i : nonzero_ids) {
-//    bool is_neighbor = false;
-//    auto const & i_aabb = aabbs[i];
-//    for (Int iset = 0; iset < subset_ids.size(); ++iset) {
-//      auto & subset = subset_ids[iset];
-//      auto & subset_aabb = subset_aabbs[iset];
-//      // If the bounding box of the subset intersects the bounding box of the
-//      // current element, then the current element may be a neighbor
-//      if (i_aabb.intersects(subset_aabb)) {
-//        for (auto const j : subset) {
-//          if (soup.elementsShareVertexApprox(i, j)) {
-//            subset.emplace_back(i);
-//            subset_aabb += i_aabb;
-//            is_neighbor = true;
-//            goto next_element;
-//          }
-//        } // for j
-//      } // intersects
-//    } // for iset
-//    next_element:
-//    if (!is_neighbor) {
-//      // New subset
-//      Vector<Int> new_subset(1);
-//      new_subset[0] = i;
-//      subset_ids.emplace_back(um2::move(new_subset));
-//      subset_aabbs.emplace_back(aabbs[i]);
-//    }
-//  } // for i
+//   LOG_DEBUG("Grouping faces into subsets");
+//   // Now we wist to sort the ids into connected subsets
+//   Vector<Vector<Int>> subset_ids;
+//   Vector<AxisAlignedBox2> subset_aabbs;
+//   for (auto const i : nonzero_ids) {
+//     bool is_neighbor = false;
+//     auto const & i_aabb = aabbs[i];
+//     for (Int iset = 0; iset < subset_ids.size(); ++iset) {
+//       auto & subset = subset_ids[iset];
+//       auto & subset_aabb = subset_aabbs[iset];
+//       // If the bounding box of the subset intersects the bounding box of the
+//       // current element, then the current element may be a neighbor
+//       if (i_aabb.intersects(subset_aabb)) {
+//         for (auto const j : subset) {
+//           if (soup.elementsShareVertexApprox(i, j)) {
+//             subset.emplace_back(i);
+//             subset_aabb += i_aabb;
+//             is_neighbor = true;
+//             goto next_element;
+//           }
+//         } // for j
+//       } // intersects
+//     } // for iset
+//     next_element:
+//     if (!is_neighbor) {
+//       // New subset
+//       Vector<Int> new_subset(1);
+//       new_subset[0] = i;
+//       subset_ids.emplace_back(um2::move(new_subset));
+//       subset_aabbs.emplace_back(aabbs[i]);
+//     }
+//   } // for i
 //
-//  LOG_DEBUG("Merging subsets");
-//  // We must now merge adjacent subsets
-//  // We keep iterating until no more merges are possible
-//  Vector<Vector<Int>> subset_ids_copy = subset_ids;
-//  bool done_merging = false;
-//  Int merge_count = 0;
-//  while (!done_merging) {
-//    done_merging = true;
-//    for (Int i = 0; i < subset_ids_copy.size(); ++i) {
-//      auto const & i_aabb = subset_aabbs[i];
-//      for (Int j = i + 1; j < subset_ids_copy.size(); ++j) {
-//        auto const & j_aabb = subset_aabbs[j];
-//        // If the bounding box of a subset does not intersect the bounding box
-//        // of another subset, then the two subsets cannot be neighbors
-//        if (!i_aabb.intersects(j_aabb)) {
-//          continue;
-//        }
-//        for (auto const i_id : subset_ids_copy[i]) {
-//          for (auto const j_id : subset_ids_copy[j]) {
-//            if (soup.elementsShareVertexApprox(i_id, j_id)) {
-//              // Merge the subsets
-//              Int const set_i_size = subset_ids_copy[i].size();
-//              Int const set_j_size = subset_ids_copy[j].size();
-//              Vector<Int> merged_subset(set_i_size + set_j_size);
-//              um2::copy(subset_ids_copy[i].cbegin(), subset_ids_copy[i].cend(),
-//                        merged_subset.begin());
-//              um2::copy(subset_ids_copy[j].cbegin(), subset_ids_copy[j].cend(),
-//                        merged_subset.begin() + set_i_size);
-//              std::sort(merged_subset.begin(), merged_subset.end());
-//              done_merging = false;
-//              // We must now remove the old subsets and add the merged one
-//              // To do so, we will simply clear the old subsets and add the
-//              // merged one at the end of the vector
-//              subset_ids_copy[i].clear();
-//              subset_ids_copy[j].clear();
-//              subset_ids_copy.emplace_back(um2::move(merged_subset));
-//              subset_aabbs.emplace_back(i_aabb + j_aabb);
-//              goto next_merge;
-//            }
-//          } // for j_id
-//        } // for i_id
-//      } // for j
-//    } // for i
-//    next_merge:
-//    ++merge_count;
-//  } // while
-//  um2::logger::debug("Merged ", merge_count, " subsets");
+//   LOG_DEBUG("Merging subsets");
+//   // We must now merge adjacent subsets
+//   // We keep iterating until no more merges are possible
+//   Vector<Vector<Int>> subset_ids_copy = subset_ids;
+//   bool done_merging = false;
+//   Int merge_count = 0;
+//   while (!done_merging) {
+//     done_merging = true;
+//     for (Int i = 0; i < subset_ids_copy.size(); ++i) {
+//       auto const & i_aabb = subset_aabbs[i];
+//       for (Int j = i + 1; j < subset_ids_copy.size(); ++j) {
+//         auto const & j_aabb = subset_aabbs[j];
+//         // If the bounding box of a subset does not intersect the bounding box
+//         // of another subset, then the two subsets cannot be neighbors
+//         if (!i_aabb.intersects(j_aabb)) {
+//           continue;
+//         }
+//         for (auto const i_id : subset_ids_copy[i]) {
+//           for (auto const j_id : subset_ids_copy[j]) {
+//             if (soup.elementsShareVertexApprox(i_id, j_id)) {
+//               // Merge the subsets
+//               Int const set_i_size = subset_ids_copy[i].size();
+//               Int const set_j_size = subset_ids_copy[j].size();
+//               Vector<Int> merged_subset(set_i_size + set_j_size);
+//               um2::copy(subset_ids_copy[i].cbegin(), subset_ids_copy[i].cend(),
+//                         merged_subset.begin());
+//               um2::copy(subset_ids_copy[j].cbegin(), subset_ids_copy[j].cend(),
+//                         merged_subset.begin() + set_i_size);
+//               std::sort(merged_subset.begin(), merged_subset.end());
+//               done_merging = false;
+//               // We must now remove the old subsets and add the merged one
+//               // To do so, we will simply clear the old subsets and add the
+//               // merged one at the end of the vector
+//               subset_ids_copy[i].clear();
+//               subset_ids_copy[j].clear();
+//               subset_ids_copy.emplace_back(um2::move(merged_subset));
+//               subset_aabbs.emplace_back(i_aabb + j_aabb);
+//               goto next_merge;
+//             }
+//           } // for j_id
+//         } // for i_id
+//       } // for j
+//     } // for i
+//     next_merge:
+//     ++merge_count;
+//   } // while
+//   um2::logger::debug("Merged ", merge_count, " subsets");
 //
-//  // We will now remove empty subsets and place the merged subsets in the
-//  // original subset_ids vector
-//  subset_ids.clear();
-//  for (auto & subset : subset_ids_copy) {
-//    if (!subset.empty()) {
-//      subset_ids.emplace_back(um2::move(subset));
-//    }
-//  }
+//   // We will now remove empty subsets and place the merged subsets in the
+//   // original subset_ids vector
+//   subset_ids.clear();
+//   for (auto & subset : subset_ids_copy) {
+//     if (!subset.empty()) {
+//       subset_ids.emplace_back(um2::move(subset));
+//     }
+//   }
 //
-//  LOG_DEBUG("Computing total powers and centroids");
-//  // We care about the numerical accuracy of the power and centroid.
-//  // Therefore, we will avoid using the naive algorithm in favor of
-//  // um2::sum, which better handles floating point error.
-//  // However, we have to do extra memory allocations to store
-//  // intermediate results.
-//  subset_pc.reserve(subset_ids.size());
-//  Vector<Float> areas;
-//  Vector<Point3F> area_weighted_centroids;
-//  Vector<Float> area_weighted_powers; // data[i] is power density, so data[i] * a
-//  for (auto const & subset : subset_ids) {
-//    Int const n = subset.size();
-//    areas.resize(n);
-//    area_weighted_centroids.resize(n);
-//    area_weighted_powers.resize(n);
-//    // Get the area, area-weighted centroid, and area-weighted power
-//    for (Int i = 0; i < n; ++i) {
-//      Int const iface = subset[i];
-//      Float const a = soup.getElementArea(iface);
-//      Point3F const c = soup.getElementCentroid(iface);
-//      areas[i] = a;
-//      area_weighted_centroids[i] = a * c;
-//      area_weighted_powers[i] = data[iface] * a;
-//      ASSERT(data[iface] > 0);
-//    }
-//    Float const area_sum = um2::sum(areas.cbegin(), areas.cend());
-//    Point3F centroid_sum = um2::sum(area_weighted_centroids.cbegin(),
-//                                        area_weighted_centroids.cend());
-//    Float const total_power = um2::sum(area_weighted_powers.cbegin(),
-//                                       area_weighted_powers.cend());
+//   LOG_DEBUG("Computing total powers and centroids");
+//   // We care about the numerical accuracy of the power and centroid.
+//   // Therefore, we will avoid using the naive algorithm in favor of
+//   // um2::sum, which better handles floating point error.
+//   // However, we have to do extra memory allocations to store
+//   // intermediate results.
+//   subset_pc.reserve(subset_ids.size());
+//   Vector<Float> areas;
+//   Vector<Point3F> area_weighted_centroids;
+//   Vector<Float> area_weighted_powers; // data[i] is power density, so data[i] * a
+//   for (auto const & subset : subset_ids) {
+//     Int const n = subset.size();
+//     areas.resize(n);
+//     area_weighted_centroids.resize(n);
+//     area_weighted_powers.resize(n);
+//     // Get the area, area-weighted centroid, and area-weighted power
+//     for (Int i = 0; i < n; ++i) {
+//       Int const iface = subset[i];
+//       Float const a = soup.getElementArea(iface);
+//       Point3F const c = soup.getElementCentroid(iface);
+//       areas[i] = a;
+//       area_weighted_centroids[i] = a * c;
+//       area_weighted_powers[i] = data[iface] * a;
+//       ASSERT(data[iface] > 0);
+//     }
+//     Float const area_sum = um2::sum(areas.cbegin(), areas.cend());
+//     Point3F centroid_sum = um2::sum(area_weighted_centroids.cbegin(),
+//                                         area_weighted_centroids.cend());
+//     Float const total_power = um2::sum(area_weighted_powers.cbegin(),
+//                                        area_weighted_powers.cend());
 //
-//    // Compute the centroid of the set from geometric decomposition
-//    // c = sum_i (a_i * c_i) / sum_i a_i
-//    centroid_sum /= area_sum;
-//    subset_pc.emplace_back(total_power, centroid_sum);
-//  }
-//  return subset_pc;
-//}
+//     // Compute the centroid of the set from geometric decomposition
+//     // c = sum_i (a_i * c_i) / sum_i a_i
+//     centroid_sum /= area_sum;
+//     subset_pc.emplace_back(total_power, centroid_sum);
+//   }
+//   return subset_pc;
+// }
 
 } // namespace um2
 

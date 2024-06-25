@@ -1,22 +1,24 @@
-#include <um2c.h>
 #include <um2.hpp>
-#include <um2/config.hpp>
-#include <um2/mpact/model.hpp>
-#include <um2/stdlib/string.hpp>
-#include <um2/stdlib/assert.hpp>
-#include <um2/stdlib/vector.hpp>
-#include <um2/mesh/element_types.hpp>
+#include <um2/common/cast_if_not.hpp>
 #include <um2/common/logger.hpp>
+#include <um2/config.hpp>
 #include <um2/geometry/point.hpp>
 #include <um2/geometry/ray.hpp>
-#include <um2/stdlib/utility/pair.hpp>
+#include <um2/math/vec.hpp>
+#include <um2/mesh/element_types.hpp>
+#include <um2/mesh/face_vertex_mesh.hpp>
+#include <um2/mpact/model.hpp>
+#include <um2/stdlib/assert.hpp>
 #include <um2/stdlib/math/abs.hpp>
-#include <um2/common/cast_if_not.hpp>
+#include <um2/stdlib/string.hpp>
+#include <um2/stdlib/utility/pair.hpp>
+#include <um2/stdlib/vector.hpp>
+#include <um2c.h>
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdlib>
 #include <cstring>
-#include <cstddef>
 
 //==============================================================================
 // Data sizes
@@ -242,34 +244,30 @@ um2MPACTCoarseCellFaceAreas(void * const model, Int const cc_id, Float * const a
   auto const & sp = *reinterpret_cast<um2::mpact::Model *>(model);
   auto const & cc = sp.getCoarseCell(cc_id);
   switch (cc.mesh_type) {
-  case um2::MeshType::Tri: 
-  {
+  case um2::MeshType::Tri: {
     auto const & mesh = sp.getTriMesh(cc.mesh_id);
-    for (Int i = 0; i < mesh.numFaces(); ++i) { 
+    for (Int i = 0; i < mesh.numFaces(); ++i) {
       areas[i] = mesh.getFace(i).area();
     }
     break;
   }
-  case um2::MeshType::Quad: 
-  {
+  case um2::MeshType::Quad: {
     auto const & mesh = sp.getQuadMesh(cc.mesh_id);
-    for (Int i = 0; i < mesh.numFaces(); ++i) { 
+    for (Int i = 0; i < mesh.numFaces(); ++i) {
       areas[i] = mesh.getFace(i).area();
     }
     break;
   }
-  case um2::MeshType::QuadraticTri: 
-  {
+  case um2::MeshType::QuadraticTri: {
     auto const & mesh = sp.getTri6Mesh(cc.mesh_id);
-    for (Int i = 0; i < mesh.numFaces(); ++i) { 
+    for (Int i = 0; i < mesh.numFaces(); ++i) {
       areas[i] = mesh.getFace(i).area();
     }
     break;
   }
-  case um2::MeshType::QuadraticQuad: 
-  {
+  case um2::MeshType::QuadraticQuad: {
     auto const & mesh = sp.getQuad8Mesh(cc.mesh_id);
-    for (Int i = 0; i < mesh.numFaces(); ++i) { 
+    for (Int i = 0; i < mesh.numFaces(); ++i) {
       areas[i] = mesh.getFace(i).area();
     }
     break;
@@ -287,13 +285,11 @@ um2MPACTCoarseCellFaceContaining(void * const model, Int const cc_id, Float cons
   auto const & sp = *reinterpret_cast<um2::mpact::Model *>(model);
   auto const & cc = sp.getCoarseCell(cc_id);
   switch (cc.mesh_type) {
-  case um2::MeshType::Tri: 
-  {
+  case um2::MeshType::Tri: {
     *face_id = sp.getTriMesh(cc.mesh_id).faceContaining(um2::Point2F(x, y));
     break;
   }
-  case um2::MeshType::Quad: 
-  {
+  case um2::MeshType::Quad: {
     *face_id = sp.getQuadMesh(cc.mesh_id).faceContaining(um2::Point2F(x, y));
     break;
   }
@@ -367,7 +363,7 @@ um2MPACTIntersectCoarseCell(void * const model, Int const cc_id, Float const ori
   auto & sp = *reinterpret_cast<um2::mpact::Model *>(model);
   auto const & cc = sp.getCoarseCell(cc_id);
   um2::Ray2F const ray(um2::Point2F(origin_x, origin_y),
-                      um2::Vec2F(direction_x, direction_y));
+                       um2::Vec2F(direction_x, direction_y));
 
   switch (cc.mesh_type) {
   case um2::MeshType::Tri: {
@@ -405,8 +401,8 @@ void
 um2MPACTRTMHeight(void * const model, Int const rtm_id, Float * const height)
 
 {
-    auto const & sp = *reinterpret_cast<um2::mpact::Model *>(model);
-    *height = sp.getRTM(rtm_id).grid().extents(1);
+  auto const & sp = *reinterpret_cast<um2::mpact::Model *>(model);
+  *height = sp.getRTM(rtm_id).grid().extents(1);
 }
 
 void
@@ -433,7 +429,7 @@ um2MPACTCoarseCellHeights(void * model, Int * const n, Int ** cc_ids, Float ** h
       // Get the dz of the lattice
       Float const dz = assembly.grid().getBox(ilat).extents(0);
 
-      // Get the lattice 
+      // Get the lattice
       Int const lat_id = assembly.getChild(ilat);
       auto const & lattice = sp.getLattice(lat_id);
 
@@ -455,7 +451,7 @@ um2MPACTCoarseCellHeights(void * model, Int * const n, Int ** cc_ids, Float ** h
           if (add_id) {
             id_dz.emplace_back(cc_id, dz);
           }
-        } // cc_id 
+        } // cc_id
       } // rtm_id
     } // ilat
   } // assembly
@@ -500,7 +496,7 @@ um2MPACTRTMHeights(void * model, Int * const n, Int ** rtm_ids, Float ** heights
       // Get the dz of the lattice
       Float const dz = assembly.grid().getBox(ilat).extents(0);
 
-      // Get the lattice 
+      // Get the lattice
       Int const lat_id = assembly.getChild(ilat);
       auto const & lattice = sp.getLattice(lat_id);
 
@@ -561,7 +557,7 @@ um2MPACTLatticeHeights(void * model, Int * const n, Int ** lat_ids, Float ** hei
       // Get the dz of the lattice
       Float const dz = assembly.grid().getBox(ilat).extents(0);
 
-      // Get the lattice 
+      // Get the lattice
       Int const lat_id = assembly.getChild(ilat);
       // If the id, dz pair is not in the vector, add it
       bool add_id = true;

@@ -1,10 +1,10 @@
 #include <um2/config.hpp>
-#include <um2/common/logger.hpp>
 
 #if UM2_USE_GMSH
-#  include <um2/gmsh/io.hpp>
+#  include <cstdio>
+#  include <um2/common/logger.hpp>
 #  include <um2/gmsh/base_gmsh_api.hpp>
-#include <cstdio>
+#  include <um2/gmsh/io.hpp>
 #endif
 
 #include "../test_macros.hpp"
