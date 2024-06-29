@@ -140,10 +140,10 @@ Model::addCylindricalPinMesh(Float const pitch, Vector<Float> const & radii,
   Int mesh_id = -1;
   if (mesh_order == 1) {
     mesh_id = this->_quads.size();
-    logger::info("Adding quad cylindrical pin mesh ", mesh_id);
+    LOG_DEBUG("Adding quad cylindrical pin mesh ", mesh_id);
   } else if (mesh_order == 2) {
     mesh_id = this->_quad8s.size();
-    logger::info("Adding quad8 cylindrical pin mesh ", mesh_id);
+    LOG_DEBUG("Adding quad8 cylindrical pin mesh ", mesh_id);
   } else {
     logger::error("Invalid mesh order");
     return -1;
@@ -435,7 +435,7 @@ Model::addCylindricalPinMesh(Float const pitch, Vector<Float> const & radii,
     }
     // Log the equivalent radii in debug mode
     for (Int i = 0; i < total_rings; ++i) {
-      logger::debug("Ring ", i, " equivalent radius: ", eq_radii[i]);
+      LOG_DEBUG("Ring ", i, " equivalent radius: ", eq_radii[i]);
     }
     // If any of the equivalent radii are larger than half the pitch, error
     if (std::any_of(eq_radii.begin(), eq_radii.end(),
@@ -568,7 +568,7 @@ Model::addCylindricalPinMesh(Float const pitch, Vector<Float> const & radii,
       vertices[num_prev_points + ia] = {rb * cos_ia_gamma, rb * sin_ia_gamma};
     }
     for (Int i = 0; i < num_points; ++i) {
-      logger::debug("Point ", i, ": ", vertices[i][0], ", ", vertices[i][1]);
+      LOG_DEBUG("Point ", i, ": ", vertices[i][0], ", ", vertices[i][1]);
     }
 
     //-------------------------------------------------------------------------
@@ -714,7 +714,7 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces,
                              Int const ny_faces) -> Int
 {
   Int const mesh_id = _quads.size();
-  logger::info("Adding rectangular pin mesh ", mesh_id);
+  LOG_DEBUG("Adding rectangular pin mesh ", mesh_id);
   _quads.emplace_back();
   auto & mesh = _quads.back();
 
@@ -770,7 +770,7 @@ auto
 Model::addTriMesh(TriFVM const & mesh) -> Int
 {
   Int const mesh_id = _tris.size();
-  logger::info("Adding triangular mesh ", mesh_id);
+  LOG_DEBUG("Adding triangular mesh ", mesh_id);
   ASSERT(mesh.boundingBox().minima().norm() < epsDistance<Float>());
   _tris.emplace_back(mesh);
   return mesh_id;
@@ -780,7 +780,7 @@ auto
 Model::addQuadMesh(QuadFVM const & mesh) -> Int
 {
   Int const mesh_id = _quads.size();
-  logger::info("Adding quadrilateral mesh ", mesh_id);
+  LOG_DEBUG("Adding quadrilateral mesh ", mesh_id);
   ASSERT(mesh.boundingBox().minima().norm() < epsDistance<Float>());
   _quads.emplace_back(mesh);
   return mesh_id;
@@ -790,7 +790,7 @@ auto
 Model::addTri6Mesh(Tri6FVM const & mesh) -> Int
 {
   Int const mesh_id = _tri6s.size();
-  logger::info("Adding quadratic triangular mesh ", mesh_id);
+  LOG_DEBUG("Adding quadratic triangular mesh ", mesh_id);
   ASSERT(mesh.boundingBox().minima().norm() < epsDistance<Float>());
   _tri6s.emplace_back(mesh);
   return mesh_id;
@@ -800,7 +800,7 @@ auto
 Model::addQuad8Mesh(Quad8FVM const & mesh) -> Int
 {
   Int const mesh_id = _quad8s.size();
-  logger::info("Adding quadratic quadrilateral mesh ", mesh_id);
+  LOG_DEBUG("Adding quadratic quadrilateral mesh ", mesh_id);
   ASSERT(mesh.boundingBox().minima().norm() < epsDistance<Float>());
   _quad8s.emplace_back(mesh);
   return mesh_id;
@@ -816,7 +816,7 @@ Model::addCoarseCell(Vec2F const xy_extents, MeshType const mesh_type, Int const
                      Vector<MatID> const & material_ids) -> Int
 {
   Int const cc_id = _coarse_cells.size();
-  logger::info("Adding coarse cell ", cc_id);
+  LOG_DEBUG("Adding coarse cell ", cc_id);
   // Ensure extents are positive
   if (xy_extents[0] <= 0 || xy_extents[1] <= 0) {
     logger::error("Coarse cell dimensions must be positive");
@@ -895,7 +895,7 @@ auto
 Model::addRTM(Vector<Vector<Int>> const & cc_ids) -> Int
 {
   Int const rtm_id = _rtms.size();
-  logger::info("Adding ray tracing module ", rtm_id);
+  LOG_DEBUG("Adding ray tracing module ", rtm_id);
   Vector<Int> unique_cc_ids;
   Vector<Vec2F> xy_extents;
   // Ensure that all coarse cells exist
@@ -951,7 +951,7 @@ auto
 Model::addLattice(Vector<Vector<Int>> const & rtm_ids) -> Int
 {
   Int const lat_id = _lattices.size();
-  logger::info("Adding lattice ", lat_id);
+  LOG_DEBUG("Adding lattice ", lat_id);
   // Ensure that all RTMs exist
   Int const num_rtm = _rtms.size();
   for (auto const & rtm_ids_row : rtm_ids) {
@@ -992,7 +992,7 @@ auto
 Model::addAssembly(Vector<Int> const & lat_ids, Vector<Float> const & z) -> Int
 {
   Int const asy_id = _assemblies.size();
-  logger::info("Adding assembly ", asy_id);
+  LOG_DEBUG("Adding assembly ", asy_id);
   // Ensure that all lattices exist
   Int const num_lat = _lattices.size();
   for (auto const & id : lat_ids) {
@@ -1058,7 +1058,7 @@ Model::addAssembly(Vector<Int> const & lat_ids, Vector<Float> const & z) -> Int
 auto
 Model::addCore(Vector<Vector<Int>> const & asy_ids) -> Int
 {
-  logger::info("Adding core");
+  LOG_DEBUG("Adding core");
   // Ensure it is not already made
   if (!_core.children().empty()) {
     logger::error("The core has already been made");

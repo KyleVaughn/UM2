@@ -2,9 +2,9 @@
 
 #if UM2_USE_GMSH
 #  include <um2/gmsh/base_gmsh_api.hpp>
-#endif
 
-#include "../test_macros.hpp"
+#  include "../test_macros.hpp"
+#endif
 
 #if UM2_USE_GMSH
 

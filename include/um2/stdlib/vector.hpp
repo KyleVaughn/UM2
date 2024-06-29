@@ -221,6 +221,10 @@ public:
   // NOLINTNEXTLINE(readability-identifier-naming) match std::vector
   push_back(T && value) noexcept;
 
+  HOSTDEV inline void
+  // NOLINTNEXTLINE(readability-identifier-naming) match std::vector
+  pop_back() noexcept;
+
   template <typename... Args>
   HOSTDEV inline void
   // NOLINTNEXTLINE(readability-identifier-naming) match std::vector
@@ -783,6 +787,15 @@ Vector<T>::push_back(T && value) noexcept
   } else [[unlikely]] {
     _end = pushBackSlowPath(um2::move(value));
   }
+}
+
+template <class T>
+HOSTDEV inline void
+// NOLINTNEXTLINE(readability-identifier-naming) match std::vector
+Vector<T>::pop_back() noexcept
+{
+  ASSERT(!empty());
+  this->destructAtEnd(_end - 1);
 }
 
 template <class T>

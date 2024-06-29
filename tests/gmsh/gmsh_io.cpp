@@ -5,9 +5,9 @@
 #  include <um2/common/logger.hpp>
 #  include <um2/gmsh/base_gmsh_api.hpp>
 #  include <um2/gmsh/io.hpp>
-#endif
 
-#include "../test_macros.hpp"
+#  include "../test_macros.hpp"
+#endif
 
 #if UM2_USE_GMSH
 

@@ -9,9 +9,9 @@
 #  include <um2/gmsh/model.hpp>
 #  include <um2/physics/material.hpp>
 #  include <vector>
-#endif
 
-#include "../test_macros.hpp"
+#  include "../test_macros.hpp"
+#endif
 
 #if UM2_USE_GMSH
 

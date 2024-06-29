@@ -43,7 +43,7 @@ generateMesh(MeshType const mesh_type, int const smooth_iters)
 {
   gmsh::option::setNumber("Mesh.SecondOrderIncomplete", 1);
   gmsh::option::setNumber("Mesh.Smoothing", smooth_iters);
-  //  Int constexpr mesh_from_curvature = 12;
+  Int constexpr mesh_from_curvature = 12;
   switch (mesh_type) {
   case MeshType::Tri:
     LOG_INFO("Generating triangle mesh");
@@ -62,8 +62,8 @@ generateMesh(MeshType const mesh_type, int const smooth_iters)
   case MeshType::QuadraticTri:
     LOG_INFO("Generating quadratic triangle mesh");
     gmsh::option::setNumber("Mesh.Algorithm", 5);
-    //    gmsh::option::setNumber("Mesh.MeshSizeFromCurvature", mesh_from_curvature);
-    //    LOG_WARN("Setting mesh size from curvature to ", mesh_from_curvature);
+    gmsh::option::setNumber("Mesh.MeshSizeFromCurvature", mesh_from_curvature);
+    LOG_WARN("Setting mesh size from curvature to ", mesh_from_curvature);
     gmsh::model::mesh::generate(2);
     gmsh::option::setNumber("Mesh.HighOrderOptimize", 2); // elastic + opt
     gmsh::model::mesh::setOrder(2);

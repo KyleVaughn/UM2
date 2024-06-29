@@ -21,6 +21,9 @@ option(UM2_BUILD_BENCHMARKS "Build benchmarks" OFF)
 # (e.g. C5G7).
 option(UM2_BUILD_MODELS "Build models" OFF)
 
+# Build post-processing tools.
+option(UM2_BUILD_POSTPROCESS "Build models" ON)
+
 # Build UM2 as a shared library (ON) or static library (OFF). This option is
 # overriden if CUDA is enabled, in which case a static library is always built.
 option(UM2_BUILD_SHARED_LIB "Build UM2 as a shared library" ON)
@@ -28,9 +31,6 @@ option(UM2_BUILD_SHARED_LIB "Build UM2 as a shared library" ON)
 # Build tests. These are unit tests that are used to verify the correctness of
 # UM2.
 option(UM2_BUILD_TESTS "Build tests" ON)
-
-# Build tutorial. This is a tutorial that demonstrates how to use UM2.
-option(UM2_BUILD_TUTORIAL "Build tutorial" ON)
 
 # Features
 #------------------------------------------------------------------------------
@@ -71,7 +71,7 @@ option(UM2_ENABLE_SIMD_VEC "Enable GCC vector extensions for the Vec class" ON)
 
 # Use BLAS/LAPACK for linear algebra.
 # NOTE: this is required for CMFD spectral radius calculations.
-option(UM2_USE_BLAS_LAPACK    "Use BLAS/LAPACK" OFF)
+option(UM2_USE_BLAS_LAPACK"Use BLAS/LAPACK" OFF)
 
 # Use clang-format for code formatting. This option enables the format-check
 # and format-fix targets, which check and fix the formatting of the code.
@@ -81,25 +81,25 @@ option(UM2_USE_CLANG_FORMAT "Use clang-format" OFF)
 option(UM2_USE_CLANG_TIDY "Use clang-tidy" OFF)
 
 # Use gcov for code coverage analysis.
-option(UM2_USE_COVERAGE      "Use coverage" OFF)
+option(UM2_USE_COVERAGE "Use coverage" OFF)
 
 # Use CUDA for GPU acceleration.
-option(UM2_USE_CUDA          "Use CUDA"     OFF)
+option(UM2_USE_CUDA "Use CUDA" OFF)
 
 # Use GMSH for CAD geometry and mesh generation from CAD geometry.
-option(UM2_USE_GMSH          "Use Gmsh"     ON)
+option(UM2_USE_GMSH "Use Gmsh" ON)
 
 # Use HDF5 for binary data I/O. (Used for mesh I/O)
-option(UM2_USE_HDF5          "Use HDF5"     ON)
+option(UM2_USE_HDF5 "Use HDF5" ON)
 
 # Use MPACT's cross section libraries. (Used for CMFD)
-option(UM2_USE_MPACT_XSLIBS  "Use MPACT's cross section libraries" ON)
+option(UM2_USE_MPACT_XSLIBS "Use MPACT's cross section libraries" ON)
 
 # Use OpenMP for multi-threading.
-option(UM2_USE_OPENMP        "Use OpenMP"   ON)
+option(UM2_USE_OPENMP "Use OpenMP" ON)
 
 # Use pugixml for XML parsing. (Used for mesh I/O)
-option(UM2_USE_PUGIXML       "Use pugixml"  ON)
+option(UM2_USE_PUGIXML "Use pugixml" ON)
 
 # Use valgrind for memory checking. Creates a valgrind_X target for each test.
 option(UM2_USE_VALGRIND "Use valgrind" OFF)
@@ -334,6 +334,7 @@ set(UM2_SOURCES
     "src/physics/material.cpp"
     "src/physics/cmfd.cpp"
     "src/mpact/model.cpp"
+    "src/mpact/powers.cpp"
     "src/gmsh/base_gmsh_api.cpp"
     "src/gmsh/io.cpp"
     "src/gmsh/model.cpp"
@@ -386,10 +387,10 @@ if (UM2_USE_CLANG_FORMAT)
     benchmarks/*.cpp
     models/*.hpp
     models/*.cpp
+    post-process/*.hpp
+    post-process/*.cpp
     tests/*.hpp
     tests/*.cpp
-    tutorial/*.hpp
-    tutorial/*.cpp
     CACHE STRING
     "Patterns to format")
 
@@ -512,13 +513,13 @@ if (UM2_BUILD_MODELS)
   add_subdirectory(models)
 endif()
 
+if (UM2_BUILD_POSTPROCESS)
+  add_subdirectory(post-process)
+endif()
+
 if (UM2_BUILD_TESTS)
   include(CTest)
   add_subdirectory(tests)
-endif()
-
-if (UM2_BUILD_TUTORIAL)
-  add_subdirectory(tutorial)
 endif()
 
 #===============================================================================

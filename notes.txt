@@ -1,9 +1,0 @@
-#-------------------------------------------------
-# Design
-#-------------------------------------------------
-# 1. We use signed 32-bit integers for indexing.
-     Signed integers are used for easy sentinel values and more easily identifiable
-     indexing errors. 32-bit integers are used for performance and because most
-     indices are small. In the event that a mesh or data structure requires more than
-     2^31 elements, it should probably be split into smaller parts anyway.
-

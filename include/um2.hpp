@@ -9,6 +9,7 @@
 #include <um2/common/settings.hpp>
 #include <um2/common/string_to_lattice.hpp>
 #include <um2/mpact/model.hpp>
+#include <um2/mpact/powers.hpp>
 #include <um2/physics/material.hpp>
 
 //==============================================================================

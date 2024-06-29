@@ -32,8 +32,8 @@ Prerequisites
 
 If you are building UM\ :sup:`2` \ on a local Ubuntu  machine, the prerequisites can be installed
 with apt_.
-If you are building UM\ :sup:`2` \ on a cluster or do not have admin privileges, we recommend using
-the Spack_ instructions below.
+If you are building UM\ :sup:`2` \ on a cluster, do not have admin privileges, or plan to
+use MPACT, we recommend using the Spack_ instructions below.
 
 UM\ :sup:`2` \ requires the following software to be installed:
 
@@ -97,7 +97,7 @@ the prerequisites can be installed with the following commands:
     lsb_release -a
 
     # From within the UM2 directory
-    ./scripts/install/apt_install.sh
+    ./scripts/deps/apt_install.sh
 
     # Verify that your cmake version is 3.25 or higher
     cmake --version
@@ -220,11 +220,11 @@ Next, we will install gcc 12. But first, please examine the potential issues bel
 
 .. code-block:: bash
 
-    spack install gcc@12.3.0 # This will take a while (15-90 minutes)
-    spack load gcc@12.3.0
+    spack install gcc@12 # This will take a while (15-90 minutes)
+    spack load gcc@12
     spack compiler find
     # Verify that gcc 12 is the default gcc
-    gcc --version # Expect 12.3.0
+    gcc --version # Expect 12
 
 
 You should have previously cloned the UM2 repository. If not, do so now:
@@ -243,10 +243,10 @@ Spack sometimes has issues resolving many dependencies at once, so we will add t
     spack env activate -p um2
 
     # Add the first few dependencies
-    spack add cmake%gcc@12.3
-    spack add hdf5%gcc@12.3 +cxx+fortran~mpi
-    spack add pugixml%gcc@12.3
-    spack add openblas%gcc@12.3
+    spack add cmake%gcc@12
+    spack add hdf5%gcc@12 +cxx+fortran~mpi
+    spack add pugixml%gcc@12
+    spack add openblas%gcc@12
 
     # Verify that spack is able to resolve the dependencies
     spack spec # this will likely take a few seconds
@@ -255,7 +255,7 @@ Spack sometimes has issues resolving many dependencies at once, so we will add t
     spack add gmsh@4.12%gcc@12.3 +openmp+cairo+fltk+opencascade+eigen ^scotch~mpi
 
 We will now tell spack to resolve the dependencies and install them.
-See the files in ``UM2/scripts/install`` for more information on spack environments.
+See the files in ``UM2/scripts/deps`` for more information on spack environments.
 
 .. code-block:: bash
 
@@ -271,7 +271,7 @@ See the files in ``UM2/scripts/install`` for more information on spack environme
 
     .. code-block:: bash
 
-        g++ --version                       # Expect 12+
+ spack add pugixml%gcc@12       g++ --version                       # Expect 12+
         gfortran --version                  # Expect 12+
         cmake --version                     # Expect 3.25+
         find $SPACK_ENV -name libhdf5*      # Expect non-empty output

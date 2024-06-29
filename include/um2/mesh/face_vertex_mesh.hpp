@@ -81,7 +81,7 @@ public:
   constexpr FaceVertexMesh(Vector<Vertex> const & v,
                            Vector<FaceConn> const & fv) noexcept;
 
-  explicit FaceVertexMesh(PolytopeSoup const & soup);
+  explicit FaceVertexMesh(PolytopeSoup const & soup, bool validate = true);
 
   //===========================================================================
   // Member access

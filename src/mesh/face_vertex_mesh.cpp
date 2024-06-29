@@ -16,8 +16,6 @@
 #include <algorithm> // sort
 #include <numeric>   // inclusive_scan
 
-#include <iostream> // std::cerr
-
 namespace um2
 {
 
@@ -47,7 +45,7 @@ getVTKElemType() -> VTKElemType
 } // namespace
 
 template <Int P, Int N>
-FaceVertexMesh<P, N>::FaceVertexMesh(PolytopeSoup const & soup)
+FaceVertexMesh<P, N>::FaceVertexMesh(PolytopeSoup const & soup, bool validate)
 {
   auto const num_vertices = soup.numVertices();
   auto const num_faces = soup.numElements();
@@ -86,7 +84,9 @@ FaceVertexMesh<P, N>::FaceVertexMesh(PolytopeSoup const & soup)
       _fv[i][j] = soup_conn[i * N + j];
     }
   }
-  validate();
+  if (validate) {
+    this->validate();
+  }
 }
 
 //==============================================================================
@@ -429,8 +429,9 @@ checkSelfIntersections(FaceVertexMesh<2, N> const & mesh)
     if (mesh.getFace(iface).hasSelfIntersection(buffer)) {
       PolytopeSoup const soup = mesh;
       soup.write("self_intersecting_mesh.xdmf");
-      std::cerr << "Intersection at (" << buffer[0][0] << ", " << buffer[0][1] << ") or ("
-                << buffer[1][0] << ", " << buffer[1][1] << ")" << std::endl;
+      //      std::cerr << "Intersection at (" << buffer[0][0] << ", " << buffer[0][1] <<
+      //      ") or ("
+      //                << buffer[1][0] << ", " << buffer[1][1] << ")" << std::endl;
       logger::error("Mesh has self-intersecting face at index: ", iface,
                     ". Mesh written to self_intersecting_mesh.xdmf");
       return;

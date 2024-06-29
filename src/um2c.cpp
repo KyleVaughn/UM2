@@ -384,6 +384,7 @@ um2MPACTIntersectCoarseCell(void * const model, Int const cc_id, Float const ori
   }
   default:
     LOG_ERROR("Invalid mesh type");
+    *n = -1;
     return;
   }
   // Sort the intersections
