@@ -1,10 +1,13 @@
-#include <um2/common/cast_if_not.hpp>
-#include <um2/common/logger.hpp>
-#include <um2/common/settings.hpp>
 #include <um2/config.hpp>
-#include <um2/physics/cross_section_library.hpp>
 
-#include "../test_macros.hpp"
+#if UM2_USE_MPACT_XSLIBS
+
+#  include <um2/common/cast_if_not.hpp>
+#  include <um2/common/logger.hpp>
+#  include <um2/common/settings.hpp>
+#  include <um2/physics/cross_section_library.hpp>
+
+#  include "../test_macros.hpp"
 
 TEST_CASE(readMPACTLibrary)
 {
@@ -36,3 +39,13 @@ main() -> int
   RUN_SUITE(XSLibrary);
   return 0;
 }
+
+#else
+
+CONST auto
+main() -> int
+{
+  return 0;
+}
+
+#endif

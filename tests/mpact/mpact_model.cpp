@@ -1,8 +1,7 @@
-#include <um2/common/cast_if_not.hpp>
-#include <um2/common/color.hpp>
-#include <um2/common/settings.hpp>
-#include <um2/common/string_to_lattice.hpp>
 #include <um2/config.hpp>
+
+#include <um2/common/cast_if_not.hpp>
+#include <um2/common/string_to_lattice.hpp>
 #include <um2/geometry/axis_aligned_box.hpp>
 #include <um2/geometry/point.hpp>
 #include <um2/math/vec.hpp>
@@ -15,12 +14,17 @@
 #include <um2/mesh/regular_partition.hpp>
 #include <um2/mpact/model.hpp>
 #include <um2/physics/cross_section.hpp>
-#include <um2/physics/cross_section_library.hpp>
 #include <um2/physics/material.hpp>
 #include <um2/stdlib/algorithm/fill.hpp>
 #include <um2/stdlib/numbers.hpp>
 #include <um2/stdlib/string.hpp>
 #include <um2/stdlib/vector.hpp>
+
+#if UM2_USE_MPACT_XSLIBS
+#  include <um2/common/color.hpp>
+#  include <um2/common/settings.hpp>
+#  include <um2/physics/cross_section_library.hpp>
+#endif
 
 #include "../test_macros.hpp"
 
@@ -134,6 +138,7 @@ TEST_CASE(addCoarseCell)
   ASSERT(cell.mesh_id == -1);
   ASSERT(cell.material_ids.empty());
 
+#if UM2_USE_MPACT_XSLIBS
   // Add a cell with full properties
   um2::XSLibrary const lib8(um2::settings::xs::library_path + "/" + um2::mpact::XSLIB_8G);
   model.addRectangularPinMesh(dxdy, 2, 2);
@@ -179,6 +184,7 @@ TEST_CASE(addCoarseCell)
   ASSERT(cell2.mesh_type == um2::MeshType::Quad);
   ASSERT(cell2.mesh_id == 0);
   ASSERT(cell2.material_ids == material_ids);
+#endif
 }
 
 TEST_CASE(addRTM)

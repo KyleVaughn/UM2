@@ -1,9 +1,12 @@
-#include <um2/common/cast_if_not.hpp>
-#include <um2/common/color.hpp>
-#include <um2/common/settings.hpp>
 #include <um2/config.hpp>
-#include <um2/physics/cross_section_library.hpp>
 #include <um2/physics/material.hpp>
+
+#if UM2_USE_MPACT_XSLIBS
+#  include <um2/common/cast_if_not.hpp>
+#  include <um2/common/color.hpp>
+#  include <um2/common/settings.hpp>
+#  include <um2/physics/cross_section_library.hpp>
+#endif
 
 #include "../test_macros.hpp"
 
@@ -29,6 +32,8 @@ TEST_CASE(addNuclide)
   ASSERT_NEAR(h2o.numDensity(1), o_num_density, 1e-6);
 }
 
+#if UM2_USE_MPACT_XSLIBS
+
 TEST_CASE(getXS)
 {
   um2::XSLibrary const lib8(um2::settings::xs::library_path + "/" + um2::mpact::XSLIB_8G);
@@ -45,10 +50,14 @@ TEST_CASE(getXS)
   ASSERT_NEAR(fuel.xsec().t(1), 14, 1)
 }
 
+#endif
+
 TEST_SUITE(Material)
 {
   TEST(addNuclide);
+#if UM2_USE_MPACT_XSLIBS
   TEST(getXS);
+#endif
 }
 
 auto

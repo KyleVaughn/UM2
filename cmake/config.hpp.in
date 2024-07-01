@@ -4,6 +4,7 @@
 // CMake defines
 //==============================================================================
 
+// clang-format off
 // Ignore clang-tidy, since these are CMake defines
 // NOLINTBEGIN(*-macro-to-enum)
 
@@ -24,14 +25,13 @@
 #cmakedefine01 UM2_USE_PUGIXML
 
 // Max log level for compile-time filtering of log messages
-// clang-format off
 #define MAX_LOG_LEVEL @UM2_MAX_LOG_LEVEL@
-// clang-format on
 
 // Default path to look for MPACT cross section libraries
 #define MPACT_DATA_DIR "@MPACT_DATA@"
 
 // NOLINTEND(*-macro-to-enum)
+// clang-format on
 
 //==============================================================================
 // Includes

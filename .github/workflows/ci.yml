@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+env:
+  HDF5_ROOT: /usr
+  OMP_NUM_THREADS: 2
+  ENABLE_COVERAGE: OFF
+  COVERALLS_PARALLEL: true
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  main:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: true
+      matrix:
+        compiler: [gcc, clang]
+        build_type: [Debug, Release]
+        asserts: [ON, OFF]
+        gmsh: [ON, OFF]
+
+    name: "${{matrix.compiler}}-${{matrix.build_type}},gmsh=${{matrix.gmsh}}"
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Apt dependencies
+        shell: bash
+        run: |
+          sudo apt -y update
+          sudo apt install -y cmake clang-format clang-tidy libomp-dev
+          sudo apt install -y libhdf5-dev libpugixml-dev
+
+      - name: gcc
+        shell: bash
+        if: matrix.compiler == 'gcc'
+        run: |
+          sudo apt install -y gcc
+          echo "CC=gcc" >> $GITHUB_ENV
+          echo "CXX=g++" >> $GITHUB_ENV
+
+      - name: clang
+        shell: bash
+        if: matrix.compiler == 'clang'
+        run: |
+          sudo apt install -y clang 
+          echo "CC=clang" >> $GITHUB_ENV
+          echo "CXX=clang++" >> $GITHUB_ENV
+
+      - name: Gmsh
+        shell: bash
+        if: matrix.gmsh == 'ON'
+        run: sudo apt install -y libgmsh-dev
+
+      - name: Configure with coverage
+        if: matrix.build_type == 'Debug'  && matrix.compiler == 'gcc' && matrix.asserts == 'ON' && matrix.gmsh == 'ON'
+        run: echo "ENABLE_COVERAGE=ON" >> $GITHUB_ENV
+
+      - name: Configure
+        run: |
+          cmake -S . -B build \
+                -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+                -DUM2_BUILD_MODELS=ON \
+                -DUM2_ENABLE_ASSERTS=${{ matrix.asserts }} \
+                -DUM2_ENABLE_NATIVE=OFF \ 
+                -DUM2_USE_CLANG_FORMAT=ON \
+                -DUM2_USE_CLANG_TIDY=ON \
+                -DUM2_USE_COVERAGE=${ENABLE_COVERAGE} \
+                -DUM2_USE_GMSH=${{ matrix.gmsh }} \
+                -DUM2_USE_MPACT_XSLIBS=OFF 
+
+      - name: Format check
+        run: make -C build format-check
+
+      - name: Build
+        run: make -j -C build
+
+      - name: Run tests
+        run: make -j -C build test
+
+      - name: coverage
+        if: matrix.build_type == 'Debug'  && matrix.compiler == 'gcc' && matrix.asserts == 'ON' && matrix.gmsh == 'ON'
+        run: |
+          sudo apt install -y python3 pipx 
+          pipx ensurepath
+          pipx install cpp-coveralls
+          pipx install coveralls
+          pipx ensurepath
+          source ~/.bashrc
+          cpp-coveralls -i include -i src -e /usr --gcov /usr/bin/gcov --dump cpp_cov.json
+          coveralls --merge=cpp_cov.json --service=github
+
+  finish:
+    needs: main
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Coveralls finished
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.github_token }}
+          parallel-finished: true

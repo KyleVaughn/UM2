@@ -218,7 +218,7 @@ main(int argc, char ** argv) -> int
   //===========================================================================
 
   model.importCoarseCellMeshes("crocus_2d.inp");
-  model.writeCMFDInfo("crocus_2d_cmfd_info.xdmf");
+  // model.writeCMFDInfo("crocus_2d_cmfd_info.xdmf");
   model.write("crocus_2d.xdmf");
   um2::finalize();
   return 0;
