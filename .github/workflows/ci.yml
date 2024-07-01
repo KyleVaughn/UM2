@@ -80,10 +80,10 @@ jobs:
         run: make -C build format-check
 
       - name: Build
-        run: make -j -C build
+        run: make -C build
 
       - name: Run tests
-        run: make -j -C build test
+        run: make -C build test
 
       - name: coverage
         if: matrix.build_type == 'Debug'  && matrix.compiler == 'gcc' && matrix.asserts == 'ON' && matrix.gmsh == 'ON'
