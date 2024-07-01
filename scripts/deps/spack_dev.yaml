@@ -1,0 +1,20 @@
+spack:
+  specs:
+    - cmake%gcc@12.3
+    - hdf5%gcc@12.3
+    - pugixml%gcc@12.3
+    - benchmark%gcc@12.3
+    - llvm@15%gcc@12.3
+    - gmsh
+    - cuda@12.4
+  view: true
+  concretizer:
+    unify: when_possible
+  packages:
+    hdf5:
+      require: +cxx+fortran~mpi
+    gmsh:
+      # Should be able to do ^opencascade~visualization~draw~application_framework
+      require: +openmp+cairo+fltk+opencascade+eigen ^scotch~mpi
+    opengl:
+      buildable: false

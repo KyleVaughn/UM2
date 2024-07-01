@@ -1,0 +1,9 @@
+#!/bin/bash
+
+cmake \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DUM2_USE_BLAS_LAPACK=ON \
+  -DUM2_ENABLE_ASSERTS=ON \
+  -DUM2_USE_CLANG_FORMAT=ON \
+  -DUM2_USE_CLANG_TIDY=ON \
+  ..

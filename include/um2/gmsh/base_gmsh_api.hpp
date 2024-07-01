@@ -4,7 +4,7 @@
 
 #if UM2_USE_GMSH
 
-// NOLINTBEGIN(readability*, modernize*) justification: this is a third party library
+// NOLINTBEGIN(readability*, modernize*) this is a third party library
 
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"

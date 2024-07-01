@@ -1,0 +1,7 @@
+um2_add_test(./logger.cpp)
+um2_add_test(./color.cpp)
+um2_add_test(./branchless_sort.cpp)
+um2_add_test(./insertion_sort.cpp)
+um2_add_test(./permutation.cpp)
+um2_add_test(./strto.cpp)
+um2_add_test(./string_to_lattice.cpp)

@@ -14,8 +14,8 @@ Installation and Configuration
 Cloning the Repository
 --------------------------
 
-The first step to building UM\ :sup:`2` \ is to clone the repository. 
-The UM\ :sup:`2` \ source code is hosted on `GitHub <https://github.com/KyleVaughn/UM2>`_. 
+The first step to building UM\ :sup:`2` \ is to clone the repository.
+The UM\ :sup:`2` \ source code is hosted on `GitHub <https://github.com/KyleVaughn/UM2>`_.
 Assuming you have git_ installed, to clone the repository run the following command:
 
 .. code-block:: bash
@@ -30,8 +30,10 @@ Assuming you have git_ installed, to clone the repository run the following comm
 Prerequisites
 ----------------------------------
 
-If it is your first time using UM\ :sup:`2` \, we recommend that you install the
-prerequisites using the Spack_ instructions below.
+If you are building UM\ :sup:`2` \ on a local Ubuntu  machine, the prerequisites can be installed
+with apt_.
+If you are building UM\ :sup:`2` \ on a cluster, do not have admin privileges, or plan to
+use MPACT, we recommend using the Spack_ instructions below.
 
 UM\ :sup:`2` \ requires the following software to be installed:
 
@@ -46,37 +48,36 @@ UM\ :sup:`2` \ requires the following software to be installed:
 
     * PugiXML_ library for XML data
 
-Additional software is required for some features. Note that TBB_, OpenMP_, and Gmsh_ are
+Additional software is required for some features. Note that OpenMP_ and Gmsh_ are
 enabled by default. If these features are not needed, they can be disabled by setting the
 corresponding CMake variables to ``OFF``.
 
 .. admonition:: Optional
    :class: note
 
-    * TBB_ for shared-memory parallelism in the C++ standard library
+    * OpenMP_ for shared-memory parallelism
 
-      This is currently the primary method of parallelism in UM\ :sup:`2` \ . If you have
-      to pick between TBB and OpenMP, we recommend TBB.
+    * Gmsh_ for CAD-based models and CAD-based mesh generation
 
-    * OpenMP_ for additional shared-memory parallelism
+    * OpenBLAS_ for linear algebra
 
-    * Gmsh_ for mesh generation
+      OpenBLAS is required for advanced CMFD grid generation features.
 
-      UM\ :sup:`2` \ uses Gmsh for CAD model mesh generation. Meshes can still be imported,
-      exported, and manipulated without Gmsh, but Gmsh is required for most mesh generation.
+    * MPACT_ cross section libraries
 
-    * libpng_ for exporting PNG images
+      OpenBLAS and MPACT are required for advanced cross section based mesh generation features.
 
+.. _apt: https://en.wikipedia.org/wiki/APT_(software)
 .. _gcc: https://gcc.gnu.org/
 .. _clang: https://clang.llvm.org/
 .. _CMake: https://cmake.org
 .. _HDF5: https://www.hdfgroup.org/solutions/hdf5/
 .. _XDMF: https://www.xdmf.org/index.php/XDMF_Model_and_Format
 .. _PugiXML: https://pugixml.org/
-.. _TBB: https://github.com/oneapi-src/oneTBB
+.. _OpenBLAS: https://github.com/OpenMathLib/OpenBLAS
 .. _OpenMP: https://www.openmp.org/
 .. _Gmsh: https://gmsh.info/
-.. _libpng: http://www.libpng.org/pub/png/libpng.html
+.. _MPACT: https://vera.ornl.gov/mpact/
 
 .. _installing_prerequisites_with_apt:
 
@@ -84,17 +85,39 @@ corresponding CMake variables to ``OFF``.
 Installing Prerequisites with apt
 ----------------------------------
 
-On desktop machines running Debian-based Linux distributions, if you have admin privileges,
+On desktop machines running Ubuntu Linux distributions, if you have admin privileges,
 the prerequisites can be installed with the following commands:
 
 .. code-block:: bash
 
-    sudo apt -y update
-    sudo apt install -y g++-12 libhdf5-dev libpugixml-dev libtbb-dev libglu1-mesa
-    sudo apt install -y libpng-dev
+    # First, check that you are running Ubuntu 20.04 or higher.
+    # If you are not, proceed to the Spack instructions in the next section.
+    # If you are using Ubuntu version <= 24, you will need to install cmake and gmsh
+    # manually as described at the end of this block
+    lsb_release -a
 
-    # In a directory outside of UM2
-    mkdir um2_dependencies && cd um2_dependencies
+    # From within the UM2 directory
+    ./scripts/deps/apt_install.sh
+
+    # Verify that your cmake version is 3.25 or higher
+    cmake --version
+
+    # Verify that your gcc is version 12 or higher
+    g++ --version
+
+    # If both of the above commands return the expected versions, you are ready to
+    # build UM2. If not, proceed below.
+
+    # If your gcc is not version 12+, you may need to explicitly install version 12
+    # and set it as the default compiler
+    sudo apt install -y gcc-12 g++-12 gfortran-12
+    sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-12 100
+    sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 100
+    sudo update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-12 100
+
+    # If you are using Ubuntu version <= 24, we will install cmake and gmsh manually
+    # In a directory outside of UM2:
+    mkdir um2_deps && cd um2_deps
 
     # Install cmake
     wget https://github.com/Kitware/CMake/releases/download/v3.27.6/cmake-3.27.6.tar.gz
@@ -108,6 +131,9 @@ the prerequisites can be installed with the following commands:
     # Add GMSH_ROOT to your bashrc so cmake can find gmsh.
     echo "export GMSH_ROOT=${PWD}" >> ~/.bashrc && source ~/.bashrc && cd ..
 
+    # You may also need the following line for Gmsh's GUI to work correctly:
+    # sudo apt install -y libglu1-mesa
+
 .. admonition:: Stop!
    :class: error
 
@@ -115,29 +141,16 @@ the prerequisites can be installed with the following commands:
 
     .. code-block:: bash
 
-        g++-12 --version                # Expect 12+
+        g++ --version                   # Expect 12+
+        gfotran --version               # Expect 12+
+        cmake --version                 # Expect 3.25+
         ldconfig -p | grep libhdf5      # Expect non-empty output
         ldconfig -p | grep libpugixml   # Expect non-empty output
-        ldconfig -p | grep libtbb       # Expect non-empty output
         ldconfig -p | grep libGLU       # Expect non-empty output
-        ldconfig -p | grep libpng       # Expect non-empty output
-        cmake --version                 # Expect 3.27.6
+        ldconfig -p | grep libgmsh      # Expect non-empty output
+        ldconfig -p | grep libopenblas  # Expect non-empty output
+        ldconfig -p | grep liblapacke   # Expect non-empty output
         echo $GMSH_ROOT                 # Expect the path to the gmsh directory
-
-If you are a developer, you will also need to install the following:
-
-.. code-block:: bash
-
-    sudo apt install -y clang-15 clang-format-15 clang-tidy-15 libomp-15-dev cppcheck
-
-    # It may be necessary to symlink clang-format-15 and clang-tidy-15 to clang-format
-    # and clang-tidy, respectively.
-    sudo ln -s /usr/bin/clang-format-15 /usr/bin/clang-format
-    sudo ln -s /usr/bin/clang-tidy-15 /usr/bin/clang-tidy
-
-
-Scripts to perform these steps are available in the ``UM2/dependencies/apt`` directory of the
-git repository.
 
 .. _installing_prerequisites_with_spack:
 
@@ -161,18 +174,18 @@ To install Spack:
 .. code-block:: bash
 
     # In a directory outside of UM2
-    git clone --depth=100 --branch=releases/v0.20 https://github.com/spack/spack.git
+    git clone --depth=100 --branch=releases/v0.22 https://github.com/spack/spack.git
 
     # We will add the following line to your bashrc (or zshrc) so that spack is available
     # in future sessions.
     echo "source ${PWD}/spack/share/spack/setup-env.sh" >> ~/.bashrc && source ~/.bashrc
 
     # Verify that spack is installed correctly
-    spack --version # Expect 0.20
+    spack --version # Expect 0.22
 
 If you do not have C, C++, and Fortran compilers available,
 install them now, or you will need to modify the compilers.yaml file created in the next step.
-Assuming you're using gcc, to verify that you have the necessary compilers, run the following 
+Assuming you're using gcc, to verify that you have the necessary compilers, run the following
 commands:
 
 .. code-block:: bash
@@ -194,7 +207,7 @@ Next, we will install gcc 12. But first, please examine the potential issues bel
 .. admonition:: Potential Issues
    :class: warning
 
-    * If spack complains about being unable to fetch a package, your Python installation may 
+    * If spack complains about being unable to fetch a package, your Python installation may
       be missing valid SSL certificates.
 
     * If you're on a cluster, the ``tmp`` directory may not have enough space to build the
@@ -207,11 +220,12 @@ Next, we will install gcc 12. But first, please examine the potential issues bel
 
 .. code-block:: bash
 
-    spack install gcc@12.3.0 # This may take a while
-    spack load gcc@12.3.0
+    spack install gcc@12 # This will take a while (15-90 minutes)
+    spack load gcc@12
     spack compiler find
-    # Verify that gcc 12 is the default gcc 
-    gcc --version # Expect 12.3.0
+    # Verify that gcc 12 is the default gcc
+    gcc --version # Expect 12
+
 
 You should have previously cloned the UM2 repository. If not, do so now:
 
@@ -219,27 +233,36 @@ You should have previously cloned the UM2 repository. If not, do so now:
 
     git clone https://github.com/KyleVaughn/UM2.git
 
-There are a number of pre-defined environment files for Spack in ``UM2/dependencies/spack``.
-These environments contain the dependencies for UM2 and are defined in yaml files.
-Pick the appropriate yaml file in ``UM2/dependencies/spack`` for use in the next step, then:
+Now, we will create a Spack environment for UM2 and install the dependencies.
+Spack sometimes has issues resolving many dependencies at once, so we will add them incrementally.
 
 .. code-block:: bash
 
-    # Assuming you're a user on a desktop machine
-    cd UM2/dependencies/spack/user
-    spack env create um2 desktop.yaml 
+    # Create the um2 environment and activate it
+    spack env create um2
     spack env activate -p um2
-    # If you don't plan to build MPACT with UM2, you can add gcc@12.3.0 to the environment
-    spack add gcc@12.3.0
-    # Otherwise, you will need to load gcc@12.3.0 when you want to build/use UM2
-    echo "spack load gcc@12.3.0" >> ~/.bashrc 
+
+    # Add the first few dependencies
+    spack add cmake%gcc@12
+    spack add hdf5%gcc@12 +cxx+fortran~mpi
+    spack add pugixml%gcc@12
+    spack add openblas%gcc@12
+
+    # Verify that spack is able to resolve the dependencies
+    spack spec # this will likely take a few seconds
+
+    # Omit the next line if you are on a cluster and do not need CAD-based mesh generation
+    spack add gmsh@4.12%gcc@12.3 +openmp+cairo+fltk+opencascade+eigen ^scotch~mpi
 
 We will now tell spack to resolve the dependencies and install them.
+See the files in ``UM2/scripts/deps`` for more information on spack environments.
 
 .. code-block:: bash
 
     spack spec # This may take a minute or two
-    spack install # This will take a while (30 mins to 2 hours, depending on your machine)
+    # This will take a while (20 mins to 2 hours, depending on your machine)
+    # Remember to use TMP or -j as needed, as described above
+    spack install
 
 .. admonition:: Stop!
    :class: error
@@ -248,14 +271,14 @@ We will now tell spack to resolve the dependencies and install them.
 
     .. code-block:: bash
 
-        g++ --version                     # Expect 12.X.X
-        find $SPACK_ENV -name libhdf5*    # Expect non-empty output
-        find $SPACK_ENV -name libpugixml* # Expect non-empty output
-        find $SPACK_ENV -name libtbb*     # Expect non-empty output
-        find $SPACK_ENV -name libGLU*     # Expect non-empty if you used desktop.yaml
-        find $SPACK_ENV -name libpng*     # Expect non-empty output
-        gmsh --version                    # Expect 4.10
-        cmake --version                   # Expect 3.26+
+ spack add pugixml%gcc@12       g++ --version                       # Expect 12+
+        gfortran --version                  # Expect 12+
+        cmake --version                     # Expect 3.25+
+        find $SPACK_ENV -name libhdf5*      # Expect non-empty output
+        find $SPACK_ENV -name libpugixml*   # Expect non-empty output
+        find $SPACK_ENV -name libGLU*       # Expect non-empty output
+        find $SPACK_ENV -name libopenblas*  # Expect non-empty output
+        gmsh --version                      # Expect 4.10+
 
 .. _Spack: https://spack.readthedocs.io/en/latest/
 
@@ -265,24 +288,30 @@ We will now tell spack to resolve the dependencies and install them.
 Building
 ----------------------------------
 
-
 To build UM\ :sup:`2` \ with the default options, run the following commands:
 
 .. code-block:: bash
 
     cd UM2
     mkdir build && cd build
+
+    # Configure the build
+    # Use -DUM2_USE_XXXX=ON or -DUM2_ENABLE_XXXX=ON to enable or disable features.
+    # See CMake Options below.
     cmake ..
-    make -j
+    make
+
     # Make sure the tests pass
     ctest
+
+    # Install the library and headers
     make install
 
-You may need to specify the compiler to use during the configuration process, 
+You may need to specify the compiler to use during the configuration process,
 e.g. ``CXX=g++-12 cmake ..``.
 
-.. admonition:: CMake Options 
-   :class: note 
+.. admonition:: CMake Options
+   :class: note
 
     If you want to change the default options, you can do so by passing the appropriate
     flags to cmake, e.g. ``cmake -DUM2_USE_OPENMP=OFF ..``. The available options are
@@ -299,39 +328,111 @@ e.g. ``CXX=g++-12 cmake ..``.
 Configuring
 ----------------------------------
 
-The following options are available for configuration. 
-This list is not exhaustive, but many of the other options are for 
-developer use or are under development.
-
-UM2_USE_TBB          
-  Enable shared-memory parallelism with Intel TBB. (Default: ON) 
-
-UM2_USE_OPENMP
-  Enable shared-memory parallelism with OpenMP. (Default: ON)
-
-UM2_USE_GMSH
-  Enable Gmsh for mesh generation. (Default: ON)
-
-UM2_USE_PNG
-  Enable PNG support. (Default: OFF)
-
-UM2_ENABLE_INT64
-  Set the integer type to 64-bit. (Default: OFF)
-
-UM2_ENABLE_FLOAT64
-  Set the floating point type to 64-bit. (Default: ON)
-
-UM2_ENABLE_FASTMATH
-  Enable fast math optimizations. (Default: ON)
-
-UM2_BUILD_TESTS
-  Build tests. (Default: ON)
-
-UM2_BUILD_TUTORIAL
-  Build tutorial. (Default: ON)
-
-UM2_BUILD_EXAMPLES
-  Build examples. (Default: OFF)
+The following options are available for configuration.
 
 UM2_BUILD_BENCHMARKS
-  Build benchmarks. (Default: OFF)
+  Build code benchmarks. These are code snippets that are used to measure the
+  performance of UM2. These are not IRPhE or other nuclear reactor benchmarks.
+  (Default: OFF)
+
+UM2_BUILD_MODELS
+  Build models. These are nuclear reactor models or other physics benchmarks
+  (e.g. C5G7).
+  (Default: OFF)
+
+UM2_BUILD_SHARED_LIB
+  Build UM2 as a shared library (ON) or static library (OFF). This option is
+  overriden if CUDA is enabled, in which case a static library is always built.
+  (Default: ON)
+
+UM2_BUILD_TESTS
+  Build tests. These are unit tests that are used to verify the correctness of
+  UM2.
+  (Default: ON)
+
+UM2_BUILD_TUTORIAL
+  Build tutorial. This is a tutorial that demonstrates how to use UM2.
+  (Default: ON)
+
+UM2_ENABLE_ASSERTS
+  Enable assertions. This option enables UM2_ASSERT*(condition) macros, which
+  are evaluated regardless of the build type, unlike the standard assert macro
+  which is only evaluated if NDEBUG is not defined.
+  (Default: OFF)
+
+UM2_ENABLE_BMI2
+  Enable BMI2 instruction set. This option enables the BMI2 instruction set,
+  if it is supported by the architecture. This is primarily for fast Morton
+  sorting.
+  (Default: ON)
+
+UM2_ENABLE_FASTMATH
+  Enable fast math optimizations. This option enables fast math optimizations
+  -ffast-math on the CPU and --use_fast_math on the GPU. Note that this may
+  result in a loss of precision.
+  (Default: OFF)
+
+UM2_ENABLE_FLOAT64
+  Set the Float type to 64-bit (double) instead of 32-bit (float). This option
+  determines the precision of the floating point numbers used in UM2.
+  (Default: ON)
+
+UM2_ENABLE_NATIVE
+  Enable native architecture. This option enables the -march=native flag, which
+  optimizes the code for the architecture on which it is built.
+  (Default: ON)
+
+UM2_ENABLE_SIMD_VEC
+  Enable GCC vector extensions for the Vec class. Vec<D, T> uses T[D] as the
+  underlying storage type by default. When ON, if D is a power of 2 and T is
+  an arithmetic type, Vec<D, T> will use GCC vector extensions instead to store
+  a SIMD vector of D elements of type T. Despite aligned T[D] being functionally
+  the same as the SIMD vector, the compiler tends to generate slightly better code
+  with the vector extensions.
+  (Default: ON)
+
+UM2_USE_BLAS_LAPACK
+  Use BLAS/LAPACK for linear algebra.
+  NOTE: this is required for CMFD spectral radius calculations.
+  (Default: OFF)
+
+UM2_USE_CLANG_FORMAT
+  Use clang-format for code formatting. This option enables the format-check
+  and format-fix targets, which check and fix the formatting of the code.
+  (Default: OFF)
+
+UM2_USE_CLANG_TIDY
+  Use clang-tidy for static analysis. Enable clang-tidy on all targets.
+  (Default: OFF)
+
+UM2_USE_COVERAGE
+  Use gcov for code coverage analysis.
+  (Default: OFF)
+
+UM2_USE_CUDA
+  Use CUDA for GPU acceleration.
+  (Default: OFF)
+
+UM2_USE_GMSH
+  Use GMSH for CAD geometry and mesh generation from CAD geometry.
+  (Default: ON)
+
+UM2_USE_HDF5
+  Use HDF5 for binary data I/O. (Used for mesh I/O)
+  (Default: ON)
+
+UM2_USE_MPACT_XSLIBS
+  Use MPACT's cross section libraries. Used for CMFD and advanced mesh generation.
+  (Default: ON)
+
+UM2_USE_OPENMP
+  Use OpenMP for multi-threading.
+  (Default: ON)
+
+UM2_USE_PUGIXML
+  Use pugixml for XML parsing. Used for mesh I/O.
+  (Default: ON)
+
+UM2_USE_VALGRIND
+  Use valgrind for memory checking. Creates a valgrind_X target for each test.
+  (Default: OFF)

@@ -1,9 +1,10 @@
 #include <um2/config.hpp>
+
 #if UM2_USE_GMSH
 #  include <um2/gmsh/base_gmsh_api.hpp>
-#endif
 
-#include "../test_macros.hpp"
+#  include "../test_macros.hpp"
+#endif
 
 #if UM2_USE_GMSH
 
@@ -18,6 +19,9 @@ TEST_CASE(base_gmsh_api)
 TEST_SUITE(gmsh_wrapper) { TEST(base_gmsh_api); }
 #endif // UM2_USE_GMSH
 
+#if !UM2_USE_GMSH
+CONST
+#endif
 auto
 main() -> int
 {

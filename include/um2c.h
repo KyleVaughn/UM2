@@ -6,106 +6,139 @@
 extern "C" {
 #endif
 
-// Memory management
+//==============================================================================
+// Data sizes 
+//==============================================================================
+
 void
-um2Malloc(void ** p, Size size);
+um2SizeOfInt(int * size);
+
+void
+um2SizeOfFloat(int * size);
+
+//==============================================================================
+// Memory management
+//==============================================================================
+
+void
+um2Malloc(void ** p, Int size);
+
 void
 um2Free(void * p);
 
+//==============================================================================
 // Initialization and finalization
-void
-um2Initialize(char const * verbosity, Int init_gmsh, Int gmsh_verbosity, Int * ierr);
+//==============================================================================
 
 void
-um2Finalize(Int * ierr);
-
-// Size of Int and Float
-void
-getSizeOfInt(int * size);
+um2Initialize();
 
 void
-getSizeOfFloat(int * size);
+um2Finalize();
 
-// MPACT Spatial Partition
-void
-um2NewMPACTSpatialPartition(void ** model, Int * ierr);
-void
-um2DeleteMPACTSpatialPartition(void * model, Int * ierr);
+
+//==============================================================================
+// MPACT model
+//==============================================================================
 
 void
-um2ImportMPACTModel(char const * path, void ** model, Int * ierr);
+um2NewMPACTModel(void ** model);
+
+void
+um2DeleteMPACTModel(void * model);
+
+void
+um2ReadMPACTModel(char const * path, void ** model);
 
 // Num
+//------------------------------------------------------------------------------
 void
-um2MPACTNumCoarseCells(void * model, Int * n, Int * ierr);
+um2MPACTNumCoarseCells(void * model, Int * n);
 void
-um2MPACTNumRTMs(void * model, Int * n, Int * ierr);
+um2MPACTNumRTMs(void * model, Int * n);
 void
-um2MPACTNumLattices(void * model, Int * n, Int * ierr);
+um2MPACTNumLattices(void * model, Int * n);
 void
-um2MPACTNumAssemblies(void * model, Int * n, Int * ierr);
+um2MPACTNumAssemblies(void * model, Int * n);
 
 // NumCells
+//------------------------------------------------------------------------------
 void
-um2MPACTCoreNumCells(void * model, Int * nx, Int * ny, Int * ierr);
+um2MPACTCoreNumCells(void * model, Int * nx, Int * ny);
 void
-um2MPACTAssemblyNumCells(void * model, Int asy_id, Int * nx, Int * ierr);
+um2MPACTAssemblyNumCells(void * model, Int asy_id, Int * nx);
 void
-um2MPACTLatticeNumCells(void * model, Int lat_id, Int * nx, Int * ny, Int * ierr);
+um2MPACTLatticeNumCells(void * model, Int lat_id, Int * nx, Int * ny);
 void
-um2MPACTRTMNumCells(void * model, Int rtm_id, Int * nx, Int * ny, Int * ierr);
+um2MPACTRTMNumCells(void * model, Int rtm_id, Int * nx, Int * ny);
 
-// Child
+// GetChild
+//------------------------------------------------------------------------------
 void
-um2MPACTCoreGetChild(void * model, Int ix, Int iy, Int * child, Int * ierr);
+um2MPACTCoreGetChild(void * model, Int ix, Int iy, Int * child);
+
 void
-um2MPACTAssemblyGetChild(void * model, Int asy_id, Int ix, Int * child, Int * ierr);
+um2MPACTAssemblyGetChild(void * model, Int asy_id, Int ix, Int * child);
+
 void
-um2MPACTLatticeGetChild(void * model, Int lat_id, Int ix, Int iy, Int * child,
-                        Int * ierr);
+um2MPACTLatticeGetChild(void * model, Int lat_id, Int ix, Int iy, Int * child);
+
 void
-um2MPACTRTMGetChild(void * model, Int rtm_id, Int ix, Int iy, Int * child, Int * ierr);
+um2MPACTRTMGetChild(void * model, Int rtm_id, Int ix, Int iy, Int * child);
 
 // CoarseCell
+//------------------------------------------------------------------------------
 void
-um2MPACTCoarseCellNumFaces(void * model, Int cc_id, Int * num_faces, Int * ierr);
+um2MPACTCoarseCellNumFaces(void * model, Int cc_id, Int * num_faces);
+
 void
-um2MPACTCoarseCellWidth(void * model, Int cc_id, Float * width, Int * ierr);
+um2MPACTCoarseCellWidth(void * model, Int cc_id, Float * width);
+
 void
-um2MPACTCoarseCellHeight(void * model, Int cc_id, Float * height, Int * ierr);
+um2MPACTCoarseCellHeight(void * model, Int cc_id, Float * height);
+
 void
-um2MPACTCoarseCellFaceAreas(void * model, Int cc_id, Int * n, Float ** areas, Int * ierr);
+um2MPACTCoarseCellFaceAreas(void * model, Int cc_id, Float * areas);
+
 void
-um2MPACTCoarseCellFaceContaining(void * model, Int cc_id, Float x, Float y, Int * face_id,
-                                 Int * ierr);
+um2MPACTCoarseCellFaceContaining(void * model, Int cc_id, Float x, Float y, Int * face_id);
+
 void
-um2MPACTCoarseCellFaceCentroid(void * model, Int cc_id, Int face_id, Float * x, Float * y,
-                               Int * ierr);
+um2MPACTCoarseCellFaceCentroid(void * model, Int cc_id, Int face_id, Float * x, Float * y);
+
 void
-um2MPACTCoarseCellMaterialIDs(void * model, Int cc_id, MaterialID ** mat_ids, Int * n,
-                              Int * ierr);
+um2MPACTCoarseCellMaterialIDs(void * model, Int cc_id, MatID * mat_ids); 
+
 void
 um2MPACTIntersectCoarseCell(void * model, Int cc_id, Float origin_x, Float origin_y,
                             Float direction_x, Float direction_y, Float * intersections,
-                            Int * n, Int * ierr);
+                            Int * n);
+
+// RTM
+//------------------------------------------------------------------------------
 void
-um2MPACTRTMWidth(void * model, Int rtm_id, Float * width, Int * ierr);
+um2MPACTRTMWidth(void * model, Int rtm_id, Float * width);
+
 void
-um2MPACTRTMHeight(void * model, Int rtm_id, Float * height, Int * ierr);
+um2MPACTRTMHeight(void * model, Int rtm_id, Float * height);
+
+// Heights
+//-----------------------------------------------------------------------------
 void
-um2MPACTCoarseCellHeights(void * model, Int * n, Int ** cc_ids, Float ** heights,
-                          Int * ierr);
+um2MPACTCoarseCellHeights(void * model, Int * n, Int ** cc_ids, Float ** heights);
+
 void
-um2MPACTRTMHeights(void * model, Int * n, Int ** rtm_ids, Float ** heights, Int * ierr);
+um2MPACTRTMHeights(void * model, Int * n, Int ** rtm_ids, Float ** heights);
+
 void
-um2MPACTLatticeHeights(void * model, Int * n, Int ** lat_ids, Float ** heights,
-                       Int * ierr);
+um2MPACTLatticeHeights(void * model, Int * n, Int ** lat_ids, Float ** heights);
+
 void
-um2MPACTAssemblyHeights(void * model, Int asy_id, Int * n, Float ** heights, Int * ierr);
+um2MPACTAssemblyHeights(void * model, Int asy_id, Float * heights);
 
 void
 um2MPACTCoarseCellFaceData(void * model, Int cc_id, Int * mesh_type, Int * num_vertices,
-                           Int * num_faces, Float ** vertices, Int ** fv, Int * ierr);
+                           Int * num_faces, Float ** vertices, Int ** fv);
 
 #ifdef __cplusplus
 }

@@ -1,17 +1,23 @@
+#include <um2/common/cast_if_not.hpp>
+#include <um2/config.hpp>
+#include <um2/math/vec.hpp>
+#include <um2/mpact/model.hpp>
+#include <um2/stdlib/algorithm/is_sorted.hpp>
 #include <um2c.h>
 
 #include "../test_macros.hpp"
 
-#if UM2_ENABLE_FLOAT64
-constexpr Float test_eps = 1e-4;
-#else
-constexpr Float test_eps = 1e-4F;
-#endif
+#include <cstdlib>
 
-#if defined(__GNUC__) && !defined(__clang__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wuseless-cast"
-#endif
+TEST_CASE(data_sizes)
+{
+  int n = -1;
+  um2SizeOfInt(&n);
+  ASSERT(n == sizeof(Int));
+  n = -1;
+  um2SizeOfFloat(&n);
+  ASSERT(n == sizeof(Float));
+}
 
 TEST_CASE(malloc_free)
 {
@@ -23,393 +29,275 @@ TEST_CASE(malloc_free)
 
 TEST_CASE(initialize_finalize)
 {
-  Int ierr = -1;
-  um2Initialize("info", 1, 2, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
-  um2Finalize(&ierr);
-  ASSERT(ierr == 0);
+  um2Initialize();
+  um2Finalize();
 }
 
-TEST_CASE(new_delete_spatial_partition)
+TEST_CASE(new_delete_mpact_model)
 {
-  Int ierr = -1;
-  um2Initialize("warn", 1, 2, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
+  um2Initialize();
   void * sp = nullptr;
-  um2NewMPACTSpatialPartition(&sp, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
-  um2DeleteMPACTSpatialPartition(sp, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
-  um2Finalize(&ierr);
-  ASSERT(ierr == 0);
+  um2NewMPACTModel(&sp);
+  ASSERT(sp != nullptr);
+  um2DeleteMPACTModel(sp);
+  um2Finalize();
 }
 
-TEST_CASE(import_MPACT_model)
+TEST_CASE(read_mpact_model)
 {
-  Int ierr = -1;
-  um2Initialize("warn", 1, 2, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
+  um2Initialize();
   void * sp = nullptr;
-  um2ImportMPACTModel("./api_mesh_files/1a.xdmf", &sp, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
-  auto * const sp_ptr = reinterpret_cast<um2::mpact::SpatialPartition *>(sp);
+  um2ReadMPACTModel("./api_mesh_files/1a_nogap.xdmf", &sp);
+  ASSERT(sp != nullptr);
 
-  // coarse cells
-  ASSERT(sp_ptr->coarse_cells.size() == 1);
+  auto const & model = *reinterpret_cast<um2::mpact::Model *>(sp);
+
+  // Coarse cells
+  ASSERT(model.numCoarseCells() == 1);
   Int n = -1;
-  um2MPACTNumCoarseCells(sp, &n, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
+  um2MPACTNumCoarseCells(sp, &n);
   ASSERT(n == 1);
   n = -1;
 
-  ASSERT(sp_ptr->coarse_cells[0].mesh_type == um2::MeshType::Tri);
-  ASSERT(sp_ptr->coarse_cells[0].mesh_id == 0);
-
-  ASSERT(sp_ptr->rtms.size() == 1);
-  um2MPACTNumRTMs(sp, &n, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
+  // RTMs
+  ASSERT(model.numRTMs() == 1);
+  um2MPACTNumRTMs(sp, &n);
   ASSERT(n == 1);
   n = -1;
 
-  ASSERT(sp_ptr->lattices.size() == 1);
-  um2MPACTNumLattices(sp, &n, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
+  // Lattices
+  ASSERT(model.numLattices() == 1);
+  um2MPACTNumLattices(sp, &n);
   ASSERT(n == 1);
   n = -1;
 
-  ASSERT(sp_ptr->assemblies.size() == 1);
-  um2MPACTNumAssemblies(sp, &n, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
+  // Assemblies
+  ASSERT(model.numAssemblies() == 1);
+  um2MPACTNumAssemblies(sp, &n);
   ASSERT(n == 1);
   n = -1;
 
-  um2DeleteMPACTSpatialPartition(sp, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
-  um2Finalize(&ierr);
-  ASSERT(ierr == 0);
+  um2DeleteMPACTModel(sp);
+  um2Finalize();
 }
 
 TEST_CASE(mpact_num_cells)
 {
-  Int ierr = -1;
-  um2Initialize("warn", 1, 2, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
+  um2Initialize();
   void * sp = nullptr;
-  um2ImportMPACTModel("./api_mesh_files/1a.xdmf", &sp, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
+  um2ReadMPACTModel("./api_mesh_files/1a_nogap.xdmf", &sp);
   Int nx = -1;
   Int ny = -1;
 
   // Core
-  um2MPACTCoreNumCells(sp, &nx, &ny, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
+  um2MPACTCoreNumCells(sp, &nx, &ny);
   ASSERT(nx == 1);
   nx = -1;
   ASSERT(ny == 1);
   ny = -1;
 
   // Assembly
-  um2MPACTAssemblyNumCells(sp, 0, &nx, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
+  um2MPACTAssemblyNumCells(sp, 0, &nx);
   ASSERT(nx == 1);
   nx = -1;
 
   // Lattice
-  um2MPACTLatticeNumCells(sp, 0, &nx, &ny, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
+  um2MPACTLatticeNumCells(sp, 0, &nx, &ny);
   ASSERT(nx == 1);
   nx = -1;
   ASSERT(ny == 1);
   ny = -1;
 
   // RTMs
-  um2MPACTRTMNumCells(sp, 0, &nx, &ny, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
+  um2MPACTRTMNumCells(sp, 0, &nx, &ny);
   ASSERT(nx == 1);
   nx = -1;
   ASSERT(ny == 1);
   ny = -1;
 
-  um2DeleteMPACTSpatialPartition(sp, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
-  um2Finalize(&ierr);
-  ASSERT(ierr == 0);
+  um2DeleteMPACTModel(sp);
+  um2Finalize();
 }
 
-TEST_CASE(get_child)
+TEST_CASE(mpact_get_child)
 {
-  Int ierr = -1;
-  um2Initialize("warn", 1, 2, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
+  um2Initialize();
   void * sp = nullptr;
-  um2ImportMPACTModel("./api_mesh_files/1a.xdmf", &sp, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
+  um2ReadMPACTModel("./api_mesh_files/1a_nogap.xdmf", &sp);
   Int id = -1;
+
   // Core
-  um2MPACTCoreGetChild(sp, 0, 0, &id, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
-  ASSERT(id == 0);
-  id = -1;
-  // Assembly
-  um2MPACTAssemblyGetChild(sp, 0, 0, &id, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
-  ASSERT(id == 0);
-  id = -1;
-  // Lattice
-  um2MPACTLatticeGetChild(sp, 0, 0, 0, &id, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
-  ASSERT(id == 0);
-  id = -1;
-  // RTM
-  um2MPACTRTMGetChild(sp, 0, 0, 0, &id, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
+  um2MPACTCoreGetChild(sp, 0, 0, &id);
   ASSERT(id == 0);
   id = -1;
 
-  um2DeleteMPACTSpatialPartition(sp, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
-  um2Finalize(&ierr);
-  ASSERT(ierr == 0);
+  // Assembly
+  um2MPACTAssemblyGetChild(sp, 0, 0, &id);
+  ASSERT(id == 0);
+  id = -1;
+
+  // Lattice
+  um2MPACTLatticeGetChild(sp, 0, 0, 0, &id);
+  ASSERT(id == 0);
+  id = -1;
+
+  // RTM
+  um2MPACTRTMGetChild(sp, 0, 0, 0, &id);
+  ASSERT(id == 0);
+  id = -1;
+
+  um2DeleteMPACTModel(sp);
+  um2Finalize();
 }
 
 TEST_CASE(coarse_cell_functions)
 {
-  Int ierr = -1;
-  um2Initialize("warn", 1, 2, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
+  um2Initialize();
   void * sp = nullptr;
-  um2ImportMPACTModel("./api_mesh_files/1a.xdmf", &sp, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
+  um2ReadMPACTModel("./api_mesh_files/1a_nogap.xdmf", &sp);
+  ASSERT(sp != nullptr);
+
   // numFaces
   Int n = -1;
-  um2MPACTCoarseCellNumFaces(sp, 0, &n, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
-  ASSERT(n == 212);
+  um2MPACTCoarseCellNumFaces(sp, 0, &n);
+  ASSERT(n == 48);
   n = -1;
-  // dx, dy
+
+  // width, height
   Float dx = -1;
-  um2MPACTCoarseCellWidth(sp, 0, &dx, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
-#if UM2_ENABLE_FLOAT64 == 1
-  Float const expected_dx = 1.26;
-#else
-  Float const expected_dx = 1.26F;
-#endif
+  auto const expected_dx = castIfNot<Float>(1.26);
+  auto const test_eps = um2::epsDistance<Float>();
+  um2MPACTCoarseCellWidth(sp, 0, &dx);
+  ASSERT_NEAR(dx, expected_dx, test_eps);
+
+  um2MPACTRTMWidth(sp, 0, &dx);
   ASSERT_NEAR(dx, expected_dx, test_eps);
   dx = -1;
-  um2MPACTRTMWidth(sp, 0, &dx, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
-  ASSERT_NEAR(dx, expected_dx, test_eps);
-  dx = -1;
+
   Float dy = -1;
-  um2MPACTCoarseCellHeight(sp, 0, &dy, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
+  um2MPACTCoarseCellHeight(sp, 0, &dy);
   ASSERT_NEAR(dy, expected_dx, test_eps);
-  dy = -1;
 
   // heights
   Int * cc_ids = nullptr;
   Float * cc_heights = nullptr;
-  um2MPACTCoarseCellHeights(sp, &n, &cc_ids, &cc_heights, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
+  um2MPACTCoarseCellHeights(sp, &n, &cc_ids, &cc_heights);
   ASSERT(n == 1);
   n = -1;
   ASSERT(cc_ids);
   ASSERT(cc_heights);
   ASSERT(cc_ids[0] == 0);
-  ASSERT_NEAR(cc_heights[0], static_cast<Float>(2), test_eps);
+  ASSERT_NEAR(cc_heights[0], 1, test_eps);
   free(cc_ids);
   cc_ids = nullptr;
   free(cc_heights);
   cc_heights = nullptr;
 
-  Float * ass_dzs = nullptr;
-  um2MPACTAssemblyHeights(sp, 0, &n, &ass_dzs, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
-  ASSERT(n == 1);
-  n = -1;
-  ASSERT_NEAR(ass_dzs[0], static_cast<Float>(2), test_eps);
+  Float ass_dzs[10];
+  for (auto & dz : ass_dzs) {
+    dz = 0;
+  }
+  um2MPACTAssemblyHeights(sp, 0, ass_dzs);
+  ASSERT_NEAR(ass_dzs[0], 1, test_eps);
+  for (Int i = 1; i < 10; ++i) {
+    ASSERT_NEAR(ass_dzs[i], 0, test_eps);
+  }
 
   // Coarse cell face areas
-  Float * areas = nullptr;
-  um2MPACTCoarseCellFaceAreas(sp, 0, &n, &areas, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
-  ASSERT(n == 212);
-  n = -1;
+  Float areas[48];
+  um2MPACTCoarseCellFaceAreas(sp, 0, areas);
+  for (Int i = 0; i < 24; ++i) {
+    ASSERT_NEAR(areas[i], castIfNot<Float>(0.02196132438887047), test_eps);
+  }
   Float area_sum = 0;
-  for (Int i = 0; i < 212; ++i) {
-    area_sum += areas[i];
+  for (auto area : areas) {
+    area_sum += area;
   }
   ASSERT_NEAR(area_sum, expected_dx * expected_dx, test_eps);
-  free(areas);
-  areas = nullptr;
 
   // material ids
-  MaterialID * mat_ids = nullptr;
-  um2MPACTCoarseCellMaterialIDs(sp, 0, &mat_ids, &n, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
-  ASSERT(n == 212);
-  n = -1;
-  ASSERT(mat_ids);
-  ASSERT(mat_ids[0] == 1);
-  ASSERT(mat_ids[1] == 1);
+  MatID mat_ids[48];
+  um2MPACTCoarseCellMaterialIDs(sp, 0, mat_ids);
+  ASSERT(mat_ids[0] == 0);
+  ASSERT(mat_ids[24] == 1);
+  ASSERT(mat_ids[44] == 2);
 
   // find face
+  auto x = castIfNot<Float>(0.7);
+  auto const y = castIfNot<Float>(0.64);
   Int face_id = -2;
-  um2MPACTCoarseCellFaceContaining(sp, 0, static_cast<Float>(0.1),
-                                   static_cast<Float>(0.01), &face_id, &ierr);
-  ASSERT(face_id == 179);
-  face_id = -2;
-  um2MPACTCoarseCellFaceContaining(sp, 0, static_cast<Float>(0.6),
-                                   static_cast<Float>(0.54), &face_id, &ierr);
+  um2MPACTCoarseCellFaceContaining(sp, 0, x, y, &face_id);
   ASSERT(face_id == 0);
   face_id = -2;
 
-  um2DeleteMPACTSpatialPartition(sp, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
-  um2Finalize(&ierr);
-  ASSERT(ierr == 0);
-}
+  x = castIfNot<Float>(0.9);
+  um2MPACTCoarseCellFaceContaining(sp, 0, x, y, &face_id);
+  ASSERT(face_id == 8);
+  face_id = -2;
 
-TEST_CASE(intersect)
-{
-  Int ierr = -1;
-  um2Initialize("warn", 1, 2, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
-  void * sp = nullptr;
-  // Cheat with some c++
-  um2::mpact::SpatialPartition model;
-  model.makeCoarseCell({1, 1});
-  model.makeCoarseCell({1, 1});
-  model.makeCoarseCell({1, 1});
-  model.makeRTM({
-      {2, 2},
-      {0, 1}
-  });
-  model.makeLattice({{0}});
-  model.makeAssembly({0});
-  model.makeCore({{0}});
-  model.importCoarseCells("./mpact_mesh_files/coarse_cells.inp");
-  sp = &model;
+  x = castIfNot<Float>(1.0);
+  um2MPACTCoarseCellFaceContaining(sp, 0, x, y, &face_id);
+  ASSERT(face_id == 16);
+  face_id = -2;
 
-  Int const buffer_size = 6;
-  Int n = buffer_size;
-  auto * buffer = static_cast<Float *>(malloc(sizeof(Float) * buffer_size));
-  auto ox = static_cast<Float>(0.0);
-  auto oy = static_cast<Float>(0.5);
-  auto dx = static_cast<Float>(1.0);
-  auto dy = static_cast<Float>(0.0);
-  um2MPACTIntersectCoarseCell(sp, 0, ox, oy, dx, dy, buffer, &n, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
-  ASSERT(n == 4);
-  n = buffer_size;
-  ASSERT_NEAR(buffer[0], static_cast<Float>(0.0), test_eps);
-  ASSERT_NEAR(buffer[1], static_cast<Float>(0.5), test_eps);
-  ASSERT_NEAR(buffer[2], static_cast<Float>(0.5), test_eps);
-  ASSERT_NEAR(buffer[3], static_cast<Float>(1.0), test_eps);
+  x = castIfNot<Float>(1.0723);
+  um2MPACTCoarseCellFaceContaining(sp, 0, x, y, &face_id);
+  ASSERT(face_id == 24);
+  face_id = -2;
 
-  um2MPACTIntersectCoarseCell(sp, 1, ox, oy, dx, dy, buffer, &n, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
-  ASSERT(n == 4);
-  n = buffer_size;
-  ASSERT_NEAR(buffer[0], static_cast<Float>(0.0), test_eps);
-  ASSERT_NEAR(buffer[1], static_cast<Float>(0.5), test_eps);
-  ASSERT_NEAR(buffer[2], static_cast<Float>(0.5), test_eps);
-  ASSERT_NEAR(buffer[3], static_cast<Float>(1.0), test_eps);
-  free(buffer);
+  x = castIfNot<Float>(1.155);
+  um2MPACTCoarseCellFaceContaining(sp, 0, x, y, &face_id);
+  ASSERT(face_id == 32);
+  face_id = -2;
 
+  x = castIfNot<Float>(1.2325);
+  um2MPACTCoarseCellFaceContaining(sp, 0, x, y, &face_id);
+  ASSERT(face_id == 40);
+  face_id = -2;
+
+  // Intersect
+  Float buffer[256];
+  n = -1;
+  auto const ox = castIfNot<Float>(0.0);
+  auto const oy = castIfNot<Float>(0.62);
+  dx = castIfNot<Float>(1.0);
+  dy = castIfNot<Float>(0.0);
+  um2MPACTIntersectCoarseCell(sp, 0, ox, oy, dx, dy, buffer, &n);
+  ASSERT(n == 28);
+  for (Int i = 0; i < n; ++i) {
+    ASSERT(buffer[i] >= 0);
+  }
+  ASSERT(um2::is_sorted(buffer, buffer + n));
+
+  // FaceData
   Int mesh_type = -1;
-  Int nverts = -1;
-  Int nfaces = -1;
-  Int * fv = nullptr;
+  Int num_vertices = -1;
+  Int num_faces = -1;
   Float * vertices = nullptr;
-  um2MPACTCoarseCellFaceData(sp, 0, &mesh_type, &nverts, &nfaces, &vertices, &fv, &ierr);
-  ASSERT(ierr == 0);
-  ierr = -1;
-  ASSERT(mesh_type == 3);
-  mesh_type = -1;
-  ASSERT(nverts == 4);
-  nverts = -1;
-  ASSERT(nfaces == 2);
-  nfaces = -1;
-  ASSERT(fv);
-  ASSERT(fv[0] == 0);
-  fv[0] = -1;
-  ASSERT(fv[1] == 1);
-  fv[1] = -1;
-  ASSERT(fv[2] == 2);
-  fv[2] = -1;
-  ASSERT(fv[3] == 2);
-  fv[3] = -1;
-  ASSERT(fv[4] == 3);
-  fv[4] = -1;
-  ASSERT(fv[5] == 0);
-  fv[5] = -1;
-  ASSERT(vertices);
-  auto const zero = static_cast<Float>(0);
-  auto const one = static_cast<Float>(1);
-  ASSERT_NEAR(vertices[0], zero, test_eps);
-  ASSERT_NEAR(vertices[1], zero, test_eps);
-  ASSERT_NEAR(vertices[2], one, test_eps);
-  ASSERT_NEAR(vertices[3], zero, test_eps);
-  ASSERT_NEAR(vertices[4], one, test_eps);
-  ASSERT_NEAR(vertices[5], one, test_eps);
-  ASSERT_NEAR(vertices[6], zero, test_eps);
-  ASSERT_NEAR(vertices[7], one, test_eps);
+  Int * faces = nullptr;
+  um2MPACTCoarseCellFaceData(sp, 0, &mesh_type, &num_vertices, &num_faces, &vertices,
+                             &faces);
+  ASSERT(mesh_type == 8);
+  ASSERT(num_faces == 48);
+  ASSERT(vertices != nullptr);
+  ASSERT(faces != nullptr);
 
-  um2Finalize(&ierr);
-  ASSERT(ierr == 0);
+  um2Free(vertices);
+  um2Free(faces);
+  um2DeleteMPACTModel(sp);
+  um2Finalize();
 }
 
 TEST_SUITE(c_api)
 {
+  TEST(data_sizes);
   TEST(malloc_free);
   TEST(initialize_finalize);
-  TEST(new_delete_spatial_partition);
-  TEST(import_MPACT_model);
+  TEST(new_delete_mpact_model);
+  TEST(read_mpact_model);
   TEST(mpact_num_cells);
-  TEST(get_child);
+  TEST(mpact_get_child);
   TEST(coarse_cell_functions);
-  TEST(intersect);
 }
 
 auto
@@ -418,7 +306,3 @@ main() -> int
   RUN_SUITE(c_api);
   return 0;
 }
-
-#if defined(__GNUC__) && !defined(__clang__)
-#  pragma GCC diagnostic pop
-#endif

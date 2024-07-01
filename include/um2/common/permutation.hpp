@@ -1,59 +1,70 @@
 #pragma once
 
 #include <um2/config.hpp>
+#include <um2/stdlib/assert.hpp>
+#include <um2/stdlib/numeric/iota.hpp>
+#include <um2/stdlib/utility/swap.hpp>
 
-#include <um2/stdlib/algorithm.hpp>
-#include <um2/stdlib/numeric.hpp>
+#include <algorithm> // std::sort
 
 namespace um2
 {
 
 //==============================================================================
-// Sorting
+// sortPermutation
 //==============================================================================
+// Create a permutation that sorts [begin, end) when applied. [begin, end) is
+// not modified.
 
 template <typename T>
-constexpr void
+void
 sortPermutation(T const * const begin, T const * const end,
-                Size * const perm_begin) noexcept
+                Int * const perm_begin) noexcept
 {
   auto const n = end - begin;
-  std::iota(perm_begin, perm_begin + n, 0);
+  um2::iota(perm_begin, perm_begin + n, 0);
   std::sort(perm_begin, perm_begin + n,
-            [&begin](Size const i, Size const j) { return begin[i] < begin[j]; });
+            [&begin](Int const i, Int const j) { return begin[i] < begin[j]; });
 }
 
-// template <typename T>
-// constexpr void
-// applyPermutation(Vector<T> & v, Vector<Size> const & perm) noexcept
-//{
-//   // Verify that perm is a permutation
-//   // (contains all elements of [0, v.size()) exactly once)
-// #ifndef NDEBUG
-//   Vector<int8_t> seen(v.size(), 0);
-//   for (Size const i : perm) {
-//     assert(i < v.size());
-//     assert(seen[i] == 0);
-//     seen[i] = 1;
-//   }
-//   assert(std::count(seen.cbegin(), seen.cend(), 1) == v.size());
-// #endif
-//   // Apply the permutation in-place by iterating over cycles.
-//   Vector<int8_t> done(v.size());
-//   for (Size i = 0; i < v.size(); ++i) {
-//     if (done[i] == 1) {
-//       continue;
-//     }
-//     done[i] = true;
-//     Size prev_j = i;
-//     Size j = perm[i];
-//     while (i != j) {
-//       std::swap(v[prev_j], v[j]);
-//       done[j] = true;
-//       prev_j = j;
-//       j = perm[j];
-//     }
-//   }
-// }
+//==============================================================================
+// applyPermutation
+//==============================================================================
+// Apply the permutation perm to [begin, end).
+
+template <typename T>
+void
+applyPermutation(T * const begin, T * const end, Int const * const perm) noexcept
+{
+  auto const size = static_cast<Int>(end - begin);
+  if (size == 0) {
+    return;
+  }
+  for (Int i = 0; i < size - 1; ++i) {
+    Int ind = perm[i];
+    ASSERT(0 <= ind);
+    while (ind < i) {
+      ASSERT(0 <= ind);
+      ASSERT(ind < size);
+      ind = perm[ind];
+    }
+    um2::swap(begin[i], begin[ind]);
+  }
+}
+
+//==============================================================================
+// invertPermutation
+//==============================================================================
+// Compute the inverse of the permutation perm and store it in inv_perm.
+
+inline void
+invertPermutation(Int const * const p_begin, Int const * const p_end,
+                  Int * const inv_perm) noexcept
+{
+  auto const size = static_cast<Int>(p_end - p_begin);
+  for (Int i = 0; i < size; ++i) {
+    inv_perm[p_begin[i]] = i;
+  }
+}
 
 } // namespace um2

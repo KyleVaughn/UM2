@@ -1,12 +1,12 @@
-#include <um2/stdlib/algorithm.hpp>
+#include <um2/config.hpp>
+#include <um2/stdlib/algorithm/fill.hpp>
 
 #include "../../test_macros.hpp"
 
-template <typename T>
 HOSTDEV
 TEST_CASE(fill_test)
 {
-  T a[10] = {0};
+  int a[10] = {0};
   um2::fill(&a[0], &a[0] + 10, 1);
   for (auto const & i : a) {
     ASSERT(i == 1);
@@ -16,22 +16,34 @@ TEST_CASE(fill_test)
     ASSERT(i == 2);
   }
 }
+MAKE_CUDA_KERNEL(fill_test);
 
-#if UM2_USE_CUDA
-template <typename T>
-MAKE_CUDA_KERNEL(fill_test, T);
-#endif
+HOSTDEV
+constexpr auto
+foo() -> int
+{
+  int a[10] = {0};
+  um2::fill(&a[0], &a[0] + 10, 1);
+  int sum = 0;
+  for (auto const & i : a) {
+    sum += i;
+  }
+  return sum;
+}
 
-template <typename T>
+HOSTDEV
+TEST_CASE(fill_constexpr_test) { static_assert(foo() == 10); }
+MAKE_CUDA_KERNEL(fill_constexpr_test);
+
 TEST_SUITE(fill)
 {
-  TEST_HOSTDEV(fill_test, 1, 1, T);
+  TEST_HOSTDEV(fill_test);
+  TEST_HOSTDEV(fill_constexpr_test);
 }
 
 auto
 main() -> int
 {
-  RUN_SUITE(fill<int32_t>);
-  RUN_SUITE(fill<int64_t>);
+  RUN_SUITE(fill);
   return 0;
 }

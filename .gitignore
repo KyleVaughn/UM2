@@ -1,18 +1,9 @@
-.idea/
-.vs/
-.vscode/
+# Build directory
 build/
-cmake-build-*/
-prefix/
-**/.DS_Store
-CMakeLists.txt.user
-CMakeUserPresets.json
+
+# MPACT data
+MPACT_Extras/
+MPACT_Extras
+
+# config files
 include/um2/config.hpp
-.cache/    
-env/    
-docs/_build/    
-docs/_static/    
-docs/_templates/    
-docs/html/    
-docs/latex/    
-docs/Doxyfile.bak

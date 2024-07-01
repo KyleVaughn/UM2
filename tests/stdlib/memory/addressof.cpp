@@ -1,65 +1,49 @@
-#include <um2/stdlib/memory.hpp>
+#include <um2/config.hpp>
+#include <um2/stdlib/memory/addressof.hpp>
 
 #include "../../test_macros.hpp"
 
-// NOLINTBEGIN justification: Just simple test code
+// addressof(x) must return the same value as &x, even if operator& is overloaded
 struct A {
-  void
-  operator&() const
+  int i;
+
+  // NOLINTNEXTLINE(google-runtime-operator) OK, we are testing operator&
+  auto
+  operator&() const -> int
   {
+    return 42;
   }
 };
-
-struct Nothing {
-  explicit
-  operator char &()
-  {
-    // cppcheck-suppress unassignedVariable; justification: don't care in this case
-    static char c;
-    return c;
-  }
-};
-// NOLINTEND
-
-//=============================================================================
-// addressof
-//=============================================================================
 
 HOSTDEV
-TEST_CASE(addressof)
+TEST_CASE(test_addressof)
 {
-  {
-    int i = 0;
-    double d = 0;
-    static_assert(um2::addressof(i) == &i);
-    static_assert(um2::addressof(d) == &d);
+  // Basic tests
+  int i = 0;
+  double d = 0;
+  static_assert(um2::addressof(i) == &i);
+  static_assert(um2::addressof(d) == &d);
 
-    A * tp = new A;
-    const A * ctp = tp;
-    ASSERT(um2::addressof(*tp) == tp);
-    ASSERT(um2::addressof(*ctp) == ctp);
-    delete tp;
-  }
-  {
-    union {
-      Nothing n;
-      int i;
-    };
-// Clang can do this as a static assert, gcc cannot
-#ifdef __clang__
-    static_assert(um2::addressof(n) == static_cast<void *>(um2::addressof(n)));
-#else
-    ASSERT(um2::addressof(n) == static_cast<void *>(um2::addressof(n)));
-#endif
-  }
+  // Overloaded operator&
+  A * tp = new A;
+  A const * ctp = tp;
+  ASSERT(um2::addressof(*tp) == tp);
+  ASSERT(um2::addressof(*ctp) == ctp);
+  delete tp;
+
+  // Constexpr tests
+  constexpr int ci = 0;
+  constexpr double cd = 0;
+  static_assert(um2::addressof(ci) == &ci);
+  static_assert(um2::addressof(cd) == &cd);
 }
-MAKE_CUDA_KERNEL(addressof);
+MAKE_CUDA_KERNEL(test_addressof);
 
-TEST_SUITE(addressof_suite) { TEST_HOSTDEV(addressof); }
+TEST_SUITE(addressof) { TEST_HOSTDEV(test_addressof); }
 
 auto
 main() -> int
 {
-  RUN_SUITE(addressof_suite);
+  RUN_SUITE(addressof);
   return 0;
 }

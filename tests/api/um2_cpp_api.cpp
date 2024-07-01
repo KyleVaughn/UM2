@@ -1,4 +1,9 @@
 #include <um2.hpp>
+#include <um2/config.hpp>
+
+#if UM2_USE_GMSH
+#  include <um2/gmsh/base_gmsh_api.hpp>
+#endif
 
 #include "../test_macros.hpp"
 
@@ -7,7 +12,6 @@ TEST_CASE(initialize_finalize)
   um2::initialize();
 #if UM2_USE_GMSH
   ASSERT(um2::gmsh::isInitialized());
-  ASSERT(um2::Log::getMaxVerbosityLevel() == um2::LogVerbosity::Info);
 #endif
   um2::finalize();
 }

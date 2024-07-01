@@ -1,57 +1,111 @@
 #pragma once
 
-#include <cassert> // assert
-#include <cstdint> // int32_t, int64_t
-
-// Ignore clang-tidy in this case, since these are CMake defines
-// NOLINTBEGIN(modernize-macro-to-enum) justified
-
 //==============================================================================
 // CMake defines
 //==============================================================================
 
-// OpenMP
-#cmakedefine01 UM2_USE_OPENMP
+// clang-format off
+// Ignore clang-tidy, since these are CMake defines
+// NOLINTBEGIN(*-macro-to-enum)
 
-// TBB
-#cmakedefine01 UM2_USE_TBB
-
-// Gmsh
-#cmakedefine01 UM2_USE_GMSH
-
-// libpng
-#cmakedefine01 UM2_USE_PNG
-
-// CUDA
-#cmakedefine01 UM2_USE_CUDA
-
-// Integer type in API
-#cmakedefine01 UM2_ENABLE_INT64
-
-// Floating point type in API
+// Enable/disable features
+#cmakedefine01 UM2_ENABLE_ASSERTS
+#cmakedefine01 UM2_ENABLE_BMI2
+#cmakedefine01 UM2_ENABLE_FASTMATH
 #cmakedefine01 UM2_ENABLE_FLOAT64
+#cmakedefine01 UM2_ENABLE_SIMD_VEC
 
-// Logging
-#define MIN_LOG_LEVEL @UM2_MIN_LOG_LEVEL@
+// External tools/dependencies
+#cmakedefine01 UM2_USE_BLAS_LAPACK
+#cmakedefine01 UM2_USE_CUDA
+#cmakedefine01 UM2_USE_GMSH
+#cmakedefine01 UM2_USE_MPACT_XSLIBS
+#cmakedefine01 UM2_USE_HDF5
+#cmakedefine01 UM2_USE_OPENMP
+#cmakedefine01 UM2_USE_PUGIXML
+
+// Max log level for compile-time filtering of log messages
+#define MAX_LOG_LEVEL @UM2_MAX_LOG_LEVEL@
+
+// Default path to look for MPACT cross section libraries
+#define MPACT_DATA_DIR "@MPACT_DATA@"
+
+// NOLINTEND(*-macro-to-enum)
+// clang-format on
+
+//==============================================================================
+// Includes
+//==============================================================================
+
+#include <cstdint> // int8_t, int32_t
+
+#if UM2_USE_OPENMP
+#  include <omp.h>
+#endif
+
+#if UM2_USE_CUDA
+#  include <cuda/std/complex>
+#  include <cuda_runtime.h>
+#else
+#  include <complex>
+#endif
 
 //==============================================================================
 // Attributes
 //==============================================================================
 
 // Optimization
-#undef PURE
-#undef CONST
-#undef HOT
-#undef HIDDEN
+#ifdef PURE
+#  error "PURE already defined"
+#endif
+#ifdef CONST
+#  error "CONST already defined"
+#endif
 #define PURE  [[gnu::pure]]
 #define CONST [[gnu::const]]
-#define HOT   [[gnu::hot]]
+
+// TODO(kcvaughn): Once C++23 is supported, we can use [[assume(expr)]] instead.
+// https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1774r8.pdf
+// https://github.com/KyleVaughn/UM2/issues/142
+#ifdef ASSUME
+#  error "ASSUME already defined"
+#endif
+#if defined(__clang__)
+#  define ASSUME(expr) __builtin_assume(expr)
+#elif defined(__GNUC__)
+#  if (__GNUC__ >= 13)
+#    define ASSUME(expr) __attribute__((__assume__(expr)))
+#  else
+#    define ASSUME(expr)                                                                 \
+      if (expr) {                                                                        \
+      } else {                                                                           \
+        __builtin_unreachable();                                                         \
+      }
+#  endif
+#elif defined(__CUDACC__)
+#  define ASSUME(expr) __assume(expr)
+#else
+#  define ASSUME(expr)
+#endif
+
+#ifdef RESTRICT
+#  error "RESTRICT already defined"
+#endif
+#define RESTRICT __restrict__
 
 // CUDA
-#undef HOST
-#undef DEVICE
-#undef HOSTDEV
-#undef GLOBAL
+#ifdef HOST
+#  error "HOST already defined"
+#endif
+#ifdef DEVICE
+#  error "DEVICE already defined"
+#endif
+#ifdef HOSTDEV
+#  error "HOSTDEV already defined"
+#endif
+#ifdef GLOBAL
+#  error "GLOBAL already defined"
+#endif
 #if UM2_USE_CUDA
 #  define HOST    __host__
 #  define DEVICE  __device__
@@ -64,58 +118,52 @@
 #  define GLOBAL
 #endif
 
-// API
-#define HIDDEN __attribute__((visibility("hidden")))
-
 //==============================================================================
 // Typedefs
 //==============================================================================
 
-#if UM2_ENABLE_INT64
-using Size = int64_t; // Index type
-using Int = int64_t;  // Integer type in API
-
-consteval auto
-sizeMax() -> Size
-{
-  return 0x7FFFFFFFFFFFFFFF;
-}
-
-#else
-
-using Size = int32_t; // Index type
-using Int = int32_t;  // Integer type in API
-
-consteval auto
-sizeMax() -> Size
-{
-  return 0x7FFFFFFF;
-}
-
-#endif
-
+// Floating point type
 #if UM2_ENABLE_FLOAT64
-using Float = double; // Floating point type in API
+using Float = double;
 #else
-using Float = float; // Floating point type in API
-#endif
-
-// Integer type for material IDs.
-using MaterialID = int8_t;
-
-template <class... T>
-constexpr bool always_false = false;
-
-// NOLINTEND(modernize-macro-to-enum)
-
-//==============================================================================
-// Includes
-//==============================================================================
-
-#if UM2_USE_OPENMP
-#  include <omp.h>
+using Float = float;
 #endif
 
 #if UM2_USE_CUDA
-#  include <cuda_runtime.h>
+template <class T>
+using Complex = cuda::std::complex<T>;
+#else
+template <class T>
+using Complex = std::complex<T>;
 #endif
+
+template <class T>
+constexpr auto
+conj(T const & z) noexcept -> T
+{
+#if UM2_USE_CUDA
+  return cuda::std::conj(z);
+#else
+  return std::conj(z);
+#endif
+}
+
+// Integer type
+using Int = int32_t;
+HOSTDEV consteval auto
+intMax() noexcept -> Int
+{
+  return INT32_MAX;
+}
+
+// Integer type for material IDs.
+// We don't expect more than 127 materials, so we use int8_t to save memory.
+using MatID = int8_t;
+
+//==============================================================================
+// Misc.
+//==============================================================================
+
+// For static_asserts which are always false.
+template <class... T>
+constexpr bool always_false = false;

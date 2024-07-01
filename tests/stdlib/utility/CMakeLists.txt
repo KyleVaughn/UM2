@@ -1,0 +1,5 @@
+um2_add_test(./forward.cpp)
+um2_add_test(./move.cpp)
+um2_add_test(./pair.cpp)
+um2_add_test(./swap.cpp)
+um2_add_test(./is_pointer_in_range.cpp)

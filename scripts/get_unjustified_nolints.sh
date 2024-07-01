@@ -1,7 +1,10 @@
+#!/bin/bash
+
 START_DIR=$PWD
 cd ../
-# Has to be followed by "justified", "justification", etc.
-grep -r "NOLINTBEGIN" | grep -v "justif"
-grep -r "NOLINTNEXTLINE" | grep -v "justif"
-grep -r "cppcheck-suppress" | grep -v "justif"
+
+# Has to be followed by "OK" or "match"
+grep -r "NOLINTBEGIN" | grep -v "OK" | grep -v "match"
+grep -r "NOLINTNEXTLINE" | grep -v "OK" | grep -v "match"
+
 cd $START_DIR

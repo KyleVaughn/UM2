@@ -1,9 +1,17 @@
 #include <um2/config.hpp>
-#if UM2_USE_GMSH
-#  include <um2/gmsh/model.hpp>
-#endif
 
-#include "../test_macros.hpp"
+#if UM2_USE_GMSH
+#  include <cstddef>
+#  include <string>
+#  include <um2/common/color.hpp>
+#  include <um2/common/logger.hpp>
+#  include <um2/gmsh/base_gmsh_api.hpp>
+#  include <um2/gmsh/model.hpp>
+#  include <um2/physics/material.hpp>
+#  include <vector>
+
+#  include "../test_macros.hpp"
+#endif
 
 #if UM2_USE_GMSH
 
@@ -39,7 +47,6 @@ TEST_CASE(getMaterials)
           {2, 1}
   },
       255, 0, 0);
-  um2::Color const red(um2::Colors::Red);
   um2::gmsh::model::addPhysicalGroup(2, {2, 3}, -1, "Material_MOX");
   um2::gmsh::model::setColor(
       {
@@ -47,21 +54,25 @@ TEST_CASE(getMaterials)
           {2, 3}
   },
       0, 0, 255);
-  um2::Color const blue(um2::Colors::Blue);
   std::vector<um2::Material> materials;
   um2::gmsh::model::getMaterials(materials);
   ASSERT(materials.size() == 2);
-  ASSERT(materials[0].name == "UO2");
-  ASSERT(materials[0].color == red);
-  ASSERT(materials[1].name == "MOX");
-  ASSERT(materials[1].color == blue);
+  ASSERT(materials[0].getName() == "UO2");
+  ASSERT(materials[0].getColor() == um2::red);
+  ASSERT(materials[1].getName() == "MOX");
+  ASSERT(materials[1].getColor() == um2::blue);
   um2::gmsh::finalize();
 }
 
-TEST_CASE(groupPresFragment_2d2d)
+TEST_CASE(groupPresFragment_2d2d_basic)
 {
-  std::vector<um2::Material> const materials = {um2::Material("Fuel", "red"),
-                                                um2::Material("Moderator", "blue")};
+  um2::Material fuel;
+  fuel.setName("Fuel");
+  fuel.setColor(um2::red);
+  um2::Material moderator;
+  moderator.setName("Moderator");
+  moderator.setColor(um2::blue);
+  std::vector<um2::Material> const materials = {fuel, moderator};
   // First pass no material hierarchy, second pass with material hierarchy
   for (size_t i = 0; i < 2; ++i) {
     um2::gmsh::initialize();
@@ -138,15 +149,16 @@ TEST_CASE(groupPresFragment_2d2d)
     ASSERT(tags[0] == 1);
     ASSERT(tags[1] == 2);
     if (i == 1) {
-      um2::Color const red("red");
       int r = 0;
       int g = 0;
       int b = 0;
       int a = 0;
       um2::gmsh::model::getColor(2, 1, r, g, b, a);
-      ASSERT(r == red.r() && g == red.g() && b == red.b() && a == red.a());
+      ASSERT(r == um2::red.r() && g == um2::red.g() && b == um2::red.b() &&
+             a == um2::red.a());
       um2::gmsh::model::getColor(2, 2, r, g, b, a);
-      ASSERT(r == red.r() && g == red.g() && b == red.b() && a == red.a());
+      ASSERT(r == um2::red.r() && g == um2::red.g() && b == um2::red.b() &&
+             a == um2::red.a());
     }
     // if material hierarchy is used, Material Moderator should have 1 entity: {3}
     // if material hierarchy is not used, Material Moderator should have 2 entities:
@@ -162,22 +174,87 @@ TEST_CASE(groupPresFragment_2d2d)
     } else {
       ASSERT(tags.size() == 1);
       ASSERT(tags[0] == 3);
-      um2::Color const blue("blue");
       int r = 0;
       int g = 0;
       int b = 0;
       int a = 0;
       um2::gmsh::model::getColor(2, 3, r, g, b, a);
-      ASSERT(r == blue.r() && g == blue.g() && b == blue.b() && a == blue.a());
+      ASSERT(r == um2::blue.r() && g == um2::blue.g() && b == um2::blue.b() &&
+             a == um2::blue.a());
     }
     um2::gmsh::finalize();
   }
 }
 
+TEST_CASE(groupPresFragment_2d2d_complex)
+{
+  um2::Material fuel;
+  fuel.setName("Fuel");
+  fuel.setColor(um2::red);
+  um2::Material moderator;
+  moderator.setName("Moderator");
+  moderator.setColor(um2::blue);
+  std::vector<um2::Material> const materials = {fuel, moderator};
+  um2::gmsh::initialize();
+  int const disk_tag = um2::gmsh::model::occ::addDisk(0, 0, 0, 1, 1);
+  std::vector<int> grid_tags(4);
+  grid_tags[0] = um2::gmsh::model::occ::addRectangle(-2, -2, 0, 2, 2);
+  grid_tags[1] = um2::gmsh::model::occ::addRectangle(0, -2, 0, 2, 2);
+  grid_tags[2] = um2::gmsh::model::occ::addRectangle(-2, 0, 0, 2, 2);
+  grid_tags[3] = um2::gmsh::model::occ::addRectangle(0, 0, 0, 2, 2);
+  um2::gmsh::model::occ::synchronize();
+  um2::gmsh::model::addPhysicalGroup(2, grid_tags, -1, "Grid");
+  um2::gmsh::model::addPhysicalGroup(2, {disk_tag}, -1, "Disk");
+  int const fuel_ptag =
+      um2::gmsh::model::addPhysicalGroup(2, {disk_tag}, -1, "Material_Fuel");
+  int const moderator_ptag =
+      um2::gmsh::model::addPhysicalGroup(2, grid_tags, -1, "Material_Moderator");
+  um2::gmsh::vectorpair const object_dimtags = {
+      {2, disk_tag}
+  };
+  um2::gmsh::vectorpair const tool_dimtags = {
+      {2, grid_tags[0]},
+      {2, grid_tags[1]},
+      {2, grid_tags[2]},
+      {2, grid_tags[3]}
+  };
+  um2::gmsh::vectorpair out_dimtags;
+  std::vector<um2::gmsh::vectorpair> out_dimtags_map;
+  um2::gmsh::model::occ::groupPreservingFragment(object_dimtags, tool_dimtags,
+                                                 out_dimtags, out_dimtags_map, materials);
+  // Group Fuel should have 4 entities: {1, 2, 3, 4}
+  std::vector<int> tags;
+  std::string name;
+  um2::gmsh::model::getEntitiesForPhysicalGroup(2, fuel_ptag, tags);
+  um2::gmsh::model::getPhysicalName(2, fuel_ptag, name);
+  ASSERT(name == "Material_Fuel");
+  ASSERT(tags.size() == 4);
+  ASSERT(tags[0] == 1);
+  ASSERT(tags[1] == 2);
+  ASSERT(tags[2] == 3);
+  ASSERT(tags[3] == 4);
+  // Group Moderator should have 4 entities: {5, 6, 7, 8}
+  tags.clear();
+  um2::gmsh::model::getEntitiesForPhysicalGroup(2, moderator_ptag, tags);
+  um2::gmsh::model::getPhysicalName(2, moderator_ptag, name);
+  ASSERT(name == "Material_Moderator");
+  ASSERT(tags.size() == 4);
+  ASSERT(tags[0] == 5);
+  ASSERT(tags[1] == 6);
+  ASSERT(tags[2] == 7);
+  ASSERT(tags[3] == 8);
+  um2::gmsh::finalize();
+}
+
 TEST_CASE(groupPresFragment_3d3d)
 {
-  std::vector<um2::Material> const materials = {um2::Material("Fuel", "red"),
-                                                um2::Material("Moderator", "blue")};
+  um2::Material fuel;
+  fuel.setName("Fuel");
+  fuel.setColor(um2::red);
+  um2::Material moderator;
+  moderator.setName("Moderator");
+  moderator.setColor(um2::blue);
+  std::vector<um2::Material> const materials = {fuel, moderator};
   // First pass no material hierarchy, second pass with material hierarchy
   for (size_t i = 0; i < 2; ++i) {
     um2::gmsh::initialize();
@@ -254,15 +331,16 @@ TEST_CASE(groupPresFragment_3d3d)
     ASSERT(tags[0] == 1);
     ASSERT(tags[1] == 2);
     if (i == 1) {
-      um2::Color const red(um2::Colors::Red);
       int r = 0;
       int g = 0;
       int b = 0;
       int a = 0;
       um2::gmsh::model::getColor(3, 1, r, g, b, a);
-      ASSERT(r == red.r() && g == red.g() && b == red.b() && a == red.a());
+      ASSERT(r == um2::red.r() && g == um2::red.g() && b == um2::red.b() &&
+             a == um2::red.a());
       um2::gmsh::model::getColor(3, 2, r, g, b, a);
-      ASSERT(r == red.r() && g == red.g() && b == red.b() && a == red.a());
+      ASSERT(r == um2::red.r() && g == um2::red.g() && b == um2::red.b() &&
+             a == um2::red.a());
     }
     // if material hierarchy is used, Material Moderator should have 1 entity: {3}
     // if material hierarchy is not used, Material Moderator should have 2 entities:
@@ -278,22 +356,27 @@ TEST_CASE(groupPresFragment_3d3d)
     } else {
       ASSERT(tags.size() == 1);
       ASSERT(tags[0] == 3);
-      um2::Color const blue(um2::Colors::Blue);
       int r = 0;
       int g = 0;
       int b = 0;
       int a = 0;
       um2::gmsh::model::getColor(3, 3, r, g, b, a);
-      ASSERT(r == blue.r() && g == blue.g() && b == blue.b() && a == blue.a());
+      ASSERT(r == um2::blue.r() && g == um2::blue.g() && b == um2::blue.b() &&
+             a == um2::blue.a());
     }
     um2::gmsh::finalize();
   }
 }
 
-TEST_CASE(groupPresIntersect_2d2d)
+TEST_CASE(groupPresIntersect_2d2d_basic)
 {
-  std::vector<um2::Material> const materials = {um2::Material("Fuel", "red"),
-                                                um2::Material("Moderator", "blue")};
+  um2::Material fuel;
+  fuel.setName("Fuel");
+  fuel.setColor(um2::red);
+  um2::Material moderator;
+  moderator.setName("Moderator");
+  moderator.setColor(um2::blue);
+  std::vector<um2::Material> const materials = {fuel, moderator};
   // First pass no material hierarchy, second pass with material hierarchy
   for (size_t i = 0; i < 2; ++i) {
     um2::gmsh::initialize();
@@ -352,13 +435,13 @@ TEST_CASE(groupPresIntersect_2d2d)
     ASSERT(tags[0] == 1);
     tags.clear();
     if (i == 1) {
-      um2::Color const red(um2::Colors::Red);
       int r = 0;
       int g = 0;
       int b = 0;
       int a = 0;
       um2::gmsh::model::getColor(2, 1, r, g, b, a);
-      ASSERT(r == red.r() && g == red.g() && b == red.b() && a == red.a());
+      ASSERT(r == um2::red.r() && g == um2::red.g() && b == um2::red.b() &&
+             a == um2::red.a());
     }
     tags.clear();
     if (i == 0) {
@@ -372,21 +455,79 @@ TEST_CASE(groupPresIntersect_2d2d)
   }
 }
 
+TEST_CASE(groupPresIntersect_2d2d_complex)
+{
+  um2::Material fuel;
+  fuel.setName("Fuel");
+  fuel.setColor(um2::red);
+  um2::Material moderator;
+  moderator.setName("Moderator");
+  moderator.setColor(um2::blue);
+  std::vector<um2::Material> const materials = {fuel, moderator};
+  um2::gmsh::initialize();
+  int const disk_tag = um2::gmsh::model::occ::addDisk(0, 0, 0, 1, 1);
+  std::vector<int> grid_tags(4);
+  grid_tags[0] = um2::gmsh::model::occ::addRectangle(-2, -2, 0, 2, 2);
+  grid_tags[1] = um2::gmsh::model::occ::addRectangle(0, -2, 0, 2, 2);
+  grid_tags[2] = um2::gmsh::model::occ::addRectangle(-2, 0, 0, 2, 2);
+  grid_tags[3] = um2::gmsh::model::occ::addRectangle(0, 0, 0, 2, 2);
+  um2::gmsh::model::occ::synchronize();
+  um2::gmsh::model::addPhysicalGroup(2, grid_tags, -1, "Grid");
+  um2::gmsh::model::addPhysicalGroup(2, {disk_tag}, -1, "Disk");
+  um2::gmsh::model::addPhysicalGroup(2, {disk_tag}, -1, "Material_Fuel");
+  um2::gmsh::model::addPhysicalGroup(2, grid_tags, -1, "Material_Moderator");
+  um2::gmsh::vectorpair const object_dimtags = {
+      {2, disk_tag}
+  };
+  um2::gmsh::vectorpair const tool_dimtags = {
+      {2, grid_tags[0]},
+      {2, grid_tags[1]},
+      {2, grid_tags[2]},
+      {2, grid_tags[3]}
+  };
+  um2::gmsh::vectorpair out_dimtags;
+  std::vector<um2::gmsh::vectorpair> out_dimtags_map;
+  um2::gmsh::model::occ::groupPreservingIntersect(
+      object_dimtags, tool_dimtags, out_dimtags, out_dimtags_map, materials);
+  // Ensure that there are only 3 groups
+  um2::gmsh::vectorpair dimtags;
+  um2::gmsh::model::getPhysicalGroups(dimtags);
+  ASSERT(dimtags.size() == 3);
+  // Group Fuel should have 4 entities: {5, 6, 7, 8}
+  std::vector<int> tags;
+  std::string name;
+  tags.clear();
+  um2::gmsh::model::getEntitiesForPhysicalGroup(2, 3, tags);
+  um2::gmsh::model::getPhysicalName(2, 3, name);
+  ASSERT(name == "Material_Fuel");
+  ASSERT(tags.size() == 4);
+  ASSERT(tags[0] == 2);
+  ASSERT(tags[1] == 3);
+  ASSERT(tags[2] == 4);
+  ASSERT(tags[3] == 5);
+  um2::gmsh::finalize();
+}
+
 TEST_SUITE(gmsh_model)
 {
-  TEST(addToPhysicalGroup)
+  TEST(addToPhysicalGroup);
   TEST(getMaterials);
-  TEST(groupPresFragment_2d2d);
+  TEST(groupPresFragment_2d2d_basic);
+  TEST(groupPresFragment_2d2d_complex);
   TEST(groupPresFragment_3d3d);
-  TEST(groupPresIntersect_2d2d);
+  TEST(groupPresIntersect_2d2d_basic);
+  TEST(groupPresIntersect_2d2d_complex);
 }
 #endif // UM2_USE_GMSH
 
+#if !UM2_USE_GMSH
+CONST
+#endif
 auto
 main() -> int
 {
 #if UM2_USE_GMSH
-  um2::Log::setMaxVerbosityLevel(um2::LogVerbosity::Error);
+  um2::logger::level = um2::logger::levels::error;
   RUN_SUITE(gmsh_model);
 #endif
   return 0;

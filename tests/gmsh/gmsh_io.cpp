@@ -1,12 +1,13 @@
-#include <um2/common/Log.hpp>
 #include <um2/config.hpp>
+
 #if UM2_USE_GMSH
+#  include <cstdio>
+#  include <um2/common/logger.hpp>
+#  include <um2/gmsh/base_gmsh_api.hpp>
 #  include <um2/gmsh/io.hpp>
+
+#  include "../test_macros.hpp"
 #endif
-
-#include "../test_macros.hpp"
-
-#include <fstream>
 
 #if UM2_USE_GMSH
 
@@ -66,11 +67,14 @@ TEST_CASE(write_open)
 TEST_SUITE(gmsh_io) { TEST(write_open); }
 #endif // UM2_USE_GMSH
 
+#if !UM2_USE_GMSH
+CONST
+#endif
 auto
 main() -> int
 {
 #if UM2_USE_GMSH
-  um2::Log::setMaxVerbosityLevel(um2::LogVerbosity::Error);
+  um2::logger::level = um2::logger::levels::error;
   RUN_SUITE(gmsh_io);
 #endif
   return 0;
