@@ -502,7 +502,9 @@ String::init(ConstPtr s, uint64_t size) noexcept
     setLongSize(size);
   }
   // We know the pointers don't alias, since the string isn't initialized yet.
-  um2::copy(s, s + size, p);
+  if (size != 0) {
+    um2::copy(s, s + size, p);
+  }
   p[size] = '\0';
 }
 
@@ -631,7 +633,6 @@ HOSTDEV inline String::String(char const * s) noexcept
   ASSERT(s != nullptr);
   // Get the length of the string (not including null terminator)
   auto const n = strlen(s);
-  ASSERT(n > 0);
   init(s, n);
 }
 
