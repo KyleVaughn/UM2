@@ -67,7 +67,6 @@ jobs:
         run: |
           cmake -S . -B build \
                 -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-                -DUM2_BUILD_MODELS=ON \
                 -DUM2_ENABLE_ASSERTS=${{ matrix.asserts }} \
                 -DUM2_ENABLE_NATIVE=OFF \
                 -DUM2_USE_CLANG_FORMAT=ON \
