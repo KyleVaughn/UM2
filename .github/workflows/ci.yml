@@ -9,11 +9,7 @@ on:
       - main
 
 env:
-  HDF5_ROOT: /usr
   OMP_NUM_THREADS: 2
-  ENABLE_COVERAGE: OFF
-  COVERALLS_PARALLEL: true
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   main:
@@ -59,10 +55,6 @@ jobs:
         if: matrix.gmsh == 'ON'
         run: sudo apt install -y libgmsh-dev
 
-      - name: Configure with coverage
-        if: matrix.build_type == 'Debug'  && matrix.compiler == 'gcc' && matrix.asserts == 'ON' && matrix.gmsh == 'ON'
-        run: echo "ENABLE_COVERAGE=ON" >> $GITHUB_ENV
-
       - name: Configure
         run: |
           cmake -S . -B build \
@@ -82,26 +74,4 @@ jobs:
         run: make -C build
 
       - name: Run tests
-        run: make -C build test
-
-      - name: coverage
-        if: matrix.build_type == 'Debug'  && matrix.compiler == 'gcc' && matrix.asserts == 'ON' && matrix.gmsh == 'ON'
-        run: |
-          sudo apt install -y python3 pipx
-          pipx ensurepath
-          pipx install cpp-coveralls
-          pipx install coveralls
-          pipx ensurepath
-          source ~/.bashrc
-          cpp-coveralls -i include -i src -e /usr --gcov /usr/bin/gcov --dump cpp_cov.json
-          coveralls --merge=cpp_cov.json --service=github
-
-  finish:
-    needs: main
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Coveralls finished
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.github_token }}
-          parallel-finished: true
+        run: CTEST_OUTPUT_ON_FAILURE=ON make -C build test
