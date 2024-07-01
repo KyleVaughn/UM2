@@ -26,7 +26,7 @@ jobs:
         asserts: [ON, OFF]
         gmsh: [ON, OFF]
 
-    name: "${{matrix.compiler}}-${{matrix.build_type}},gmsh=${{matrix.gmsh}}"
+    name: "${{matrix.compiler}}-${{matrix.build_type}},asserts=${{matrix.asserts}},gmsh=${{matrix.gmsh}}"
 
     steps:
       - uses: actions/checkout@v3

@@ -56,7 +56,7 @@ addToPhysicalGroup(int const dim, std::vector<int> const & tags, int const tag,
       gmsh::model::removePhysicalGroups({
           {dim, existing_group_tag}
       });
-#  ifndef NDEBUG
+#  if UM2_ENABLE_ASSERTS
       int const new_tag =
           gmsh::model::addPhysicalGroup(dim, new_tags, existing_group_tag, name);
       ASSERT(new_tag == existing_group_tag);
@@ -476,7 +476,7 @@ groupPreservingFragment(gmsh::vectorpair const & object_dimtags,
   // Create the new physical groups
   //==============================================================================
   for (size_t i = 0; i < physical_group_names.size(); ++i) {
-#  ifndef NDEBUG
+#  if UM2_ENABLE_ASSERTS
     int const pgroup_tag = gmsh::model::addPhysicalGroup(
         model_dim,                       // Dimension of the physical group
         post_physical_group_ent_tags[i], // Tags of the entities in the group
@@ -564,7 +564,7 @@ groupPreservingIntersect(gmsh::vectorpair const & object_dimtags,
   // Create the new physical groups
   //==============================================================================
   for (size_t i = 0; i < physical_group_names.size(); ++i) {
-#  ifndef NDEBUG
+#  if UM2_ENABLE_ASSERTS
     int const pgroup_tag = gmsh::model::addPhysicalGroup(
         model_dim,                       // Dimension of the physical group
         post_physical_group_ent_tags[i], // Tags of the entities in the group
