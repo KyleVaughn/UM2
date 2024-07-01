@@ -50,7 +50,7 @@ jobs:
         shell: bash
         if: matrix.compiler == 'clang'
         run: |
-          sudo apt install -y clang 
+          sudo apt install -y clang
           echo "CC=clang" >> $GITHUB_ENV
           echo "CXX=clang++" >> $GITHUB_ENV
 
@@ -69,12 +69,12 @@ jobs:
                 -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
                 -DUM2_BUILD_MODELS=ON \
                 -DUM2_ENABLE_ASSERTS=${{ matrix.asserts }} \
-                -DUM2_ENABLE_NATIVE=OFF \ 
+                -DUM2_ENABLE_NATIVE=OFF \
                 -DUM2_USE_CLANG_FORMAT=ON \
                 -DUM2_USE_CLANG_TIDY=ON \
                 -DUM2_USE_COVERAGE=${ENABLE_COVERAGE} \
                 -DUM2_USE_GMSH=${{ matrix.gmsh }} \
-                -DUM2_USE_MPACT_XSLIBS=OFF 
+                -DUM2_USE_MPACT_XSLIBS=OFF
 
       - name: Format check
         run: make -C build format-check
@@ -88,7 +88,7 @@ jobs:
       - name: coverage
         if: matrix.build_type == 'Debug'  && matrix.compiler == 'gcc' && matrix.asserts == 'ON' && matrix.gmsh == 'ON'
         run: |
-          sudo apt install -y python3 pipx 
+          sudo apt install -y python3 pipx
           pipx ensurepath
           pipx install cpp-coveralls
           pipx install coveralls
