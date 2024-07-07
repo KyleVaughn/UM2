@@ -43,7 +43,7 @@ generateMesh(MeshType const mesh_type, int const smooth_iters)
 {
   gmsh::option::setNumber("Mesh.SecondOrderIncomplete", 1);
   gmsh::option::setNumber("Mesh.Smoothing", smooth_iters);
-  Int constexpr mesh_from_curvature = 12;
+  Int constexpr mesh_from_curvature = 16;
   switch (mesh_type) {
   case MeshType::Tri:
     LOG_INFO("Generating triangle mesh");

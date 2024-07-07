@@ -389,6 +389,7 @@ Material::addNuclide(String const & symbol, Float num_density) noexcept
 void
 Material::addNuclideWt(String const & symbol, Float wt_percent) noexcept
 {
+  // N_i = w_i * rho * N_A / M_i
   ASSERT(!symbol.empty());
   ASSERT(0 < wt_percent);
   ASSERT(wt_percent <= 1);
@@ -411,6 +412,40 @@ Material::addNuclideWt(String const & symbol, Float wt_percent) noexcept
     }
   }
   LOG_ERROR("Atomic mass not found for ZAID: ", zaid);
+}
+
+void
+Material::addNuclidesAtomPercent(Vector<String> const & symbols,
+                                 Vector<Float> const & percents) noexcept
+{
+  ASSERT(0 < _density); // Need to set density first
+  ASSERT(!symbols.empty());
+  ASSERT(symbols.size() == percents.size());
+  // Convert to weight percent by finding the sum of the atom_percent weighted
+  // atomic masses
+  // Compute m = sum(gamma_i * m_i)
+  Float m = 0;
+  for (Int i = 0; i < symbols.size(); ++i) {
+    auto const zaid = toZAID(symbols[i]);
+    bool found = false;
+    for (auto const & zaid_mass : ZAID_ATOMIC_MASS) {
+      if (zaid_mass.first == zaid) {
+        ASSERT(percents[i] >= 0);
+        ASSERT(percents[i] <= 1);
+        m += percents[i] * zaid_mass.second;
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      LOG_ERROR("Atomic mass not found for ZAID: ", zaid);
+    }
+  }
+  for (Int i = 0; i < symbols.size(); ++i) {
+    auto const zaid = toZAID(symbols[i]);
+    auto const percent = percents[i];
+    addNuclide(zaid, percent * _density * 0.602214076 / m);
+  }
 }
 
 void
