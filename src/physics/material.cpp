@@ -387,14 +387,12 @@ Material::addNuclide(String const & symbol, Float num_density) noexcept
 }
 
 void
-Material::addNuclideWt(String const & symbol, Float wt_percent) noexcept
+Material::addNuclideWt(Int zaid, Float wt_percent) noexcept
 {
   // N_i = w_i * rho * N_A / M_i
-  ASSERT(!symbol.empty());
   ASSERT(0 < wt_percent);
   ASSERT(wt_percent <= 1);
   ASSERT(0 < _density);
-  Int const zaid = toZAID(symbol);
   // Get the atomic mass of the nuclide from the ZAID_ATOMIC_MASS list
   for (auto const & zaid_mass : ZAID_ATOMIC_MASS) {
     if (zaid_mass.first == zaid) {
@@ -412,6 +410,13 @@ Material::addNuclideWt(String const & symbol, Float wt_percent) noexcept
     }
   }
   LOG_ERROR("Atomic mass not found for ZAID: ", zaid);
+}
+
+void
+Material::addNuclideWt(String const & symbol, Float wt_percent) noexcept
+{
+  ASSERT(!symbol.empty());
+  addNuclideWt(toZAID(symbol), wt_percent);
 }
 
 void

@@ -51,8 +51,10 @@ MPACT requires gcc version 8 and mpich version 3.3 if MPI is to be used.
     spack compiler find
     spack env create mpact
     spack env activate mpact
+    spack add cmake%gcc@8.5
     spack add mpich@3.3%gcc@8.5
     spack add hdf5%gcc@8.5 +cxx+fortran~mpi
+    spack spec
     spack install
 
 Now we will begin to install MPACT. We will not cover cloning MPACT, MPACT_Extras, or Futility here.

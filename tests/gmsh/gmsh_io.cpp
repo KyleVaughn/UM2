@@ -49,15 +49,6 @@ TEST_CASE(write_open)
   ASSERT(g == 0);
   ASSERT(b == 0);
   ASSERT(a == 255);
-  r = 0;
-  g = 0;
-  b = 0;
-  a = 0;
-  um2::gmsh::model::getColor(1, 1, r, g, b, a);
-  ASSERT(r == 255);
-  ASSERT(g == 0);
-  ASSERT(b == 0);
-  ASSERT(a == 255);
   um2::gmsh::finalize();
 
   int const stat = std::remove("test.brep");

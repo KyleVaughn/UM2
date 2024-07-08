@@ -17,6 +17,7 @@
 #  include <algorithm>
 #  include <cstddef>
 #  include <fstream>
+#  include <iterator>
 #  include <string>
 #  include <vector>
 
@@ -28,6 +29,7 @@ namespace um2::gmsh
 //=============================================================================
 
 void
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 write(std::string const & filename, bool const extra_info)
 {
   LOG_INFO("Writing file: ", filename.c_str());
@@ -42,36 +44,67 @@ write(std::string const & filename, bool const extra_info)
     LOG_ERROR("Could not open file ", info_filename.c_str());
     return;
   }
+
+  // We have to map the entites to a continuous range of tags
+  std::vector<std::vector<int>> tag_map(4);
+
+  gmsh::vectorpair dimtags;
+  gmsh::model::getEntities(dimtags);
+  for (auto const & dimtag : dimtags) {
+    auto const dim = static_cast<size_t>(dimtag.first);
+    tag_map[dim].emplace_back(dimtag.second);
+  }
+
+  for (size_t dim = 0; dim < 4; ++dim) {
+    // Should be sorted, but just in case...
+    std::sort(tag_map[dim].begin(), tag_map[dim].end());
+  }
+  dimtags.clear();
+
   //==============================================================================
   // PHYSICAL_GROUPS
   //==============================================================================
-  gmsh::vectorpair dimtags;
   gmsh::model::getPhysicalGroups(dimtags);
   size_t const num_groups = dimtags.size();
   info_file << "PHYSICAL_GROUPS " << num_groups << '\n';
   for (auto const & dimtag : dimtags) {
-    int const dim = dimtag.first;
+    auto const idim = dimtag.first;
+    auto const dim = static_cast<size_t>(dimtag.first);
     int const tag = dimtag.second;
     std::string name;
-    gmsh::model::getPhysicalName(dim, tag, name);
+    gmsh::model::getPhysicalName(idim, tag, name);
     std::vector<int> tags;
-    gmsh::model::getEntitiesForPhysicalGroup(dim, tag, tags);
+    gmsh::model::getEntitiesForPhysicalGroup(idim, tag, tags);
     size_t const num_tags = tags.size();
     info_file << "PHYSICAL_GROUP \"" << name << "\" " << dim << ' ' << num_tags << '\n';
     // Write 8 tags per line.
     size_t const num_full_lines = num_tags / 8;
     size_t const num_remaining_tags = num_tags % 8;
     for (size_t i = 0; i < num_full_lines; ++i) {
-      info_file << tags[8 * i + 0] << ' ' << tags[8 * i + 1] << ' ' << tags[8 * i + 2]
-                << ' ' << tags[8 * i + 3] << ' ' << tags[8 * i + 4] << ' '
-                << tags[8 * i + 5] << ' ' << tags[8 * i + 6] << ' ' << tags[8 * i + 7]
-                << '\n';
+      for (size_t j = 0; j < 8; ++j) {
+        // Find the new tag (index into tag_map + 1)
+        auto const it =
+            std::lower_bound(tag_map[dim].begin(), tag_map[dim].end(), tags[8 * i + j]);
+        // Ensure the tag was found
+        ASSERT(it != tag_map[dim].end());
+        ASSERT(*it == tags[8 * i + j]);
+        info_file << std::distance(tag_map[dim].begin(), it) + 1 << ' ';
+      }
+      info_file << '\n';
     }
     for (size_t i = 0; i + 1 < num_remaining_tags; ++i) {
-      info_file << tags[num_full_lines * 8 + i] << ' ';
+      auto const it = std::lower_bound(tag_map[dim].begin(), tag_map[dim].end(),
+                                       tags[num_full_lines * 8 + i]);
+      ASSERT(it != tag_map[dim].end());
+      ASSERT(*it == tags[num_full_lines * 8 + i]);
+      info_file << std::distance(tag_map[dim].begin(), it) + 1 << ' ';
     }
     if (num_remaining_tags > 0) {
-      info_file << tags[num_full_lines * 8 + num_remaining_tags - 1] << '\n';
+      auto const it = std::lower_bound(tag_map[dim].begin(), tag_map[dim].end(),
+                                       tags[num_full_lines * 8 + num_remaining_tags - 1]);
+      ASSERT(it != tag_map[dim].end());
+      ASSERT(*it == tags[num_full_lines * 8 + num_remaining_tags - 1]);
+      info_file << std::distance(tag_map[dim].begin(), it) + 1 << '\n';
     }
   }
   //==============================================================================
@@ -83,6 +116,9 @@ write(std::string const & filename, bool const extra_info)
   std::vector<gmsh::vectorpair> dimtags_by_color;
   for (auto const & dimtag : dimtags) {
     int const dim = dimtag.first;
+    if (dim < 2) {
+      continue;
+    }
     int const tag = dimtag.second;
     int r = 0;
     int g = 0;
@@ -118,30 +154,33 @@ write(std::string const & filename, bool const extra_info)
     size_t const num_full_lines = num_dimtags / 8;
     size_t const num_remaining_dimtags = num_dimtags % 8;
     for (size_t j = 0; j < num_full_lines; ++j) {
-      info_file << color_dimtags[8 * j + 0].first << ' '
-                << color_dimtags[8 * j + 0].second << ' '
-                << color_dimtags[8 * j + 1].first << ' '
-                << color_dimtags[8 * j + 1].second << ' '
-                << color_dimtags[8 * j + 2].first << ' '
-                << color_dimtags[8 * j + 2].second << ' '
-                << color_dimtags[8 * j + 3].first << ' '
-                << color_dimtags[8 * j + 3].second << ' '
-                << color_dimtags[8 * j + 4].first << ' '
-                << color_dimtags[8 * j + 4].second << ' '
-                << color_dimtags[8 * j + 5].first << ' '
-                << color_dimtags[8 * j + 5].second << ' '
-                << color_dimtags[8 * j + 6].first << ' '
-                << color_dimtags[8 * j + 6].second << ' '
-                << color_dimtags[8 * j + 7].first << ' '
-                << color_dimtags[8 * j + 7].second << '\n';
+      for (size_t k = 0; k < 8; ++k) {
+        auto const cdim = static_cast<size_t>(color_dimtags[8 * j + k].first);
+        auto const ctag = color_dimtags[8 * j + k].second;
+        auto const it =
+            std::lower_bound(tag_map[cdim].begin(), tag_map[cdim].end(), ctag);
+        ASSERT(it != tag_map[cdim].end());
+        ASSERT(*it == ctag);
+        info_file << cdim << ' ' << std::distance(tag_map[cdim].begin(), it) + 1 << ' ';
+      }
+      info_file << '\n';
     }
     for (size_t j = 0; j + 1 < num_remaining_dimtags; ++j) {
-      info_file << color_dimtags[num_full_lines * 8 + j].first << ' '
-                << color_dimtags[num_full_lines * 8 + j].second << ' ';
+      auto const cdim = static_cast<size_t>(color_dimtags[num_full_lines * 8 + j].first);
+      auto const ctag = color_dimtags[num_full_lines * 8 + j].second;
+      auto const it = std::lower_bound(tag_map[cdim].begin(), tag_map[cdim].end(), ctag);
+      ASSERT(it != tag_map[cdim].end());
+      ASSERT(*it == ctag);
+      info_file << cdim << ' ' << std::distance(tag_map[cdim].begin(), it) + 1 << ' ';
     }
     if (num_remaining_dimtags > 0) {
       size_t const last = num_full_lines * 8 + num_remaining_dimtags - 1;
-      info_file << color_dimtags[last].first << ' ' << color_dimtags[last].second << '\n';
+      auto const cdim = static_cast<size_t>(color_dimtags[last].first);
+      auto const ctag = color_dimtags[last].second;
+      auto const it = std::lower_bound(tag_map[cdim].begin(), tag_map[cdim].end(), ctag);
+      ASSERT(it != tag_map[cdim].end());
+      ASSERT(*it == ctag);
+      info_file << cdim << ' ' << std::distance(tag_map[cdim].begin(), it) + 1 << '\n';
     }
   }
   // Finished. Close file.
