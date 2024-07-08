@@ -52,6 +52,17 @@ groupPreservingIntersect(gmsh::vectorpair const & object_dimtags,
                          int tag = -1, bool remove_object = true,
                          bool remove_tool = true);
 
+// A gmsh::model::occ::cut that preserves the model's physical groups
+//
+// In the event that two overlapping entities have material physical groups, the
+// optional material hierarchy is used to choose a single material for the resultant
+// overlapping entity/entities.
+void
+groupPreservingCut(gmsh::vectorpair const & object_dimtags,
+                   gmsh::vectorpair const & tool_dimtags, gmsh::vectorpair & out_dimtags,
+                   std::vector<gmsh::vectorpair> & out_dimtags_map, int tag = -1,
+                   bool remove_object = true, bool remove_tool = true);
+
 //==============================================================================
 // Functions for user-level API. These functions should take um2::Vector, um2::String,
 // etc. Not std::vector, std::string, etc.

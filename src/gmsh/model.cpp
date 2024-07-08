@@ -588,6 +588,77 @@ groupPreservingIntersect(gmsh::vectorpair const & object_dimtags,
 } // groupPreservingIntersect
 
 //=============================================================================
+// groupPreservingCut
+//=============================================================================
+//
+// A gmsh::model::occ::cut that preserves the model's D-dimensional physical
+// groups when fragmenting D-dimensional entities. All other physical groups are
+// destroyed.
+//
+void
+groupPreservingCut(gmsh::vectorpair const & object_dimtags,
+                   gmsh::vectorpair const & tool_dimtags, gmsh::vectorpair & out_dimtags,
+                   std::vector<gmsh::vectorpair> & out_dimtags_map, int const tag,
+                   bool const remove_object, bool const remove_tool)
+{
+
+  //==============================================================================-
+  // Input checking
+  //==============================================================================-
+  int const model_dim = groupPreservingInputChecking(object_dimtags, tool_dimtags);
+
+  //==============================================================================
+  // Cut the object and tool
+  //==============================================================================
+  // Get the physical groups of the object and tool to preserve them.
+  // They are destroyed by the fragment operation.
+  std::vector<std::string> physical_group_names;
+  std::vector<int> physical_group_tag;
+  std::vector<std::vector<int>> pre_physical_group_ent_tags;
+  gmsh::vectorpair pre_dimtags;
+  getPhysicalGroupInfo(physical_group_names, physical_group_tag,
+                       pre_physical_group_ent_tags, pre_dimtags, model_dim);
+  size_t const num_groups = physical_group_names.size();
+  size_t const nobject = object_dimtags.size();
+  size_t const ntool = tool_dimtags.size();
+  LOG_INFO("Cutting ", nobject, " object entities and ", ntool, " tool entities");
+  gmsh::model::removePhysicalGroups();
+  gmsh::model::occ::cut(object_dimtags, tool_dimtags, out_dimtags, out_dimtags_map, tag,
+                        remove_object, remove_tool);
+  gmsh::model::occ::synchronize();
+
+  //==============================================================================
+  // Create the new physical groups
+  //==============================================================================
+  LOG_INFO("Processing physical group changes");
+  std::vector<std::vector<int>> post_physical_group_ent_tags(num_groups);
+  getNewPhysicalGroups(object_dimtags, tool_dimtags, num_groups,
+                       pre_physical_group_ent_tags, out_dimtags_map,
+                       post_physical_group_ent_tags);
+
+  //==============================================================================
+  // Create the new physical groups
+  //==============================================================================
+  for (size_t i = 0; i < physical_group_names.size(); ++i) {
+#  if UM2_ENABLE_ASSERTS
+    int const pgroup_tag = gmsh::model::addPhysicalGroup(
+        model_dim,                       // Dimension of the physical group
+        post_physical_group_ent_tags[i], // Tags of the entities in the group
+        physical_group_tag[i],           // Old tag of the physical group
+        physical_group_names[i]);        // Name of the physical group
+    ASSERT(pgroup_tag == physical_group_tag[i]);
+#  else
+    gmsh::model::addPhysicalGroup(
+        model_dim,                       // Dimension of the physical group
+        post_physical_group_ent_tags[i], // Tags of the entities in the group
+        physical_group_tag[i],           // Old tag of the physical group
+        physical_group_names[i]);        // Name of the physical group
+#  endif
+  }
+
+} // groupPreservingCut
+
+//=============================================================================
 // addCylindricalPin2D
 //=============================================================================
 

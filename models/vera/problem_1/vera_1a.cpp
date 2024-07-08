@@ -37,11 +37,11 @@ main() -> int
   um2::Material gap;
   gap.setName("Gap");
   // "Helium with nominal density" (pg. 22).
-  // He at 565 K and 2250 psia, according to NIST has a density of 0.012768 g/cm^3.
-  gap.setDensity(0.012768);  // g/cm^3,
-  gap.setTemperature(565.0); // K, Hot zero power temperature (pg. 20)
+  // He at 565 K and 2250 psia, according to NIST has a density of 0.012768 kg/m^3.
+  gap.setDensity(0.00012768); // g/cm^3,
+  gap.setTemperature(565.0);  // K, Hot zero power temperature (pg. 20)
   gap.setColor(um2::red);
-  gap.addNuclide("He4", 2.68714e-5);
+  gap.addNuclideWt("He4", 1.0);
   gap.populateXSec(xslib);
 
   // Clad
