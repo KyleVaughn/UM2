@@ -271,7 +271,7 @@ See the files in ``UM2/scripts/deps`` for more information on spack environments
 
     .. code-block:: bash
 
- spack add pugixml%gcc@12       g++ --version                       # Expect 12+
+        g++ --version                       # Expect 12+
         gfortran --version                  # Expect 12+
         cmake --version                     # Expect 3.25+
         find $SPACK_ENV -name libhdf5*      # Expect non-empty output

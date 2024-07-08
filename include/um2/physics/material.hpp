@@ -172,7 +172,14 @@ public:
   addNuclide(String const & symbol, Float num_density) noexcept;
 
   void
+  addNuclideWt(Int zaid, Float wt_percent) noexcept;
+
+  void
   addNuclideWt(String const & symbol, Float wt_percent) noexcept;
+
+  void
+  addNuclidesAtomPercent(Vector<String> const & symbols,
+                         Vector<Float> const & percents) noexcept;
 
   [[nodiscard]] constexpr auto
   hasXSec() const noexcept -> bool

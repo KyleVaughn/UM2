@@ -1,5 +1,6 @@
 #include <um2/config.hpp>
 #include <um2/physics/material.hpp>
+#include <um2/stdlib/vector.hpp>
 
 #if UM2_USE_MPACT_XSLIBS
 #  include <um2/common/cast_if_not.hpp>
@@ -30,6 +31,14 @@ TEST_CASE(addNuclide)
   Float const o_num_density = h_num_density / 2;
   ASSERT_NEAR(h2o.numDensity(0), h_num_density, 1e-6);
   ASSERT_NEAR(h2o.numDensity(1), o_num_density, 1e-6);
+
+  um2::Material h2o_atom;
+  h2o_atom.setDensity(0.75);
+  um2::Vector<um2::String> const symbols = {"H1", "O16"};
+  um2::Vector<Float> const percents = {2.0 / 3.0, 1.0 / 3.0};
+  h2o_atom.addNuclidesAtomPercent(symbols, percents);
+  ASSERT_NEAR(h2o_atom.numDensity(0), h_num_density, 1e-6);
+  ASSERT_NEAR(h2o_atom.numDensity(1), o_num_density, 1e-6);
 }
 
 #if UM2_USE_MPACT_XSLIBS
