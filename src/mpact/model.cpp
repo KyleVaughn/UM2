@@ -39,7 +39,9 @@
 
 #include <algorithm>
 #include <cstring>
+#include <fstream>
 #include <numeric>
+#include <string>
 
 // We dont have access to the header defining many of the HDF5 types, so we disable
 // the clang-tidy warning.
@@ -1945,6 +1947,103 @@ writeXDMFFile(String const & filepath, Model const & model,
   LOG_INFO("XDMF file written successfully");
 } // writeXDMFFile
 
+void
+writeInputFile(String const & filename, Model const & model)
+{
+
+  // Strip the ending from filename
+  Int const last_period = filename.find_last_of('.');
+  String const base_filename = filename.substr(0, last_period);
+  String const input_filename = base_filename + ".input";
+  LOG_INFO("Writing MPACT input file: ", input_filename);
+
+  // Open the file
+  std::ofstream file(std::string(input_filename.data()));
+  if (!file.is_open()) {
+    logger::error("Failed to open file: ", input_filename);
+    return;
+  }
+
+  // CASEID
+  // strip everything before the last slash
+  Int last_slash = filename.find_last_of('/');
+  if (last_slash == String::npos) {
+    last_slash = -1;
+  }
+  String const model_name = base_filename.substr(last_slash + 1);
+  file << "CASEID MPACT_" << model_name.data() << "\n\n";
+
+  // STATE
+  // Assume we want power and flux
+  file << "STATE\n";
+  file << "  edit fsr_flux fsr_power\n\n";
+
+  // MATERIAL
+  file << "MATERIAL\n";
+  Int const num_materials = model.materials().size();
+  for (Int imat = 0; imat < num_materials; ++imat) {
+    auto const & material = model.materials()[imat];
+    auto const density = material.getDensity();
+    auto const temperature = material.getTemperature();
+
+    String const mat_info = "  mat " + String(imat + 1) + " <type> " + String(density) +
+                            " g/cc " + String(temperature) + " K \\ ";
+    Int const mat_info_size = mat_info.size() - 5; // Account for <type> -> 1 char
+
+    file << "  ! " << material.getName().data() << "\n";
+    file << mat_info.data();
+
+    // Write the ZAID and number density of each isotope
+    auto const & zaids = material.zaids();
+    auto const & densities = material.numDensities();
+    if (!zaids.empty()) {
+      ASSERT(zaids.size() == densities.size());
+      file << zaids[0] << " " << densities[0] << '\n';
+      for (Int i = 1; i < zaids.size(); ++i) {
+        // Insert the spaces
+        for (Int j = 0; j < mat_info_size; ++j) {
+          file << ' ';
+        }
+        file << zaids[i] << " " << densities[i] << '\n';
+      }
+    }
+  } // for (imat)
+
+  // GEOM
+  file << "GEOM\n";
+  file << "  um2_core\n";
+  file << "    " << filename.data() << "\n\n";
+
+  // XSEC
+  file << "XSEC\n";
+  file << "  xslib ORNL mpact51g_71_v4.2m5_12062016_sph.fmt\n\n";
+
+  // OPTION
+  // Get the mean chord length of the faces
+  auto mcls = model.getMeanChordLengths();
+  std::sort(mcls.begin(), mcls.end());
+  Int const num_faces = mcls.size();
+  // 90% of faces largest, means the bottom 10% of faces are not representative
+  Int const num_faces_rep = static_cast<Int>((1 - 0.9) * num_faces);
+  Float const mcl = mcls[num_faces_rep]; // The representative mean chord length
+  file << "OPTION\n";
+  file << "  bound_cond <west_bc> <north_bc> <east_bc> <south_bc> <top_bc> <bottom_bc>\n";
+  file << "  solver 1 2\n";
+  file << "  ! ray spacing is set such that the expected number of intersections in the "
+          "largest\n";
+  file << "  ! 90% of faces is 4+ for any given direction. (mean chord length / 4)\n";
+  file << "  ray " << mcl / 4 << " CHEBYSHEV-YAMAMOTO 16 3\n";
+  file << "  parallel 1 1 1 1\n";
+  file << "  conv_crit 2*1.e-6\n";
+  file << "  iter_lim 2000 1 1\n";
+  file << "  vis_edits T T\n";
+  file << "  cmfd A mgnode F 0.0 1.0 150 F";
+
+  // Close the file
+  file.close();
+
+} // writeInputFile
+
 } // namespace
 
 //==============================================================================
@@ -1960,6 +2059,8 @@ Model::write(String const & filename, bool const write_knudsen_data,
   } else {
     logger::error("Unsupported file format.");
   }
+  // Write the MPACT input file
+  writeInputFile(filename, *this);
 }
 
 //==============================================================================
@@ -2902,7 +3003,78 @@ Model::getCoarseCellHomogenizedXSec(Int cc_id) const -> XSec
     logger::error("Unsupported mesh type");
   }
   return {};
-}
+} // getCoarseCellHomogenizedXSec
+
+PURE auto
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+Model::getMeanChordLengths() const -> Vector<Float>
+{
+  Int total_num_cells = 0;
+  for (auto const & asy_id : _core.children()) {
+    for (auto const & lat_id : _assemblies[asy_id].children()) {
+      for (auto const & rtm_id : _lattices[lat_id].children()) {
+        for (auto const & cc_id : _rtms[rtm_id].children()) {
+          total_num_cells += _coarse_cells[cc_id].numFaces();
+        }
+      }
+    }
+  }
+  Vector<Float> result(total_num_cells, 0);
+  Int ctr = 0;
+  for (auto const & asy_id : _core.children()) {
+    for (auto const & lat_id : _assemblies[asy_id].children()) {
+      for (auto const & rtm_id : _lattices[lat_id].children()) {
+        for (auto const & cc_id : _rtms[rtm_id].children()) {
+          // Get the coarse cell
+          auto const & cc = _coarse_cells[cc_id];
+
+          // Call the appropriate function based on the mesh type
+          switch (cc.mesh_type) {
+          case MeshType::Tri: {
+            auto const & mesh = getTriMesh(cc.mesh_id);
+            Int const num_faces = mesh.numFaces();
+            for (Int i = 0; i < num_faces; ++i) {
+              result[ctr + i] = mesh.getFace(i).meanChordLength();
+            }
+            ctr += num_faces;
+            break;
+          }
+          case MeshType::Quad: {
+            auto const & mesh = getQuadMesh(cc.mesh_id);
+            Int const num_faces = mesh.numFaces();
+            for (Int i = 0; i < num_faces; ++i) {
+              result[ctr + i] = mesh.getFace(i).meanChordLength();
+            }
+            ctr += num_faces;
+            break;
+          }
+          case MeshType::QuadraticTri: {
+            auto const & mesh = getTri6Mesh(cc.mesh_id);
+            Int const num_faces = mesh.numFaces();
+            for (Int i = 0; i < num_faces; ++i) {
+              result[ctr + i] = mesh.getFace(i).meanChordLength();
+            }
+            ctr += num_faces;
+            break;
+          }
+          case MeshType::QuadraticQuad: {
+            auto const & mesh = getQuad8Mesh(cc.mesh_id);
+            Int const num_faces = mesh.numFaces();
+            for (Int i = 0; i < num_faces; ++i) {
+              result[ctr + i] = mesh.getFace(i).meanChordLength();
+            }
+            ctr += num_faces;
+            break;
+          }
+          default:
+            logger::error("Unsupported mesh type");
+          }
+        }
+      }
+    }
+  }
+  return result;
+} // getMeanChordLengths
 
 //==============================================================================
 // writeCMFDInfo
