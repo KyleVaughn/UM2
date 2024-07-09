@@ -303,6 +303,9 @@ public:
   PURE [[nodiscard]] auto
   getCoarseCellHomogenizedXSec(Int cc_id) const -> XSec;
 
+  PURE [[nodiscard]] auto
+  getMeanChordLengths() const -> Vector<Float>;
+
 #if UM2_HAS_CMFD
   void
   writeCMFDInfo(String const & filename) const;
