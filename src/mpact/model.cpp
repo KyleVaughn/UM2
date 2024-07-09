@@ -1986,9 +1986,9 @@ writeInputFile(String const & filename, Model const & model)
     auto const density = material.getDensity();
     auto const temperature = material.getTemperature();
 
-    String const mat_info = "  mat " + String(imat) + " <type> " + String(density) +
+    String const mat_info = "  mat " + String(imat + 1) + " <type> " + String(density) +
                             " g/cc " + String(temperature) + " K \\ ";
-    Int const mat_info_size = mat_info.size();
+    Int const mat_info_size = mat_info.size() - 5; // Account for <type> -> 1 char
 
     file << "  ! " << material.getName().data() << "\n";
     file << mat_info.data();
