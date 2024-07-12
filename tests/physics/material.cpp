@@ -1,5 +1,6 @@
 #include <um2/config.hpp>
 #include <um2/physics/material.hpp>
+#include <um2/stdlib/string.hpp>
 #include <um2/stdlib/vector.hpp>
 
 #if UM2_USE_MPACT_XSLIBS

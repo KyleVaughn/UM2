@@ -26,56 +26,6 @@ Float constexpr h2o_density = 0.84478;
 Float constexpr temp_fuel = 900.0;
 Float constexpr temp_water = 531.26;
 
-Float constexpr m_u235 = 235.043928;
-Float constexpr m_u238 = 238.05079;
-Float constexpr m_o16 = 15.9949;
-
-CONST auto
-weightToAtomPercentU235(Float const wo) -> Float
-{
-  return wo * m_u238 / (m_u235 + wo * (m_u238 - m_u235));
-}
-
-// void
-// addFuelFromWeightPercentEnrichment(um2::Material & fuel, Float const wo)
-//{
-//   Float const ao = weightToAtomPercentU235(wo);
-//   fuel.setDensity(uo2_density);
-//   fuel.setTemperature(temp_fuel);
-//   um2::Vector<um2::String> const names = {"U235", "U238", "O16"};
-//   um2::Vector<Float> const percents = {ao / 3.0, (1.0 - ao) / 3.0, 2.0 / 3.0};
-//   fuel.addNuclidesAtomPercent(names, percents);
-// }
-
-void
-addFuel(um2::Material & fuel, Float const wo_u235, Float const wo_gd = 0)
-{
-  Float const ao_u235 = weightToAtomPercentU235(wo_u235) / 3.0;
-  Float const ao_u238 = (1.0 - ao_u235) / 3.0;
-  Float const ao_o16 = 2.0 / 3.0;
-  Float const m_uo2 = ao_u235 * m_u235 + ao_u238 * m_u238 + ao_o16 * m_o16;
-  Float const wo_235 = (1 - wo_gd) * ao_u235 * m_u235 / m_uo2;
-  Float const wo_238 = (1 - wo_gd) * ao_u238 * m_u238 / m_uo2;
-  Float const wo_o16 = (1 - wo_gd) * ao_o16 * m_o16 / m_uo2;
-  fuel.setDensity(uo2_density); // This should be smaller, but we match the MPACT model
-  fuel.setTemperature(temp_fuel);
-  fuel.addNuclideWt("U235", wo_235);
-  fuel.addNuclideWt("U238", wo_238);
-  fuel.addNuclideWt("O16", wo_o16);
-  if (wo_gd < 1e-6) {
-    return;
-  }
-  // Just approximate all Gd as the same weight, so we simply multiply the
-  // isotopic abundances by the weight fraction of Gd
-  fuel.addNuclideWt("Gd152", wo_gd * 0.002);
-  fuel.addNuclideWt("Gd154", wo_gd * 0.0218);
-  fuel.addNuclideWt("Gd155", wo_gd * 0.148);
-  fuel.addNuclideWt("Gd156", wo_gd * 0.205);
-  fuel.addNuclideWt("Gd157", wo_gd * 0.157);
-  fuel.addNuclideWt("Gd158", wo_gd * 0.248);
-  fuel.addNuclideWt("Gd160", wo_gd * 0.219);
-}
-
 auto
 main(int argc, char ** argv) -> int
 {
@@ -131,7 +81,9 @@ main(int argc, char ** argv) -> int
     um2::Material fuel;
     fuel.setName(names[i]);
     fuel.setColor(colors[i]);
-    addFuel(fuel, enrichments[i] / 100);
+    fuel.setDensity(uo2_density); // This should be smaller, but we match the MPACT model
+    fuel.setTemperature(temp_fuel);
+    fuel.setUO2(enrichments[i] / 100);
     fuel.populateXSec(xslib);
     materials[i] = fuel;
   }
@@ -140,14 +92,18 @@ main(int argc, char ** argv) -> int
   um2::Material g260;
   g260.setName("G260");
   g260.setColor(um2::lightpink);
-  addFuel(g260, 0.026, 0.06); // 6% wt Gd
+  g260.setDensity(uo2_density);
+  g260.setTemperature(temp_fuel);
+  g260.setUO2(0.026, /*wt_gad=*/0.06); // 6% wt Gd
   g260.populateXSec(xslib);
   materials.push_back(g260);
 
   um2::Material g350;
   g350.setName("G350");
   g350.setColor(um2::pink);
-  addFuel(g350, 0.035, 0.04); // 4% wt Gd
+  g350.setDensity(uo2_density);
+  g350.setTemperature(temp_fuel);
+  g350.setUO2(0.035, /*wt_gad=*/0.04); // 4% wt Gd
   g350.populateXSec(xslib);
   materials.push_back(g350);
 
