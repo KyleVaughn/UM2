@@ -270,7 +270,7 @@ main(int argc, char ** argv) -> int
   uo2_300.setDensity(10.257);
   uo2_300.setTemperature(900.0);
   uo2_300.setColor(um2::pink);
-  uo2_300.addNuclidesAtomPercent({"U235", "U238", "O16"}, {0.03 / 3, 0.97 / 3, 2.0 / 3});
+  uo2_300.setUO2(0.03);
   uo2_300.populateXSec(xslib);
   materials.push_back(uo2_300);
 
@@ -281,8 +281,7 @@ main(int argc, char ** argv) -> int
   uo2_380.setDensity(10.257);
   uo2_380.setTemperature(900.0);
   uo2_380.setColor(um2::lightblue);
-  uo2_380.addNuclidesAtomPercent({"U235", "U238", "O16"},
-                                 {0.038 / 3, 0.962 / 3, 2.0 / 3});
+  uo2_380.setUO2(0.038);
   uo2_380.populateXSec(xslib);
   materials.push_back(uo2_380);
 
@@ -293,16 +292,7 @@ main(int argc, char ** argv) -> int
   uo2_410gd.setDensity(10.111);
   uo2_410gd.setTemperature(900.0);
   uo2_410gd.setColor(um2::purple);
-  uo2_410gd.addNuclide(92235, 8.78236e-04);
-  uo2_410gd.addNuclide(92238, 2.05422e-02);
-  uo2_410gd.addNuclide(64152, 3.35960e-06);
-  uo2_410gd.addNuclide(64154, 3.66190e-05);
-  uo2_410gd.addNuclide(64155, 2.48606e-04);
-  uo2_410gd.addNuclide(64156, 3.43849e-04);
-  uo2_410gd.addNuclide(64157, 2.62884e-04);
-  uo2_410gd.addNuclide(64158, 4.17255e-04);
-  uo2_410gd.addNuclide(64160, 3.67198e-04);
-  uo2_410gd.addNuclide(8016, 4.53705e-02);
+  uo2_410gd.setUO2(0.041, /*wt_gad=*/0.05);
   uo2_410gd.populateXSec(xslib);
   materials.push_back(uo2_410gd);
 
@@ -313,8 +303,7 @@ main(int argc, char ** argv) -> int
   uo2_460.setDensity(10.257);
   uo2_460.setTemperature(900.0);
   uo2_460.setColor(um2::brown);
-  uo2_460.addNuclidesAtomPercent({"U235", "U238", "O16"},
-                                 {0.046 / 3, 0.954 / 3, 2.0 / 3});
+  uo2_460.setUO2(0.046);
   uo2_460.populateXSec(xslib);
   materials.push_back(uo2_460);
 
@@ -325,16 +314,7 @@ main(int argc, char ** argv) -> int
   uo2_470gd.setDensity(10.111);
   uo2_470gd.setTemperature(900.0);
   uo2_470gd.setColor(um2::green);
-  uo2_470gd.addNuclide(92235, 1.00676e-04);
-  uo2_470gd.addNuclide(92238, 2.04136e-02);
-  uo2_470gd.addNuclide(64152, 3.35960e-06);
-  uo2_470gd.addNuclide(64154, 3.66190e-05);
-  uo2_470gd.addNuclide(64155, 2.48606e-04);
-  uo2_470gd.addNuclide(64156, 3.43849e-04);
-  uo2_470gd.addNuclide(64157, 2.62884e-04);
-  uo2_470gd.addNuclide(64158, 4.17255e-04);
-  uo2_470gd.addNuclide(64160, 3.67198e-04);
-  uo2_470gd.addNuclide(8016, 4.53705e-02);
+  uo2_470gd.setUO2(0.047, /*wt_gad=*/0.05);
   uo2_470gd.populateXSec(xslib);
   materials.push_back(uo2_470gd);
 
@@ -345,8 +325,7 @@ main(int argc, char ** argv) -> int
   uo2_495.setDensity(10.257);
   uo2_495.setTemperature(900.0);
   uo2_495.setColor(um2::orange);
-  uo2_495.addNuclidesAtomPercent({"U235", "U238", "O16"},
-                                 {0.0495 / 3, 0.9505 / 3, 2.0 / 3});
+  uo2_495.setUO2(0.0495);
   uo2_495.populateXSec(xslib);
   materials.push_back(uo2_495);
 
@@ -546,7 +525,7 @@ main(int argc, char ** argv) -> int
   //===========================================================================
 
   model.importCoarseCellMeshes("svea_2d.inp");
-  model.writeCMFDInfo("svea_2d_cmfd_info.xdmf");
+  // model.writeCMFDInfo("svea_2d_cmfd_info.xdmf");
   model.write("svea_2d.xdmf");
   um2::finalize();
   return 0;

@@ -13,6 +13,9 @@
 namespace um2
 {
 
+// Avogadro's number * 1e-24
+Float constexpr n_avo_barn = 0.602214076;
+
 um2::Vector<um2::Pair<Int, Float>> const ZAID_ATOMIC_MASS = {
     { 1001, 1.00783},
     { 1002,  2.0141},
@@ -366,7 +369,7 @@ Material::addNuclide(Int zaid, Float num_density) noexcept
   if (zaid <= 0) {
     LOG_ERROR("Invalid ZAID");
   }
-  if (num_density < 0) {
+  if (num_density <= 0) {
     LOG_ERROR("Invalid number density");
   }
   // Check if the nuclide is already in the list
@@ -405,7 +408,7 @@ Material::addNuclideWt(Int zaid, Float wt_percent) noexcept
 
       // density * wt_percent * (0.602214076 / atomic_mass)
 
-      addNuclide(zaid, wt_percent * _density * 0.602214076 / zaid_mass.second);
+      addNuclide(zaid, wt_percent * _density * n_avo_barn / zaid_mass.second);
       return;
     }
   }
@@ -449,7 +452,7 @@ Material::addNuclidesAtomPercent(Vector<String> const & symbols,
   for (Int i = 0; i < symbols.size(); ++i) {
     auto const zaid = toZAID(symbols[i]);
     auto const percent = percents[i];
-    addNuclide(zaid, percent * _density * 0.602214076 / m);
+    addNuclide(zaid, percent * _density * n_avo_barn / m);
   }
 }
 
@@ -489,6 +492,118 @@ Material::populateXSec(XSLibrary const & xsec_lib) noexcept
     }
   }
   _xsec.validate();
+}
+
+void
+Material::setUO2(Float wt_u235, Float wt_gad) noexcept
+{
+  ASSERT(wt_u235 >= 0);
+  ASSERT(wt_gad >= 0);
+  ASSERT(wt_u235 <= 1);
+  ASSERT(wt_gad <= 1);
+  ASSERT(_density > 0);
+
+  // Variable naming:
+  // m_ = atomic mass
+  // ab_ = abundance
+  // wt_ = weight percent
+  // at_ = atom percent
+  // n_ = number density
+
+  // Atomic masses
+  //---------------------------------------------------------------------------
+  Float constexpr m_u234 = 234.040946;
+  Float constexpr m_u235 = 235.043923;
+  Float constexpr m_u236 = 236.045562;
+  Float constexpr m_u238 = 238.050783;
+  Float constexpr m_o16 = 15.9949146;
+  Float constexpr m_gd152 = 151.919786;
+  Float constexpr m_gd154 = 153.920861;
+  Float constexpr m_gd155 = 154.922618;
+  Float constexpr m_gd156 = 155.922118;
+  Float constexpr m_gd157 = 156.923956;
+  Float constexpr m_gd158 = 157.924019;
+  Float constexpr m_gd160 = 159.927049;
+
+  // Gd natural abundances
+  //---------------------------------------------------------------------------
+  Float constexpr ab_gd152 = 0.2 / 100;
+  Float constexpr ab_gd154 = 2.18 / 100;
+  Float constexpr ab_gd155 = 14.8 / 100;
+  Float constexpr ab_gd156 = 20.47 / 100;
+  Float constexpr ab_gd157 = 15.65 / 100;
+  Float constexpr ab_gd158 = 24.84 / 100;
+  Float constexpr ab_gd160 = 21.86 / 100;
+
+  // Compute the average mass of UO2
+  //---------------------------------------------------------------------------
+  // Compute the weight percent of U234 and U236 using the same formula as VERA
+  Float const wt_u234 = 0.0089 * wt_u235;
+  Float const wt_u236 = 0.0046 * wt_u235;
+  Float const wt_u238 = 1 - (wt_u234 + wt_u235 + wt_u236);
+
+  // Compute the average U isotope mass
+  Float const m_u =
+      1 / (wt_u235 / m_u235 + wt_u234 / m_u234 + wt_u236 / m_u236 + wt_u238 / m_u238);
+  // Compute the average UO2 mass
+  Float const m_uo2 = m_u + 2 * m_o16;
+
+  // Add the uranium isotopes to the material
+  //---------------------------------------------------------------------------
+  // If the wt% of Gd2O3 is X, then the wt% of UO2 is 1 - X
+  // N_i = w_i * rho * N_A / M_i gives us the number density of UO2
+  Float const wt_uo2 = 1 - wt_gad;
+  Float const n_uo2 = wt_uo2 * _density * n_avo_barn / m_uo2;
+
+  Float const n_u = n_uo2;
+  Float n_o = 2 * n_uo2; // Will add to this later when computing Gd2O3
+
+  // For each U isotope, compute the number density using the atom percent
+  Float const u_denom =
+      wt_u234 / m_u234 + wt_u235 / m_u235 + wt_u236 / m_u236 + wt_u238 / m_u238;
+  Float const at_u234 = (wt_u234 / m_u234) / u_denom;
+  Float const at_u235 = (wt_u235 / m_u235) / u_denom;
+  Float const at_u236 = (wt_u236 / m_u236) / u_denom;
+  Float const at_u238 = (wt_u238 / m_u238) / u_denom;
+  Float const n_u234 = at_u234 * n_u;
+  Float const n_u235 = at_u235 * n_u;
+  Float const n_u236 = at_u236 * n_u;
+  Float const n_u238 = at_u238 * n_u;
+  addNuclide(92234, n_u234);
+  addNuclide(92235, n_u235);
+  addNuclide(92236, n_u236);
+  addNuclide(92238, n_u238);
+
+  // Compute the average mass of Gd2O3
+  //---------------------------------------------------------------------------
+  // Compute the average Gd isotope mass
+  Float constexpr m_gad =
+      (ab_gd152 * m_gd152 + ab_gd154 * m_gd154 + ab_gd155 * m_gd155 + ab_gd156 * m_gd156 +
+       ab_gd157 * m_gd157 + ab_gd158 * m_gd158 + ab_gd160 * m_gd160) /
+      7;
+  Float constexpr m_gd2o3 = 2 * m_gad + 3 * m_o16;
+
+  // Add the gadolinium isotopes to the material
+  //---------------------------------------------------------------------------
+  // Compute the number density of Gd2O3
+  Float const n_gad = wt_gad * _density * n_avo_barn / m_gd2o3;
+  Float const n_gd = 2 * n_gad;
+  n_o += 3 * n_gad; // Add the oxygen from Gd2O3
+
+  // For each Gd isotope, compute the number density using the atom percent
+  // (abundance) of each isotope
+  if (n_gd > 0) {
+    addNuclide(64152, ab_gd152 * n_gd);
+    addNuclide(64154, ab_gd154 * n_gd);
+    addNuclide(64155, ab_gd155 * n_gd);
+    addNuclide(64156, ab_gd156 * n_gd);
+    addNuclide(64157, ab_gd157 * n_gd);
+    addNuclide(64158, ab_gd158 * n_gd);
+    addNuclide(64160, ab_gd160 * n_gd);
+  }
+
+  // Add the oxygen to the material
+  addNuclide(8016, n_o);
 }
 
 //==============================================================================
