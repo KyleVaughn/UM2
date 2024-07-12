@@ -18,6 +18,7 @@
 //  - meanChordLength
 //  - intersect(Ray2)
 //  - hasSelfIntersection (quadratic polygons only)
+//  - fixSelfIntersection (quadratic polygons only)
 
 #define STATIC_ASSERT_VALID_POLYGON                                                      \
   static_assert(D >= 2, "Polygons must be embedded in at least 2 dimensions");           \
@@ -302,6 +303,88 @@ hasSelfIntersection(PlanarQuadraticPolygon<N, T> const & poly) noexcept -> bool
 {
   Point2<T> buffer[2 * N];
   return hasSelfIntersection(poly, buffer);
+}
+
+//==============================================================================
+// fixSelfIntersection
+//==============================================================================
+
+// Many times, we end up with a quadratic polygon that has 1 edge that is
+// effectively a straight line, which intersects a curved edge. In this case,
+// we can try to fix the self-intersection by displacing the quadratic vertex
+// on the straight edge away from the intersection point.
+//
+// Returns true if the polygon was fixed.
+// The displacement will be the first index in the buffer.
+// The vid will be the index of the vertex that was displaced.
+//
+// Note this will only fix one self-intersection at a time.
+
+template <Int N, class T>
+HOSTDEV auto
+fixSelfIntersection(PlanarQuadraticPolygon<N, T> & poly, Point2<T> * buffer,
+                    Int & vid) noexcept -> bool
+{
+  Int e0 = -1;
+  Int e1 = -1;
+  // Edge i should intersect edge i + 1 exactly once.
+  Int constexpr m = polygonNumEdges<2, N>();
+  for (Int i = 0; i < m - 1; ++i) {
+    if (poly.getEdge(i).intersect(poly.getEdge(i + 1), buffer) > 1) {
+      e0 = i;
+      e1 = i + 1;
+      break;
+    }
+  }
+
+  // Edge m - 1 should intersect edge 0 exactly once.
+  if (poly.getEdge(m - 1).intersect(poly.getEdge(0), buffer) > 1) {
+    e0 = m - 1;
+    e1 = 0;
+  }
+
+  // If this is a quadratic quadrilateral, we need to check i vs i + 2.
+  if constexpr (m == 4) {
+    if (poly.getEdge(0).intersect(poly.getEdge(2), buffer) > 1) {
+      e0 = 0;
+      e1 = 2;
+    }
+    if (poly.getEdge(1).intersect(poly.getEdge(3), buffer) > 1) {
+      e0 = 1;
+      e1 = 3;
+    }
+  }
+
+  QuadraticSegment2<T> edge0 = poly.getEdge(e0);
+  QuadraticSegment2<T> edge1 = poly.getEdge(e1);
+
+  // Find the segment whose middle vertex is furthest from the the line
+  // defined by the other two vertices.
+  LineSegment2<T> line0(edge0[0], edge0[1]);
+  LineSegment2<T> line1(edge1[0], edge1[1]);
+  T const d0 = line0.distanceTo(edge0[2]);
+  T const d1 = line1.distanceTo(edge1[2]);
+
+  // Ensure edge0 is the straight edge, edge1 is the curved edge.
+  if (d0 > d1) {
+    um2::swap(e0, e1);
+    um2::swap(edge0, edge1);
+    um2::swap(line0, line1);
+  }
+
+  // Get the displacement from the line to the quadratic vertex.
+  Point2<T> const disp = edge1[2] - line1(line1.pointClosestTo(edge1[2]));
+  edge0[2] += disp;
+
+  // Check that the intersection is fixed.
+  if (edge0.intersect(edge1, buffer) > 1) {
+    return false;
+  }
+
+  vid = m + e0;
+  buffer[0] = disp;
+  poly[vid] += disp;
+  return true;
 }
 
 } // namespace um2

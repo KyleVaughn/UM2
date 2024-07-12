@@ -579,8 +579,7 @@ Material::setUO2(Float wt_u235, Float wt_gad) noexcept
   // Compute the average Gd isotope mass
   Float constexpr m_gad =
       (ab_gd152 * m_gd152 + ab_gd154 * m_gd154 + ab_gd155 * m_gd155 + ab_gd156 * m_gd156 +
-       ab_gd157 * m_gd157 + ab_gd158 * m_gd158 + ab_gd160 * m_gd160) /
-      7;
+       ab_gd157 * m_gd157 + ab_gd158 * m_gd158 + ab_gd160 * m_gd160);
   Float constexpr m_gd2o3 = 2 * m_gad + 3 * m_o16;
 
   // Add the gadolinium isotopes to the material

@@ -16,6 +16,12 @@
 #include <algorithm> // sort
 #include <numeric>   // inclusive_scan
 
+#define WRITE_SELF_INTERSECTING_MESH 0
+
+#if WRITE_SELF_INTERSECTING_MESH
+#  include <um2/stdlib/numeric/iota.hpp>
+#endif
+
 namespace um2
 {
 
@@ -53,12 +59,12 @@ FaceVertexMesh<P, N>::FaceVertexMesh(PolytopeSoup const & soup, bool validate)
   ASSERT(num_faces > 0);
   auto const elem_types = soup.getElemTypes();
   if (elem_types.size() != 1) {
-    logger::error(
+    LOG_ERROR(
         "Attempted to construct a FaceVertexMesh from a non-homogeneous PolytopeSoup");
   }
   if (elem_types[0] != getVTKElemType<P, N>()) {
-    logger::error("Attempted to construct a FaceVertexMesh from a PolytopeSoup with an "
-                  "incompatible element type");
+    LOG_ERROR("Attempted to construct a FaceVertexMesh from a PolytopeSoup with an "
+              "incompatible element type");
   }
 
   // -- Vertices --
@@ -70,7 +76,7 @@ FaceVertexMesh<P, N>::FaceVertexMesh(PolytopeSoup const & soup, bool validate)
     _v[i][0] = p[0];
     _v[i][1] = p[1];
     if (um2::abs(p[2] - z) > epsDistance<Float>()) {
-      logger::warn(
+      LOG_WARN(
           "Constructing a FaceVertexMesh from a PolytopeSoup with non-planar vertices");
       break;
     }
@@ -255,7 +261,7 @@ checkCCWFaces(FaceVertexMesh<P, N> & mesh)
     }
   }
   if (faces_flipped) {
-    logger::warn("Some faces were flipped to ensure counter-clockwise order");
+    LOG_WARN("Some faces were flipped to ensure counter-clockwise order");
   }
 }
 
@@ -368,7 +374,7 @@ checkManifoldWatertight(FaceVertexMesh<P, N> const & mesh)
     auto const & edge_count = edge_counts[i];
     Int const sum = edge_count[0] + edge_count[1];
     if (sum > 2) {
-      logger::error("Mesh has overlapping faces");
+      LOG_ERROR("Mesh has overlapping faces");
       return;
     }
     if (sum == 1) {
@@ -377,7 +383,7 @@ checkManifoldWatertight(FaceVertexMesh<P, N> const & mesh)
       auto const & edge = unique_edges[i];
       for (auto const & bedge : boundary_edges) {
         if (edge[0] == bedge[0] || edge[1] == bedge[1]) {
-          logger::error("Mesh has a hole on its boundary");
+          LOG_ERROR("Mesh has a hole on its boundary");
           return;
         }
       }
@@ -403,7 +409,7 @@ checkManifoldWatertight(FaceVertexMesh<P, N> const & mesh)
     }
     // If the edge does not exist, there is a boundary edge missing.
     if (!edge_found) {
-      logger::error("Mesh has a hanging boundary edge");
+      LOG_ERROR("Mesh has a hanging boundary edge");
       return;
     }
     // If we're back at the start, we have a closed loop.
@@ -414,27 +420,85 @@ checkManifoldWatertight(FaceVertexMesh<P, N> const & mesh)
   // If the number of edges in the boundary loop is not equal to the number of
   // boundary edges, then the mesh has multiple boundary loops.
   if (ctr != boundary_edges.size()) {
-    logger::error("Mesh has a hole in its interior");
+    LOG_ERROR("Mesh has a hole in its interior");
     return;
   }
 } // checkManifoldWatertight
 
 template <Int N>
 void
-checkSelfIntersections(FaceVertexMesh<2, N> const & mesh)
+checkSelfIntersections(FaceVertexMesh<2, N> & mesh)
 {
+#if WRITE_SELF_INTERSECTING_MESH
+  static Int num_intersections = 0;
+#endif
   Int const num_faces = mesh.numFaces();
   Point2F buffer[2 * N];
-  for (Int iface = 0; iface < num_faces; ++iface) {
-    if (mesh.getFace(iface).hasSelfIntersection(buffer)) {
-      PolytopeSoup const soup = mesh;
-      soup.write("self_intersecting_mesh.xdmf");
-      //      std::cerr << "Intersection at (" << buffer[0][0] << ", " << buffer[0][1] <<
-      //      ") or ("
-      //                << buffer[1][0] << ", " << buffer[1][1] << ")" << std::endl;
-      logger::error("Mesh has self-intersecting face at index: ", iface,
-                    ". Mesh written to self_intersecting_mesh.xdmf");
-      return;
+  bool check_again = true;
+  while (check_again) {
+    check_again = false;
+    for (Int iface = 0; iface < num_faces; ++iface) {
+      if (mesh.getFace(iface).hasSelfIntersection(buffer)) [[unlikely]] {
+#if WRITE_SELF_INTERSECTING_MESH
+        // If there is a self-intersection, first write the mesh to a file.
+        ++num_intersections;
+        Vector<Int> ids(num_faces, 0);
+        um2::iota(ids.begin(), ids.end(), 0);
+        Vector<Float> data(num_faces, 0);
+        data[iface] = 1;
+        {
+          PolytopeSoup soup = mesh;
+          soup.addElset("self_intersecting_face", ids, data);
+          um2::String const filename =
+              String("self_intersecting_mesh") + String(num_intersections) + ".xdmf";
+          soup.write(filename);
+          LOG_WARN("Mesh has self-intersecting face at index: ", iface,
+                   ". Mesh written to ", filename);
+        }
+#endif
+
+        // Attempt to fix the self-intersection.
+        //-----------------------------------------------------------------------
+        // Get the bounding box of the mesh to ensure we don't modify the
+        // boundary
+        auto const aabb_before = mesh.boundingBox();
+        auto face = mesh.getFace(iface);
+        Int vid = -1; // vertex id in the face that was perturbed
+        bool const fixed = fixSelfIntersection(face, buffer, vid);
+        if (!fixed) {
+          LOG_ERROR("Self-intersection could not be fixed");
+          return;
+        }
+
+        // Perturb the vertex by the returned amount
+        //-----------------------------------------------------------------------
+        // Get the vertex id in the mesh
+        vid = mesh.getFaceConn(iface)[vid];
+        mesh.vertices()[vid] += buffer[0];
+        LOG_WARN("Self-intersection fixed");
+
+#if WRITE_SELF_INTERSECTING_MESH
+        // Write the fixed mesh to a file.
+        {
+          PolytopeSoup soup = mesh;
+          soup.addElset("self_intersecting_face", ids, data);
+          um2::String const filename = String("self_intersecting_mesh") +
+                                       String(num_intersections) + "_fixed.xdmf";
+          soup.write(filename);
+        }
+#endif
+
+        // Check that the bounding box of the mesh has not changed.
+        if (!aabb_before.isApprox(mesh.boundingBox())) {
+          LOG_ERROR("Self-intersection fixed, but bounding box changed");
+          return;
+        }
+
+        // We were able to fix the intersection, but we may have introduced new
+        // self-intersections. We will have to check again.
+        check_again = true;
+        break;
+      }
     }
   }
 }
