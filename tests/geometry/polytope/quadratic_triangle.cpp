@@ -414,6 +414,31 @@ TEST_CASE(hasSelfIntersection)
   }
 }
 
+template <class T>
+HOSTDEV
+TEST_CASE(fixSelfIntersection)
+{
+  auto tri = makeTri<2, T>();
+  um2::Point2<T> const p0(castIfNot<T>(3.90250), castIfNot<T>(1.93887));
+  um2::Point2<T> const p1(castIfNot<T>(3.90250), castIfNot<T>(1.95125));
+  um2::Point2<T> const p2(castIfNot<T>(3.75839), castIfNot<T>(1.85233));
+  um2::Point2<T> const p3(castIfNot<T>(3.90250), castIfNot<T>(1.94506));
+  um2::Point2<T> const p4(castIfNot<T>(3.83044), castIfNot<T>(1.90179));
+  um2::Point2<T> const p5(castIfNot<T>(3.82672), castIfNot<T>(1.90180));
+  tri[0] = p0;
+  tri[1] = p1;
+  tri[2] = p2;
+  tri[3] = p3;
+  tri[4] = p4;
+  tri[5] = p5;
+  ASSERT(tri.hasSelfIntersection());
+  Int vid = -1;
+  um2::Point2<T> buffer[6];
+  ASSERT(um2::fixSelfIntersection(tri, buffer, vid));
+  ASSERT(vid == 4);
+  ASSERT(!tri.hasSelfIntersection());
+}
+
 template <Int D, class T>
 TEST_SUITE(QuadraticTriangle)
 {
@@ -430,6 +455,7 @@ TEST_SUITE(QuadraticTriangle)
     TEST_HOSTDEV(meanChordLength, T);
     TEST_HOSTDEV(intersect, T);
     TEST_HOSTDEV(hasSelfIntersection, T);
+    TEST_HOSTDEV(fixSelfIntersection, T);
   }
 }
 

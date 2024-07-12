@@ -272,21 +272,90 @@ main(int argc, char ** argv) -> int
           {    2.5 * asy_pitch,     0.5 * asy_pitch},
           {    0.5 * asy_pitch,     2.5 * asy_pitch},
       };
-      std::vector<std::pair<int, int>> rect_dim_tags;
+      std::vector<std::pair<int, int>> cut_dim_tags;
       for (auto const & offset : asy_offsets) {
         auto const rect_tag =
             factory::addRectangle(offset[0], offset[1], 0, asy_pitch, asy_pitch);
-        rect_dim_tags.emplace_back(2, rect_tag);
+        cut_dim_tags.emplace_back(2, rect_tag);
       }
 
-      // Cut the rectangles from the innermost vessel tag
+      // Create the holes in the heavy reflector
+      um2::Vector<um2::Vec3d> const hole_xyr = {
+          { 0.0000, 79.8046, 0.6300},
+          { 5.2500, 79.8046, 0.6300},
+          {10.5000, 79.8046, 0.6300},
+          {15.7500, 79.8046, 0.6300},
+          {21.0000, 79.8046, 0.6300},
+          {26.2500, 79.8046, 0.6300},
+          {31.5000, 79.8046, 0.6300},
+          {36.7073, 74.3387, 0.6300},
+          {36.7073, 68.9627, 0.6300},
+          {36.7073, 63.5868, 0.6300},
+          {36.7073, 58.2109, 1.2600},
+          {42.0832, 58.2109, 0.6300},
+          {47.4591, 58.2109, 0.6300},
+          {52.8350, 58.2109, 0.6300},
+          {58.2109, 58.2109, 0.6300},
+          { 2.6880, 84.4655, 0.6300},
+          { 7.9380, 84.4655, 0.6300},
+          {13.1880, 84.4655, 0.6300},
+          {18.4380, 84.4655, 0.6300},
+          {23.6880, 85.8605, 0.6300},
+          {28.9380, 84.4655, 0.6300},
+          {40.5086, 62.0123, 0.6300},
+          {44.7711, 62.8666, 0.6300},
+          {41.3630, 66.2748, 0.6300},
+          {49.0337, 63.7209, 0.6300},
+          {42.2173, 70.5373, 0.6300},
+          {61.5504, 66.0047, 0.6300},
+          {51.1182, 74.3774, 0.6300},
+          {39.8918, 81.1753, 0.6300},
+          {14.2355, 89.3646, 0.6300},
+          { 5.5650, 88.8124, 0.6300},
+          {79.8046,  0.0000, 0.6300},
+          {79.8046,  5.2500, 0.6300},
+          {79.8046, 10.5000, 0.6300},
+          {79.8046, 15.7500, 0.6300},
+          {79.8046, 21.0000, 0.6300},
+          {79.8046, 26.2500, 0.6300},
+          {79.8046, 31.5000, 0.6300},
+          {74.3387, 36.7073, 0.6300},
+          {68.9627, 36.7073, 0.6300},
+          {63.5868, 36.7073, 0.6300},
+          {58.2109, 36.7073, 1.2600},
+          {58.2109, 42.0832, 0.6300},
+          {58.2109, 47.4591, 0.6300},
+          {58.2109, 52.8350, 0.6300},
+          {84.4655,  2.6880, 0.6300},
+          {84.4655,  7.9380, 0.6300},
+          {84.4655, 13.1880, 0.6300},
+          {84.4655, 18.4380, 0.6300},
+          {85.8605, 23.6880, 0.6300},
+          {84.4655, 28.9380, 0.6300},
+          {62.0123, 40.5086, 0.6300},
+          {62.8666, 44.7711, 0.6300},
+          {66.2748, 41.3630, 0.6300},
+          {63.7209, 49.0337, 0.6300},
+          {70.5373, 42.2173, 0.6300},
+          {66.0047, 61.5504, 0.6300},
+          {74.3774, 51.1182, 0.6300},
+          {81.1753, 39.8918, 0.6300},
+          {89.3646, 14.2355, 0.6300},
+          {88.8124,  5.5650, 0.6300},
+      };
+
+      for (auto const & hole : hole_xyr) {
+        auto const disk_tag = factory::addDisk(hole[0], hole[1], 0, hole[2], hole[2]);
+        cut_dim_tags.emplace_back(2, disk_tag);
+      }
+      // Cut the rectangles and disks from the innermost vessel tag
       std::vector<std::pair<int, int>> out_dim_tags;
       std::vector<std::vector<std::pair<int, int>>> out_dim_tags_map;
       factory::groupPreservingCut(
           {
               {2, vessel_tags[0]}
       },
-          rect_dim_tags, out_dim_tags, out_dim_tags_map);
+          cut_dim_tags, out_dim_tags, out_dim_tags_map);
       factory::synchronize();
       // The cut causes the vessel to lost it's color, so we reapply it
       factory::colorMaterialPhysicalGroupEntities({water, ss});
