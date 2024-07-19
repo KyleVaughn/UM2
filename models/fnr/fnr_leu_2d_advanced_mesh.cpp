@@ -28,7 +28,8 @@
 //   inches long. Assuming they maintain their curvature into the side plates, we
 //   see that the plates must be shifted up by some amount.
 //
-// - The core is configured according to (1) Figure B-7 on page 354.
+// - The core is configured according to (1) Figure B-6 on page 353, BUT THE FUEL
+//   IF FRESH
 
 //----------------------------------------------------------------------------
 // ISSUES
@@ -53,6 +54,9 @@
 //
 
 #include <um2.hpp>
+
+// NOLINTBEGIN(misc-include-cleaner)
+
 #include <um2/stdlib/utility/pair.hpp>
 
 #include <vector>
@@ -68,18 +72,20 @@ Float constexpr elem_y_pitch = 3.189 * in_to_cm;        // (1), pg. 348
 //----------------------------------------------------------------------------
 // Global variables
 //----------------------------------------------------------------------------
+// NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
 std::vector<int> fuel_tags;
 std::vector<int> clad_tags;
 std::vector<int> borated_steel_tags;
 std::vector<int> steel_tags;
 std::vector<int> heavy_water_tags;
+// NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
 //----------------------------------------------------------------------------
 // getCircleCenter
 //----------------------------------------------------------------------------
 // Given two points on a circle, return the center of the circle
 CONST auto
-getCircleCenter(um2::Point2 const p0, um2::Point2 const p1, Float const r) -> um2::Point2
+getCircleCenter(um2::Point2d const p0, um2::Point2d const p1, Float const r) -> um2::Point2d
 {
   //        pc
   //       / |
@@ -92,27 +98,27 @@ getCircleCenter(um2::Point2 const p0, um2::Point2 const p1, Float const r) -> um
 
   Float const a = p0.distanceTo(p1) / 2;
   Float const b = um2::sqrt(r * r - a * a);
-  um2::Point2 const p2 = um2::midpoint(p0, p1);
+  um2::Point2d const p2 = um2::midpoint(p0, p1);
   um2::Vec2d const v = (p1 - p0).normalized();
   um2::Vec2d const u(v[1], -v[0]);
   return p2 + b * u;
 }
 
 //----------------------------------------------------------------------------
-// makeFuelPlateHEURegular
+// makeFuelPlateLEURegular
 //----------------------------------------------------------------------------
-// Create an HEU Regular fuel plate given the x, y coordinates of the bottom left corner
+// Create an LEU Regular fuel plate given the x, y coordinates of the bottom left corner
 // of the plate, where the fuel plate meets the side plate.
 // Return the surface tags of the fuel and clad.
 auto
-makeFuelPlateHEURegular(Float const x0, Float const y0) -> um2::Vec2I
+makeFuelPlateLEURegular(Float const x0, Float const y0) -> um2::Vec2I
 {
   // Given parameters
   //------------------
   Float constexpr fuel_meat_width = 2.4 * in_to_cm;       // (1), pg. 347
-  Float constexpr fuel_meat_thickness = 0.022 * in_to_cm; // (1), pg. 347
-  Float constexpr clad_thickness = 0.020 * in_to_cm;      // (1), pg. 347
-  Float constexpr plate_to_plate = 2.562 * in_to_cm;      // (1), pg. 347
+  Float constexpr fuel_meat_thickness = 0.032 * in_to_cm; // (1), pg. 347
+  Float constexpr clad_thickness = 0.015 * in_to_cm;      // (1), pg. 347
+  Float constexpr plate_to_plate = 2.564 * in_to_cm;      // (1), pg. 347
 
   // Computed parameters
   //---------------------
@@ -141,10 +147,10 @@ makeFuelPlateHEURegular(Float const x0, Float const y0) -> um2::Vec2I
   // |            ..........   arc0    .........           |
   // p0..........                               ...........p1
 
-  um2::Point2 const p0(x0, y0);
-  um2::Point2 const p1(x0 + plate_to_plate, y0);
-  um2::Point2 const p2(x0 + plate_to_plate, y0 + plate_thickness);
-  um2::Point2 const p3(x0, y0 + plate_thickness);
+  um2::Point2d const p0(x0, y0);
+  um2::Point2d const p1(x0 + plate_to_plate, y0);
+  um2::Point2d const p2(x0 + plate_to_plate, y0 + plate_thickness);
+  um2::Point2d const p3(x0, y0 + plate_thickness);
 
   auto const p0_tag = um2::gmsh::model::occ::addPoint(p0[0], p0[1], 0);
   auto const p1_tag = um2::gmsh::model::occ::addPoint(p1[0], p1[1], 0);
@@ -152,7 +158,7 @@ makeFuelPlateHEURegular(Float const x0, Float const y0) -> um2::Vec2I
   auto const p3_tag = um2::gmsh::model::occ::addPoint(p3[0], p3[1], 0);
 
   // Add the circular arc between p0--p1 (arc0)
-  um2::Point2 const c0 = getCircleCenter(p0, p1, fuel_curvature_radius);
+  um2::Point2d const c0 = getCircleCenter(p0, p1, fuel_curvature_radius);
   auto const c0_tag = um2::gmsh::model::occ::addPoint(c0[0], c0[1], 0);
   auto const arc0_tag = um2::gmsh::model::occ::addCircleArc(p0_tag, c0_tag, p1_tag);
 
@@ -160,7 +166,7 @@ makeFuelPlateHEURegular(Float const x0, Float const y0) -> um2::Vec2I
   auto const line0_tag = um2::gmsh::model::occ::addLine(p1_tag, p2_tag);
 
   // Add the circular arc between p2--p3 (arc1)
-  um2::Point2 const c1 = getCircleCenter(p3, p2, fuel_curvature_radius);
+  um2::Point2d const c1 = getCircleCenter(p3, p2, fuel_curvature_radius);
   auto const c1_tag = um2::gmsh::model::occ::addPoint(c1[0], c1[1], 0);
   auto const arc1_tag = um2::gmsh::model::occ::addCircleArc(p3_tag, c1_tag, p2_tag);
 
@@ -195,11 +201,11 @@ makeFuelPlateHEURegular(Float const x0, Float const y0) -> um2::Vec2I
   um2::Vec2d v(-um2::sin(fuel_angle / 2), um2::cos(fuel_angle / 2));
   ASSERT(v[0] < 0);
   ASSERT(v[1] > 0);
-  um2::Point2 const p4 = cc + (fuel_curvature_radius - fuel_meat_thickness / 2) * v;
-  um2::Point2 const p7 = cc + (fuel_curvature_radius + fuel_meat_thickness / 2) * v;
+  um2::Point2d const p4 = cc + (fuel_curvature_radius - fuel_meat_thickness / 2) * v;
+  um2::Point2d const p7 = cc + (fuel_curvature_radius + fuel_meat_thickness / 2) * v;
   v[0] = -v[0];
-  um2::Point2 const p5 = cc + (fuel_curvature_radius - fuel_meat_thickness / 2) * v;
-  um2::Point2 const p6 = cc + (fuel_curvature_radius + fuel_meat_thickness / 2) * v;
+  um2::Point2d const p5 = cc + (fuel_curvature_radius - fuel_meat_thickness / 2) * v;
+  um2::Point2d const p6 = cc + (fuel_curvature_radius + fuel_meat_thickness / 2) * v;
 
   auto const p4_tag = um2::gmsh::model::occ::addPoint(p4[0], p4[1], 0);
   auto const p5_tag = um2::gmsh::model::occ::addPoint(p5[0], p5[1], 0);
@@ -207,7 +213,7 @@ makeFuelPlateHEURegular(Float const x0, Float const y0) -> um2::Vec2I
   auto const p7_tag = um2::gmsh::model::occ::addPoint(p7[0], p7[1], 0);
 
   // Add the circular arc between p4--p5 (arc2)
-  um2::Point2 const c2 = getCircleCenter(p4, p5, fuel_curvature_radius);
+  um2::Point2d const c2 = getCircleCenter(p4, p5, fuel_curvature_radius);
   auto const c2_tag = um2::gmsh::model::occ::addPoint(c2[0], c2[1], 0);
   auto const arc2_tag = um2::gmsh::model::occ::addCircleArc(p4_tag, c2_tag, p5_tag);
 
@@ -215,7 +221,7 @@ makeFuelPlateHEURegular(Float const x0, Float const y0) -> um2::Vec2I
   auto const line2_tag = um2::gmsh::model::occ::addLine(p5_tag, p6_tag);
 
   // Add the circular arc between p6--p7 (arc3)
-  um2::Point2 const c3 = getCircleCenter(p7, p6, fuel_curvature_radius);
+  um2::Point2d const c3 = getCircleCenter(p7, p6, fuel_curvature_radius);
   auto const c3_tag = um2::gmsh::model::occ::addPoint(c3[0], c3[1], 0);
   auto const arc3_tag = um2::gmsh::model::occ::addCircleArc(p7_tag, c3_tag, p6_tag);
 
@@ -237,18 +243,18 @@ makeFuelPlateHEURegular(Float const x0, Float const y0) -> um2::Vec2I
 }
 
 //----------------------------------------------------------------------------
-// makeFuelElementHEURegular
+// makeFuelElementLEURegular
 //----------------------------------------------------------------------------
-// Create an HEU Regular fuel element given the x, y coordinates of the bottom left corner
+// Create an LEU Regular fuel element given the x, y coordinates of the bottom left corner
 // of the element
 void
-makeFuelElementHEURegular(Float const x0, Float const y0)
+makeFuelElementLEURegular(Float const x0, Float const y0)
 {
   // Given parameters
   //------------------
-  Float constexpr side_plate_width = 3.17 * in_to_cm;      // (1), pg. 347
+  Float constexpr side_plate_width = 3.15 * in_to_cm;      // (1), pg. 347
   Float constexpr side_plate_thickness = 0.189 * in_to_cm; // (1), pg. 347
-  Float constexpr plate_to_plate = 2.562 * in_to_cm;       // (1), pg. 347
+  Float constexpr plate_to_plate = 2.564 * in_to_cm;       // (1), pg. 347
   Float constexpr water_gap = 0.115 * in_to_cm;            // (1), pg. 347
   Float constexpr unit_cell_thickness = 0.177 * in_to_cm;  // (1), pg. 347
   Int constexpr num_plates = 18;                           // (1), pg. 347
@@ -264,7 +270,7 @@ makeFuelElementHEURegular(Float const x0, Float const y0)
   for (Int i = 0; i < num_plates; ++i) {
     Float const x = x0 + side_plate_thickness + x_shift;
     Float const y = y0 + i * unit_cell_thickness + water_gap / 2 + y_shift;
-    auto const tags = makeFuelPlateHEURegular(x, y);
+    auto const tags = makeFuelPlateLEURegular(x, y);
     fuel_tags.push_back(tags[0]);
     clad_tags.push_back(tags[1]);
   }
@@ -288,9 +294,9 @@ makeFuelElementEmpty(Float const x0, Float const y0)
 {
   // Given parameters
   //------------------
-  Float constexpr side_plate_width = 3.17 * in_to_cm;      // (1), pg. 347
+  Float constexpr side_plate_width = 3.15 * in_to_cm;      // (1), pg. 347
   Float constexpr side_plate_thickness = 0.189 * in_to_cm; // (1), pg. 347
-  Float constexpr plate_to_plate = 2.562 * in_to_cm;       // (1), pg. 347
+  Float constexpr plate_to_plate = 2.564 * in_to_cm;       // (1), pg. 347
 
   // The x and y extents of the fuel element
   Float constexpr x_extent = plate_to_plate + 2 * side_plate_thickness;
@@ -333,25 +339,25 @@ makeControlRod(Float const x0, Float const y0, std::vector<int> & rod_tags)
 }
 
 //----------------------------------------------------------------------------
-// makeFuelElementHEUSpecial
+// makeFuelElementLEUSpecial
 //----------------------------------------------------------------------------
-// Create an HEU Special fuel element given the x, y coordinates of the bottom left corner
+// Create an LEU Special fuel element given the x, y coordinates of the bottom left corner
 // of the element
 void
-makeFuelElementHEUSpecial(Float const x0, Float const y0, bool make_ctrl,
+makeFuelElementLEUSpecial(Float const x0, Float const y0, bool make_ctrl,
                           std::vector<int> & rod_tags)
 {
   // Given parameters
   //------------------
-  Float constexpr side_plate_width = 3.17 * in_to_cm;      // (1), pg. 347
+  Float constexpr side_plate_width = 3.15 * in_to_cm;      // (1), pg. 347
   Float constexpr side_plate_thickness = 0.189 * in_to_cm; // (1), pg. 347
-  Float constexpr plate_to_plate = 2.562 * in_to_cm;       // (1), pg. 347
+  Float constexpr plate_to_plate = 2.564 * in_to_cm;       // (1), pg. 347
   Float constexpr water_gap = 0.115 * in_to_cm;            // (1), pg. 347
   Float constexpr unit_cell_thickness = 0.177 * in_to_cm;  // (1), pg. 347
   // This is num plates in the regular assembly. Actual num plates here is 9
   // (from same source and page)
   Int constexpr num_plates = 18;                            // (1), pg. 347
-  Float constexpr guide_plate_width = 2.562 * in_to_cm;     // (1), pg. 347
+  Float constexpr guide_plate_width = 2.564 * in_to_cm;     // (1), pg. 347
   Float constexpr guide_plate_thickness = 0.125 * in_to_cm; // (1), pg. 347
 
   // The x and y extents of the fuel element
@@ -365,7 +371,7 @@ makeFuelElementHEUSpecial(Float const x0, Float const y0, bool make_ctrl,
   for (Int i = 0; i < 5; ++i) {
     Float const x = x0 + side_plate_thickness + x_shift;
     Float const y = y0 + i * unit_cell_thickness + water_gap / 2 + y_shift;
-    auto const tags = makeFuelPlateHEURegular(x, y);
+    auto const tags = makeFuelPlateLEURegular(x, y);
     fuel_tags.push_back(tags[0]);
     clad_tags.push_back(tags[1]);
   }
@@ -373,7 +379,7 @@ makeFuelElementHEUSpecial(Float const x0, Float const y0, bool make_ctrl,
   for (Int i = 14; i < num_plates; ++i) {
     Float const x = x0 + side_plate_thickness + x_shift;
     Float const y = y0 + i * unit_cell_thickness + water_gap / 2 + y_shift;
-    auto const tags = makeFuelPlateHEURegular(x, y);
+    auto const tags = makeFuelPlateLEURegular(x, y);
     fuel_tags.push_back(tags[0]);
     clad_tags.push_back(tags[1]);
   }
@@ -471,20 +477,27 @@ main(int argc, char ** argv) -> int
   um2::initialize();
 
   // Check the number of arguments
-  if (argc != 2) {
+  if (argc != 4) {
     um2::String const exec_name(argv[0]);
-    um2::logger::error("Usage: ", exec_name, " num_coarse_cells");
+    um2::logger::error("Usage: ", exec_name, " target_kn mfp_threshold mfp_scale");
     return 1;
   }
 
-  //===========================================================================
-  // Parametric study parameters
-  //===========================================================================
-
   char * end = nullptr;
-  Int const num_coarse_cells = um2::strto<Int>(argv[1], &end);
+  Float const target_kn = um2::strto<Float>(argv[1], &end);
   ASSERT(end != nullptr);
-  ASSERT(num_coarse_cells > 0);
+  ASSERT(target_kn > 0);
+
+  Float const mfp_threshold = um2::strto<Float>(argv[2], &end);
+  ASSERT(end != nullptr);
+  end = nullptr;
+
+  Float const mfp_scale = um2::strto<Float>(argv[3], &end);
+  ASSERT(end != nullptr);
+
+  um2::logger::info("Target Knudsen number: ", target_kn);
+  um2::logger::info("MFP threshold: ", mfp_threshold);
+  um2::logger::info("MFP scale: ", mfp_scale);
 
   //============================================================================
   // Materials
@@ -519,8 +532,7 @@ main(int argc, char ** argv) -> int
   h2o.setDensity(0.99821); // g/cm^3
   h2o.setTemperature(300.0);
   h2o.setColor(um2::blue);
-  h2o.addNuclideWt("H1", 0.11191545404473821);
-  h2o.addNuclideWt("O16", 0.8880845459552619);
+  h2o.addNuclidesAtomPercent({"H1", "O16"}, {2.0 / 3.0, 1.0 / 3.0});
   h2o.populateXSec(xslib);
 
   // Heavy water
@@ -530,19 +542,10 @@ main(int argc, char ** argv) -> int
   d2o.setDensity(1.11); // g/cm^3
   d2o.setTemperature(300.0);
   d2o.setColor(um2::darkblue);
-  Float const h1_ao = 0.005;
-  Float const h2_ao = 1.995;
-  Float const o16_ao = 1;
-  Float const h1_wt = 1.00783;
-  Float const h2_wt = 2.0141;
-  Float const o16_wt = 15.9949;
-  Float const d20_wt = h1_ao * h1_wt + h2_ao * h2_wt + o16_ao * o16_wt;
-  d2o.addNuclideWt("H1", h1_ao * h1_wt / d20_wt);
-  d2o.addNuclideWt("H2", h2_ao * h2_wt / d20_wt);
-  d2o.addNuclideWt("O16", o16_ao * o16_wt / d20_wt);
+  d2o.addNuclidesAtomPercent({"H1", "H2", "O16"}, {0.005 / 3.0, 1.995 / 3.0, 1.0 / 3.0});
   d2o.populateXSec(xslib);
 
-  // HEU fuel
+  // LEU fuel
   //---------------------------------------------------------------------------
   um2::Material fuel;
   fuel.setName("Fuel");
@@ -607,9 +610,9 @@ main(int argc, char ** argv) -> int
   // Element ID | Description
   // -----------|------------
   // 0          | Empty
-  // 1          | Regular HEU
-  // 2          | Special HEU / Shim rod
-  // 3          | Special HEU / Control rod
+  // 1          | Regular LEU
+  // 2          | Special LEU / Shim rod
+  // 3          | Special LEU / Control rod
 
   um2::Vec2F const domain_extents(100, 100); // Bounding box of the domain
   um2::Vec2F const core_bounds(77.02904 - 0.5 * 30.8356,
@@ -618,16 +621,16 @@ main(int argc, char ** argv) -> int
   ASSERT(core_offset[0] > 0);
   ASSERT(core_offset[1] > 0);
 
-  //(1) Figure B-7 on page 354
+  //(1) Figure B-6 on page 353
   um2::Vector<um2::Vector<Int>> const core_layout = um2::stringToLattice<Int>(R"(
-      0 0 1 1 1 0
-      0 0 1 1 1 1
+      0 0 0 0 0 0 
+      0 0 0 1 0 0
       0 1 1 1 1 1
-      1 1 2 1 2 1
-      1 1 1 1 1 1
-      3 1 3 1 2 1
+      0 1 2 1 2 1
       0 1 1 1 1 1
-      0 0 1 1 1 0
+      0 1 3 1 2 1
+      0 1 1 1 1 1
+      0 0 0 0 0 0
     )");
 
   // Place each fuel element
@@ -638,11 +641,11 @@ main(int argc, char ** argv) -> int
       if (core_layout[i][j] == 0) {
         makeFuelElementEmpty(x, y);
       } else if (core_layout[i][j] == 1) {
-        makeFuelElementHEURegular(x, y);
+        makeFuelElementLEURegular(x, y);
       } else if (core_layout[i][j] == 2) {
-        makeFuelElementHEUSpecial(x, y, false, borated_steel_tags);
+        makeFuelElementLEUSpecial(x, y, /*make_ctrl=*/true, borated_steel_tags);
       } else if (core_layout[i][j] == 3) {
-        makeFuelElementHEUSpecial(x, y, false, steel_tags);
+        makeFuelElementLEUSpecial(x, y, /*make_ctrl=*/true, steel_tags);
       }
     }
   }
@@ -654,14 +657,12 @@ main(int argc, char ** argv) -> int
   um2::gmsh::model::addPhysicalGroup(2, clad_tags, -1, "Material_Aluminum");
   um2::gmsh::model::addPhysicalGroup(2, heavy_water_tags, -1, "Material_HeavyWater");
   um2::gmsh::model::addPhysicalGroup(2, fuel_tags, -1, "Material_Fuel");
-  //  um2::gmsh::model::addPhysicalGroup(2, borated_steel_tags, -1,
-  //  "Material_BoratedSteel"); um2::gmsh::model::addPhysicalGroup(2, steel_tags, -1,
-  //  "Material_Steel");
+  um2::gmsh::model::addPhysicalGroup(2, borated_steel_tags, -1, "Material_BoratedSteel"); 
+  um2::gmsh::model::addPhysicalGroup(2, steel_tags, -1, "Material_Steel");
 
   // Color the physical groups
-  //  std::vector<um2::Material> const materials = {aluminum, d2o, fuel, borated_steel,
-  //  steel};
-  std::vector<um2::Material> const materials = {aluminum, d2o, fuel};
+  std::vector<um2::Material> const materials = {aluminum, d2o, fuel, borated_steel, steel};
+  // std::vector<um2::Material> const materials = {aluminum, d2o, fuel};
   um2::gmsh::model::occ::colorMaterialPhysicalGroupEntities(materials);
 
   //===========================================================================
@@ -674,22 +675,22 @@ main(int argc, char ** argv) -> int
   model.addMaterial(h2o);
   model.addMaterial(d2o);
   model.addMaterial(fuel);
-  //  model.addMaterial(borated_steel);
-  //  model.addMaterial(steel);
+  model.addMaterial(borated_steel);
+  model.addMaterial(steel);
 
   // Add a coarse grid that evenly subdivides the domain (quarter core)
-  um2::Vec2I const num_cells(num_coarse_cells, num_coarse_cells);
+  Int constexpr num_coarse_cells = 70;
+  um2::Vec2I constexpr num_cells(num_coarse_cells, num_coarse_cells);
   model.addCoarseGrid(domain_extents, num_cells);
   um2::gmsh::model::occ::overlayCoarseGrid(model, h2o);
-  //  um2::gmsh::fltk::run();
 
   //===========================================================================
   // Generate the mesh
   //===========================================================================
 
-  um2::gmsh::model::mesh::setGlobalMeshSize(0.30);
+  um2::gmsh::model::mesh::setMeshFieldFromKnudsenNumber(2, model.materials(), target_kn,    
+                                                        mfp_threshold, mfp_scale);
   um2::gmsh::model::mesh::generateMesh(um2::MeshType::Tri);
-  //  um2::gmsh::fltk::run();
   um2::gmsh::write("fnr_2d.inp");
 
   //===========================================================================
@@ -697,8 +698,9 @@ main(int argc, char ** argv) -> int
   //===========================================================================
 
   model.importCoarseCellMeshes("fnr_2d.inp");
-  model.write("fnr_2d.xdmf", /*write_knudsen_data=*/true);
-  model.writeCMFDInfo("fnr_2d_cmfd_info.xdmf");
+  model.write("fnr_2d.xdmf");
   um2::finalize();
   return 0;
 }
+
+// NOLINTEND(misc-include-cleaner)
