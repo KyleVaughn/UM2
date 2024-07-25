@@ -36,17 +36,29 @@ main(int argc, char ** argv) -> int
   //===========================================================================
 
   // Check the number of arguments
-  if (argc != 2) {
+  if (argc != 4) {
     um2::String const exec_name(argv[0]);
-    um2::logger::error("Usage: ", exec_name, " num_coarse_cells");
+    um2::logger::error("Usage: ", exec_name, " target_kn mfp_threshold mfp_scale");
     return 1;
   }
 
   char * end = nullptr;
-  Int const num_coarse_cells = um2::strto<Int>(argv[1], &end);
+  Float const target_kn = um2::strto<Float>(argv[1], &end);
   ASSERT(end != nullptr);
-  ASSERT(num_coarse_cells > 0);
+  ASSERT(target_kn > 0);
 
+  Float const mfp_threshold = um2::strto<Float>(argv[2], &end);
+  ASSERT(end != nullptr);
+  end = nullptr;
+
+  Float const mfp_scale = um2::strto<Float>(argv[3], &end);
+  ASSERT(end != nullptr);
+
+  um2::logger::info("Target Knudsen number: ", target_kn);
+  um2::logger::info("MFP threshold: ", mfp_threshold);
+  um2::logger::info("MFP scale: ", mfp_scale);
+
+  Int constexpr num_coarse_cells = 119;
   um2::String const model_name = "nuscale_2d_" + um2::String(num_coarse_cells) + ".brep";
 
   //============================================================================
@@ -682,7 +694,8 @@ main(int argc, char ** argv) -> int
   // Generate the mesh
   //===========================================================================
 
-  um2::gmsh::model::mesh::setGlobalMeshSize(pin_pitch / 6);
+  um2::gmsh::model::mesh::setMeshFieldFromKnudsenNumber(2, model.materials(), target_kn,
+                                                      mfp_threshold, mfp_scale);
   um2::gmsh::model::mesh::generateMesh(um2::MeshType::QuadraticTri);
   um2::gmsh::write("nuscale_2d.inp");
 
@@ -691,8 +704,7 @@ main(int argc, char ** argv) -> int
   //===========================================================================
 
   model.importCoarseCellMeshes("nuscale_2d.inp");
-  // model.writeCMFDInfo("nuscale_2d_cmfd_info.xdmf");
-  model.write("nuscale_2d.xdmf", /*write_knudsen_data=*/true);
+  model.write("nuscale_2d.xdmf");
   um2::finalize();
   return 0;
 }
