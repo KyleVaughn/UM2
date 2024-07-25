@@ -40,6 +40,7 @@
 #include <algorithm>
 #include <cstring>
 #include <fstream>
+#include <iomanip>
 #include <numeric>
 #include <string>
 
@@ -2044,6 +2045,126 @@ writeInputFile(String const & filename, Model const & model)
 
 } // writeInputFile
 
+void
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+writeMaterialVolumes(String const & filename, Model const & model)
+{
+
+  // Strip the ending from filename
+  Int const last_period = filename.find_last_of('.');
+  String const base_filename = filename.substr(0, last_period);
+  String const volumes_filename = base_filename + ".volumes";
+  LOG_INFO("Writing MPACT material volumes file: ", volumes_filename);
+
+  // Open the file
+  std::ofstream file(std::string(volumes_filename.data()));
+  if (!file.is_open()) {
+    logger::error("Failed to open file: ", volumes_filename);
+    return;
+  }
+
+  auto const & core = model.core();
+  auto const & lattices = model.lattices();
+  auto const & rtms = model.rtms();
+  auto const & coarse_cells = model.coarseCells();
+  auto const & materials = model.materials();
+  auto const & tris = model.triMeshes();
+  auto const & quads = model.quadMeshes();
+  auto const & tri6s = model.tri6Meshes();
+  auto const & quad8s = model.quad8Meshes();
+
+  Int const nmats = materials.size();
+  Vector<Vector<Float>> volumes(nmats);
+  // For each assembly in the core
+  for (auto const & asy_id : core.children()) {
+    // Get the assembly and determine the number of lattices
+    auto const & assembly = model.getAssembly(asy_id);
+    auto const num_lats = assembly.children().size();
+    // For each of the lattices in the assembly
+    for (Int ilat = 0; ilat < num_lats; ++ilat) {
+      auto const lat_id = assembly.getChild(ilat);
+      // Get the dz of the lattice
+      Float const low_z = assembly.grid().divs(0)[ilat];
+      Float const high_z = assembly.grid().divs(0)[ilat + 1];
+      Float const dz = high_z - low_z;
+      // For each RTM in the lattice
+      for (auto const & rtm_id : lattices[lat_id].children()) {
+        // For each coarse cell in the RTM
+        for (auto const & cc_id : rtms[rtm_id].children()) {
+          // Get the coarse cell
+          auto const & cc = coarse_cells[cc_id];
+          // Based on the mesh type, find the area of each face
+          // NOLINTBEGIN(bugprone-signed-char-misuse,cert-str34-c)
+          switch (cc.mesh_type) {
+          case MeshType::Tri: {
+            auto const & mesh = tris[cc.mesh_id];
+            Int const num_faces = mesh.numFaces();
+            for (Int i = 0; i < num_faces; ++i) {
+              auto const mat_id = static_cast<Int>(cc.material_ids[i]);
+              volumes[mat_id].emplace_back(mesh.getFace(i).area() * dz);
+            }
+            break;
+          }
+          case MeshType::Quad: {
+            auto const & mesh = quads[cc.mesh_id];
+            Int const num_faces = mesh.numFaces();
+            for (Int i = 0; i < num_faces; ++i) {
+              auto const mat_id = static_cast<Int>(cc.material_ids[i]);
+              volumes[mat_id].emplace_back(mesh.getFace(i).area() * dz);
+            }
+            break;
+          }
+          case MeshType::QuadraticTri: {
+            auto const & mesh = tri6s[cc.mesh_id];
+            Int const num_faces = mesh.numFaces();
+            for (Int i = 0; i < num_faces; ++i) {
+              auto const mat_id = static_cast<Int>(cc.material_ids[i]);
+              volumes[mat_id].emplace_back(mesh.getFace(i).area() * dz);
+            }
+            break;
+          }
+          case MeshType::QuadraticQuad: {
+            auto const & mesh = quad8s[cc.mesh_id];
+            Int const num_faces = mesh.numFaces();
+            for (Int i = 0; i < num_faces; ++i) {
+              auto const mat_id = static_cast<Int>(cc.material_ids[i]);
+              volumes[mat_id].emplace_back(mesh.getFace(i).area() * dz);
+            }
+            break;
+          }
+          default:
+            logger::error("Unsupported mesh type");
+          }
+          // NOLINTEND(bugprone-signed-char-misuse,cert-str34-c)
+        }
+      }
+    }
+  }
+
+  // Reduce the volumes to the total volume of each material
+  Vector<Float> total_volumes(nmats, 0);
+  for (Int imat = 0; imat < nmats; ++imat) {
+    // Sort and use the sum function for minimal floating point error
+    // (sum uses pairwise summation)
+    std::sort(volumes[imat].begin(), volumes[imat].end());
+    total_volumes[imat] = um2::sum(volumes[imat].cbegin(), volumes[imat].cend());
+  }
+
+  Int p = 6;
+  if constexpr (std::same_as<Float, double>) {
+    p = 15;
+  }
+
+  for (Int imat = 0; imat < nmats; ++imat) {
+    file << materials[imat].getName().data() << " " << std::setprecision(p)
+         << total_volumes[imat] << '\n';
+  }
+
+  // Close the file
+  file.close();
+
+} // writeMaterialVolumes
+
 } // namespace
 
 //==============================================================================
@@ -2061,6 +2182,8 @@ Model::write(String const & filename, bool const write_knudsen_data,
   }
   // Write the MPACT input file
   writeInputFile(filename, *this);
+  // Write the volumes of each material
+  writeMaterialVolumes(filename, *this);
 }
 
 //==============================================================================
