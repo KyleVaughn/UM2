@@ -40,9 +40,9 @@
 #include <algorithm>
 #include <cstring>
 #include <fstream>
+#include <iomanip>
 #include <numeric>
 #include <string>
-#include <iomanip>
 
 // We dont have access to the header defining many of the HDF5 types, so we disable
 // the clang-tidy warning.
@@ -2074,7 +2074,7 @@ writeMaterialVolumes(String const & filename, Model const & model)
   auto const & quad8s = model.quad8Meshes();
 
   Int const nmats = materials.size();
-  Vector<Vector<Float>> volumes(nmats); 
+  Vector<Vector<Float>> volumes(nmats);
   // For each assembly in the core
   for (auto const & asy_id : core.children()) {
     // Get the assembly and determine the number of lattices
@@ -2106,7 +2106,7 @@ writeMaterialVolumes(String const & filename, Model const & model)
             break;
           }
           case MeshType::Quad: {
-            auto const & mesh = quads[cc.mesh_id]; 
+            auto const & mesh = quads[cc.mesh_id];
             Int const num_faces = mesh.numFaces();
             for (Int i = 0; i < num_faces; ++i) {
               auto const mat_id = static_cast<Int>(cc.material_ids[i]);
@@ -2150,13 +2150,14 @@ writeMaterialVolumes(String const & filename, Model const & model)
     total_volumes[imat] = um2::sum(volumes[imat].cbegin(), volumes[imat].cend());
   }
 
-  Int p = 6; 
+  Int p = 6;
   if constexpr (std::same_as<Float, double>) {
     p = 15;
   }
 
   for (Int imat = 0; imat < nmats; ++imat) {
-    file << materials[imat].getName().data() << " " << std::setprecision(p) <<  total_volumes[imat] << '\n';
+    file << materials[imat].getName().data() << " " << std::setprecision(p)
+         << total_volumes[imat] << '\n';
   }
 
   // Close the file

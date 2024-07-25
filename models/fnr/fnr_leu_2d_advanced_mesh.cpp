@@ -85,7 +85,8 @@ std::vector<int> heavy_water_tags;
 //----------------------------------------------------------------------------
 // Given two points on a circle, return the center of the circle
 CONST auto
-getCircleCenter(um2::Point2d const p0, um2::Point2d const p1, Float const r) -> um2::Point2d
+getCircleCenter(um2::Point2d const p0, um2::Point2d const p1,
+                Float const r) -> um2::Point2d
 {
   //        pc
   //       / |
@@ -657,11 +658,12 @@ main(int argc, char ** argv) -> int
   um2::gmsh::model::addPhysicalGroup(2, clad_tags, -1, "Material_Aluminum");
   um2::gmsh::model::addPhysicalGroup(2, heavy_water_tags, -1, "Material_HeavyWater");
   um2::gmsh::model::addPhysicalGroup(2, fuel_tags, -1, "Material_Fuel");
-  um2::gmsh::model::addPhysicalGroup(2, borated_steel_tags, -1, "Material_BoratedSteel"); 
+  um2::gmsh::model::addPhysicalGroup(2, borated_steel_tags, -1, "Material_BoratedSteel");
   um2::gmsh::model::addPhysicalGroup(2, steel_tags, -1, "Material_Steel");
 
   // Color the physical groups
-  std::vector<um2::Material> const materials = {aluminum, d2o, fuel, borated_steel, steel};
+  std::vector<um2::Material> const materials = {aluminum, d2o, fuel, borated_steel,
+                                                steel};
   // std::vector<um2::Material> const materials = {aluminum, d2o, fuel};
   um2::gmsh::model::occ::colorMaterialPhysicalGroupEntities(materials);
 
@@ -688,7 +690,7 @@ main(int argc, char ** argv) -> int
   // Generate the mesh
   //===========================================================================
 
-  um2::gmsh::model::mesh::setMeshFieldFromKnudsenNumber(2, model.materials(), target_kn,    
+  um2::gmsh::model::mesh::setMeshFieldFromKnudsenNumber(2, model.materials(), target_kn,
                                                         mfp_threshold, mfp_scale);
   um2::gmsh::model::mesh::generateMesh(um2::MeshType::Tri);
   um2::gmsh::write("fnr_2d.inp");
