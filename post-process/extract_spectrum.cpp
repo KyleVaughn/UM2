@@ -1,7 +1,7 @@
 #include <um2.hpp>
-#include <um2/stdlib/algorithm/is_sorted.hpp>
 
 // NOLINTBEGIN(misc-include-cleaner)
+#include <um2/stdlib/algorithm/is_sorted.hpp>
 
 PURE [[nodiscard]] auto
 getSpectrum(um2::String const & filename) -> um2::Vector<Float>;
