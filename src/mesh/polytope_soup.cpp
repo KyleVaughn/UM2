@@ -978,6 +978,7 @@ vtkParseUnstructuredGrid(PolytopeSoup & soup, std::ifstream & file, char * const
 } // vtkParseUnstructuredGrid
 
 void
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 vtkParseCellData(PolytopeSoup & soup, std::ifstream & file, char * const line,
                  uint64_t const max_line_length)
 {
@@ -1008,14 +1009,11 @@ vtkParseCellData(PolytopeSoup & soup, std::ifstream & file, char * const line,
   StringView token = line_view.getTokenAndShrink();
   token = line_view.getTokenAndShrink();
   String const data_name(token);
-
-  // Ensure float/double data type
-  if (!line_view.starts_with("float") && !line_view.starts_with("double")) {
-    LOG_WARN("Skipping data set of unsupported type. Name: ", data_name,
-             ", type: ", line_view);
+  bool const is_float = line_view.starts_with("float") || line_view.starts_with("double");
+  if (!is_float && !line_view.starts_with("int")) {
+    LOG_ERROR("Only float, double, and int data types are supported"); 
     return;
   }
-  ASSERT(line_view.starts_with("float") || line_view.starts_with("double"));
 
   // Ensure LOOKUP_TABLE
   file.getline(line, smax_line_length);
@@ -1033,6 +1031,29 @@ vtkParseCellData(PolytopeSoup & soup, std::ifstream & file, char * const line,
       Float const value = strto<Float>(token.data(), &end);
       ASSERT(end != nullptr);
       end = nullptr;
+      // if the data type is not float, ensure the conversion was lossless
+      if (!is_float) {
+        int64_t const ivalue = strto<int64_t>(token.data(), &end);
+        ASSERT(end != nullptr);
+        end = nullptr;
+        if constexpr (std::same_as<Float, double>) {
+          // If Float == double, then the significand is 52 bits (excluding the sign bit)
+          // Hence, we can safely convert all integers less than 2^52 to double 
+          int64_t constexpr max_int = 1LL << 52;
+          if (um2::abs(ivalue) > max_int) {
+            LOG_ERROR("Integer value ", ivalue, " is too large to be stored as a double");
+            return;
+          } 
+        } else {
+          // If Float == float, then the significand is 23 bits (excluding the sign bit)
+          // Hence, we can safely convert all integers less than 2^23 to float
+          int64_t constexpr max_int = 1LL << 23;
+          if (um2::abs(ivalue) > max_int) {
+            LOG_ERROR("Integer value ", ivalue, " is too large to be stored as a float");
+            return;
+          }
+        }
+      }
       data[data_ctr] = value;
       ++data_ctr;
       token = line_view.getTokenAndShrink();
