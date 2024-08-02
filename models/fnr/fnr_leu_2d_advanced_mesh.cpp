@@ -692,7 +692,7 @@ main(int argc, char ** argv) -> int
 
   um2::gmsh::model::mesh::setMeshFieldFromKnudsenNumber(2, model.materials(), target_kn,
                                                         mfp_threshold, mfp_scale);
-  um2::gmsh::model::mesh::generateMesh(um2::MeshType::Tri);
+  um2::gmsh::model::mesh::generateMesh(um2::MeshType::QuadraticTri);
   um2::gmsh::write("fnr_2d.inp");
 
   //===========================================================================

@@ -335,6 +335,7 @@ set(UM2_SOURCES
     "src/physics/cmfd.cpp"
     "src/mpact/model.cpp"
     "src/mpact/powers.cpp"
+    "src/mpact/source.cpp"
     "src/gmsh/base_gmsh_api.cpp"
     "src/gmsh/io.cpp"
     "src/gmsh/model.cpp"

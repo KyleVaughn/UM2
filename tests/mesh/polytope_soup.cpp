@@ -420,12 +420,9 @@ TEST_CASE(io_vtk_tri_mesh)
   um2::PolytopeSoup const mesh(filename);
 
   ASSERT(mesh.compare(mesh_ref) == 6); // Different elsets
-  ASSERT(mesh.numElsets() == 1);
-  um2::String name;
   um2::Vector<Int> ids;
   um2::Vector<Float> elset_data;
-  mesh.getElset(0, name, ids, elset_data);
-  ASSERT(name == "flux");
+  mesh.getElset("flux", ids, elset_data);
   ASSERT(ids == um2::Vector<Int>({0, 1}));
   ASSERT(elset_data.size() == 2);
   ASSERT_NEAR(elset_data[0], 1, castIfNot<Float>(1e-6));
@@ -441,12 +438,9 @@ TEST_CASE(io_vtk_quad_mesh)
   um2::PolytopeSoup const mesh(filename);
 
   ASSERT(mesh.compare(mesh_ref) == 6); // Different elsets
-  ASSERT(mesh.numElsets() == 1);
-  um2::String name;
   um2::Vector<Int> ids;
   um2::Vector<Float> elset_data;
-  mesh.getElset(0, name, ids, elset_data);
-  ASSERT(name == "flux");
+  mesh.getElset("flux", ids, elset_data);
   ASSERT(ids == um2::Vector<Int>({0, 1}));
   ASSERT(elset_data.size() == 2);
   ASSERT_NEAR(elset_data[0], 1, castIfNot<Float>(1e-6));
@@ -462,12 +456,9 @@ TEST_CASE(io_vtk_tri_quad_mesh)
   um2::PolytopeSoup const mesh(filename);
 
   ASSERT(mesh.compare(mesh_ref) == 6); // Different elsets
-  ASSERT(mesh.numElsets() == 1);
-  um2::String name;
   um2::Vector<Int> ids;
   um2::Vector<Float> elset_data;
-  mesh.getElset(0, name, ids, elset_data);
-  ASSERT(name == "flux");
+  mesh.getElset("flux", ids, elset_data);
   ASSERT(ids == um2::Vector<Int>({0, 1}));
   ASSERT(elset_data.size() == 2);
   ASSERT_NEAR(elset_data[0], 1, castIfNot<Float>(1e-6));
@@ -483,12 +474,9 @@ TEST_CASE(io_vtk_tri6_mesh)
   um2::PolytopeSoup const mesh(filename);
 
   ASSERT(mesh.compare(mesh_ref) == 6); // Different elsets
-  ASSERT(mesh.numElsets() == 1);
-  um2::String name;
   um2::Vector<Int> ids;
   um2::Vector<Float> elset_data;
-  mesh.getElset(0, name, ids, elset_data);
-  ASSERT(name == "flux");
+  mesh.getElset("flux", ids, elset_data);
   ASSERT(ids == um2::Vector<Int>({0, 1}));
   ASSERT(elset_data.size() == 2);
   ASSERT_NEAR(elset_data[0], 1, castIfNot<Float>(1e-6));
@@ -504,12 +492,9 @@ TEST_CASE(io_vtk_quad8_mesh)
   um2::PolytopeSoup const mesh(filename);
 
   ASSERT(mesh.compare(mesh_ref) == 6); // Different elsets
-  ASSERT(mesh.numElsets() == 1);
-  um2::String name;
   um2::Vector<Int> ids;
   um2::Vector<Float> elset_data;
-  mesh.getElset(0, name, ids, elset_data);
-  ASSERT(name == "flux");
+  mesh.getElset("flux", ids, elset_data);
   ASSERT(ids == um2::Vector<Int>({0, 1}));
   ASSERT(elset_data.size() == 2);
   ASSERT_NEAR(elset_data[0], 1, castIfNot<Float>(1e-6));
@@ -525,12 +510,9 @@ TEST_CASE(io_vtk_tri6_quad8_mesh)
   um2::PolytopeSoup const mesh(filename);
 
   ASSERT(mesh.compare(mesh_ref) == 6); // Different elsets
-  ASSERT(mesh.numElsets() == 1);
-  um2::String name;
   um2::Vector<Int> ids;
   um2::Vector<Float> elset_data;
-  mesh.getElset(0, name, ids, elset_data);
-  ASSERT(name == "flux");
+  mesh.getElset("flux", ids, elset_data);
   ASSERT(ids == um2::Vector<Int>({0, 1}));
   ASSERT(elset_data.size() == 2);
   ASSERT_NEAR(elset_data[0], 1, castIfNot<Float>(1e-6));

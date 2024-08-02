@@ -2165,6 +2165,48 @@ writeMaterialVolumes(String const & filename, Model const & model)
 
 } // writeMaterialVolumes
 
+void
+writeCrossSections(String const & filename, Model const & model)
+{
+
+  // Strip the ending from filename
+  Int const last_period = filename.find_last_of('.');
+  String const base_filename = filename.substr(0, last_period);
+  String const xs_filename = base_filename + ".xs";
+  LOG_INFO("Writing MPACT material cross sections file: ", xs_filename);
+
+  // Open the file
+  std::ofstream file(std::string(xs_filename.data()));
+  if (!file.is_open()) {
+    logger::error("Failed to open file: ", xs_filename);
+    return;
+  }
+
+  auto const & materials = model.materials();
+  Int const nmats = materials.size();
+  Int const num_groups = materials[0].xsec().numGroups();
+  Int precision = 6;
+  if constexpr (std::same_as<Float, double>) {
+    precision = 15;
+  }
+  // Write number of materials and number of groups
+  file << nmats << " " << num_groups << '\n';
+  for (auto const & material : materials) {
+    // Write the material name
+    file << material.getName().data() << '\n';
+    // Write the cross sections
+    auto const & xsec = material.xsec();
+    ASSERT(xsec.numGroups() == num_groups);
+    for (Int ig = 0; ig < num_groups; ++ig) {
+      file << std::setprecision(precision) << xsec.a()[ig] << ' ' << xsec.f()[ig] << ' '
+           << xsec.nuf()[ig] << ' ' << xsec.tr()[ig] << ' ' << xsec.s()[ig] << '\n';
+    }
+  }
+
+  // Close the file
+  file.close();
+} // writeCrossSections
+
 } // namespace
 
 //==============================================================================
@@ -2184,6 +2226,8 @@ Model::write(String const & filename, bool const write_knudsen_data,
   writeInputFile(filename, *this);
   // Write the volumes of each material
   writeMaterialVolumes(filename, *this);
+  // Write the cross sections of each material
+  writeCrossSections(filename, *this);
 }
 
 //==============================================================================
