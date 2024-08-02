@@ -4,8 +4,8 @@
 #include <um2/mesh/element_types.hpp>
 #include <um2/mesh/face_vertex_mesh.hpp>
 #include <um2/mesh/polytope_soup.hpp>
-#include <um2/mpact/source.hpp>
 #include <um2/mpact/model.hpp>
+#include <um2/mpact/source.hpp>
 #include <um2/physics/material.hpp>
 #include <um2/stdlib/assert.hpp>
 #include <um2/stdlib/string.hpp>
@@ -82,7 +82,7 @@ getSource(PolytopeSoup const & soup, Vector<Material> const & materials) -> Vect
   }
 
   // Multiply by the area of the face
-  //for (Int i = 0; i < num_faces; ++i) {
+  // for (Int i = 0; i < num_faces; ++i) {
   //  source[i] *= fvm.getFace(i).area();
   //}
 

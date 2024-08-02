@@ -1011,7 +1011,7 @@ vtkParseCellData(PolytopeSoup & soup, std::ifstream & file, char * const line,
   String const data_name(token);
   bool const is_float = line_view.starts_with("float") || line_view.starts_with("double");
   if (!is_float && !line_view.starts_with("int")) {
-    LOG_ERROR("Only float, double, and int data types are supported"); 
+    LOG_ERROR("Only float, double, and int data types are supported");
     return;
   }
 
@@ -1038,12 +1038,12 @@ vtkParseCellData(PolytopeSoup & soup, std::ifstream & file, char * const line,
         end = nullptr;
         if constexpr (std::same_as<Float, double>) {
           // If Float == double, then the significand is 52 bits (excluding the sign bit)
-          // Hence, we can safely convert all integers less than 2^52 to double 
+          // Hence, we can safely convert all integers less than 2^52 to double
           int64_t constexpr max_int = 1LL << 52;
           if (um2::abs(ivalue) > max_int) {
             LOG_ERROR("Integer value ", ivalue, " is too large to be stored as a double");
             return;
-          } 
+          }
         } else {
           // If Float == float, then the significand is 23 bits (excluding the sign bit)
           // Hence, we can safely convert all integers less than 2^23 to float

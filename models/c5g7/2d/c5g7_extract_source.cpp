@@ -16,12 +16,12 @@ main(int argc, char ** argv) -> int
     return 1;
   }
 
-  // Get the FSR file name 
+  // Get the FSR file name
   um2::String const filename(argv[1]);
 
   // Get the model's materials
   um2::Vector<um2::Material> const materials = um2::getC5G7Materials();
-  
+
   // Import the FSR mesh
   um2::PolytopeSoup soup(filename);
 

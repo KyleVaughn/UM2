@@ -2198,9 +2198,8 @@ writeCrossSections(String const & filename, Model const & model)
     auto const & xsec = material.xsec();
     ASSERT(xsec.numGroups() == num_groups);
     for (Int ig = 0; ig < num_groups; ++ig) {
-      file << std::setprecision(precision) 
-           << xsec.a()[ig] << ' ' << xsec.f()[ig] << ' ' << xsec.nuf()[ig] << ' '
-           << xsec.tr()[ig] << ' ' << xsec.s()[ig] << '\n';
+      file << std::setprecision(precision) << xsec.a()[ig] << ' ' << xsec.f()[ig] << ' '
+           << xsec.nuf()[ig] << ' ' << xsec.tr()[ig] << ' ' << xsec.s()[ig] << '\n';
     }
   }
 
