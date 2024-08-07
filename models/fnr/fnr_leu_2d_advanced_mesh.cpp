@@ -681,7 +681,7 @@ main(int argc, char ** argv) -> int
   model.addMaterial(steel);
 
   // Add a coarse grid that evenly subdivides the domain (quarter core)
-  Int constexpr num_coarse_cells = 70;
+  Int constexpr num_coarse_cells = 45;
   um2::Vec2I constexpr num_cells(num_coarse_cells, num_coarse_cells);
   model.addCoarseGrid(domain_extents, num_cells);
   um2::gmsh::model::occ::overlayCoarseGrid(model, h2o);
@@ -690,6 +690,7 @@ main(int argc, char ** argv) -> int
   // Generate the mesh
   //===========================================================================
 
+  // um2::gmsh::model::mesh::setGlobalMeshSize(target_kn);
   um2::gmsh::model::mesh::setMeshFieldFromKnudsenNumber(2, model.materials(), target_kn,
                                                         mfp_threshold, mfp_scale);
   um2::gmsh::model::mesh::generateMesh(um2::MeshType::QuadraticTri);

@@ -222,8 +222,22 @@ main(int argc, char ** argv) -> int
   //===========================================================================
 
   // um2::gmsh::model::mesh::setGlobalMeshSize(uo2_pitch / target_kn);
+
+  // normalized spectrum, to more accurately collapse the cross sections to
+  // one group
+  // um2::Vector<double> const spectrum = {
+  // 0.00500056, 0.01691701, 0.05536373, 0.06125031, 0.0504457,  0.05143273,
+  // 0.0583035,  0.04335629, 0.01255998, 0.02627276, 0.01902727, 0.034446,
+  // 0.01993101, 0.02576658, 0.01678378, 0.01376838, 0.00971882, 0.00982176,
+  // 0.01503679, 0.00392784, 0.00789364, 0.00247082, 0.00203578, 0.00274036,
+  // 0.00150333, 0.00121923, 0.00464844, 0.00843123, 0.00586606, 0.00523932,
+  // 0.00315497, 0.0013114,  0.00082711, 0.00095792, 0.00141115, 0.00076104,
+  // 0.00113644, 0.00458927, 0.00409565, 0.00514907, 0.00845822, 0.0058247,
+  // 0.00929648, 0.01395315, 0.03898544, 0.03342178, 0.05267585, 0.07607298,
+  // 0.04581338, 0.08451502, 0.01640998};
+
   um2::gmsh::model::mesh::setMeshFieldFromKnudsenNumber(2, model.materials(), target_kn,
-                                                        mfp_threshold, mfp_scale);
+                                                        mfp_threshold, mfp_scale, -1, -1);
   um2::gmsh::model::mesh::generateMesh(um2::MeshType::QuadraticTri);
   um2::gmsh::write("crocus_2d.inp");
 

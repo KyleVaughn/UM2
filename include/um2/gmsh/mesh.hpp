@@ -26,7 +26,8 @@ setMeshFieldFromKnudsenNumber(int dim, um2::Vector<Material> const & materials,
                               double kn_target, double fuel_mfp_threshold = -1.0,
                               double fuel_mfp_scale = -1.0,
                               double abs_mfp_threshold = -1.0,
-                              double abs_mfp_scale = -1.0) -> int;
+                              double abs_mfp_scale = -1.0,
+                              um2::Vector<double> const & weights = {}) -> int;
 
 } // namespace um2::gmsh::model::mesh
 #endif // UM2_USE_GMSH

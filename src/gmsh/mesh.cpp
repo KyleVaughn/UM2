@@ -165,7 +165,8 @@ auto
 setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & materials,
                               double const kn_target, double const fuel_mfp_threshold,
                               double const fuel_mfp_scale, double const abs_mfp_threshold,
-                              double const abs_mfp_scale) -> int
+                              double const abs_mfp_scale,
+                              um2::Vector<double> const & weights) -> int
 {
   //-----------------------------------------------------------------------
   // Check that each material exists as a physical group
@@ -224,7 +225,7 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
     return -1;
   }
 
-  // Ensure each material has a valic cross section
+  // Ensure each material has a valid cross section
   for (auto const & material : materials) {
     if (!material.hasXSec()) {
       LOG_ERROR("Material ", material.getName(), " does not have a valid cross section");
@@ -239,7 +240,8 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
   std::vector<int> is_fissile(num_materials, 0);
   std::vector<int> is_absorber(num_materials, 0);
   for (size_t i = 0; i < num_materials; ++i) {
-    XSec const xs_avg_1g = materials[static_cast<Int>(i)].xsec().collapseTo1GroupAvg();
+    XSec const xs_avg_1g =
+        materials[static_cast<Int>(i)].xsec().collapseTo1GroupAvg(weights);
     ASSERT(xs_avg_1g.t(0) > 0);
     double const sigma_t = xs_avg_1g.t(0);
     double const sigma_s = xs_avg_1g.s()[0];

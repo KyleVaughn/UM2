@@ -125,7 +125,7 @@ public:
   // NOTE: this is not a replacement for a one-group cross section, which
   // should perform a weighted sum which preserve the total reaction rate.
   PURE [[nodiscard]] auto
-  collapseTo1GroupAvg() const noexcept -> XSec;
+  collapseTo1GroupAvg(Vector<Float> const & weights = {}) const noexcept -> XSec;
 }; // class XS
 
 //======================================================================

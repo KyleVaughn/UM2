@@ -120,18 +120,36 @@ XSec::validate() const noexcept
 }
 
 auto
-XSec::collapseTo1GroupAvg() const noexcept -> XSec
+XSec::collapseTo1GroupAvg(Vector<Float> const & weights) const noexcept -> XSec
 {
   XSec result(1);
   result.isMacro() = isMacro();
   result.isFissile() = isFissile();
   ASSERT(_num_groups > 0);
-  result.a()[0] = um2::mean(_a.cbegin(), _a.cend());
-  result.f()[0] = um2::mean(_f.cbegin(), _f.cend());
-  result.nuf()[0] = um2::mean(_nuf.cbegin(), _nuf.cend());
-  result.tr()[0] = um2::mean(_tr.cbegin(), _tr.cend());
-  result.s()[0] = um2::mean(_s.cbegin(), _s.cend());
-  result.ss()(0) = _num_groups * um2::mean(_ss.begin(), _ss.end());
+  if (weights.empty()) {
+    result.a()[0] = um2::mean(_a.cbegin(), _a.cend());
+    result.f()[0] = um2::mean(_f.cbegin(), _f.cend());
+    result.nuf()[0] = um2::mean(_nuf.cbegin(), _nuf.cend());
+    result.tr()[0] = um2::mean(_tr.cbegin(), _tr.cend());
+    result.s()[0] = um2::mean(_s.cbegin(), _s.cend());
+    result.ss()(0) = _num_groups * um2::mean(_ss.begin(), _ss.end());
+  } else {
+    ASSERT(weights.size() == _num_groups);
+    result.a()[0] = 0;
+    result.f()[0] = 0;
+    result.nuf()[0] = 0;
+    result.tr()[0] = 0;
+    result.s()[0] = 0;
+    result.ss()(0) = 0;
+    for (Int i = 0; i < _num_groups; ++i) {
+      result.a()[0] += weights[i] * _a[i];
+      result.f()[0] += weights[i] * _f[i];
+      result.nuf()[0] += weights[i] * _nuf[i];
+      result.tr()[0] += weights[i] * _tr[i];
+      result.s()[0] += weights[i] * _s[i];
+    }
+    result.ss()(0) = result.s()[0];
+  }
 #if UM2_ENABLE_ASSERTS
   auto constexpr eps = 1.0e-6;
   ASSERT_NEAR(result.s()[0], result.ss()(0), eps);
