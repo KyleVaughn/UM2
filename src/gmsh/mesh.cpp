@@ -83,13 +83,6 @@ generateMesh(MeshType const mesh_type, int const smooth_iters)
   }
 }
 
-////=============================================================================
-//// setMeshFieldFromGroups
-////=============================================================================
-//
-// auto
-// setMeshFieldFromGroups(int const dim, std::vector<std::string> const & groups,
-//                       std::vector<double> const & sizes) -> int
 //{
 //  // Get all group dimtags for use later
 //  gmsh::vectorpair dimtags;
@@ -503,6 +496,96 @@ setMeshFieldFromKnudsenNumber(int const dim, um2::Vector<Material> const & mater
       } // if (is_absorber[i] == 1)
     } // for (size_t i = 0; i < num_materials; ++i)
   } // if (abs_mfp_threshold > 0.0)
+
+  // Create a field that takes the min of each and set as background mesh
+  int const fid = gmsh::model::mesh::field::add("Min");
+  std::vector<double> const double_field_ids(field_ids.begin(), field_ids.end());
+  gmsh::model::mesh::field::setNumbers(fid, "FieldsList", double_field_ids);
+  gmsh::model::mesh::field::setAsBackgroundMesh(fid);
+  gmsh::option::setNumber("Mesh.MeshSizeExtendFromBoundary", 0);
+  gmsh::option::setNumber("Mesh.MeshSizeFromPoints", 0);
+  gmsh::option::setNumber("Mesh.MeshSizeFromCurvature", 0);
+
+  return 0;
+}
+
+//=============================================================================
+// setMeshFieldFromGroups
+//=============================================================================
+
+auto
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+setMeshFieldFromGroups(int const dim, std::vector<std::string> const & groups,
+                       std::vector<double> const & sizes) -> int
+{
+  // Get the tags of the desired physical groups
+  size_t const num_groups = groups.size();
+  gmsh::vectorpair dimtags;
+  gmsh::model::getPhysicalGroups(dimtags, dim);
+  std::vector<int> group_tags;
+  for (auto const & dimtag : dimtags) {
+    int const tag = dimtag.second;
+    std::string name;
+    gmsh::model::getPhysicalName(dim, tag, name);
+    for (auto const & group : groups) {
+      if (group == name) {
+        group_tags.push_back(tag);
+        break;
+      }
+    }
+  }
+
+  // Ensure each group exists as a physical group
+  if (group_tags.size() != num_groups) {
+    LOG_ERROR("Not all groups exist as physical groups");
+    return -1;
+  }
+
+  // Ensure the sizes vector has the correct size
+  if (sizes.size() != num_groups) {
+    LOG_ERROR("Sizes vector does not have the correct size");
+    return -1;
+  }
+
+  // Ensure all sizes are positive
+  for (auto const size : sizes) {
+    if (size < 0.0) {
+      LOG_ERROR("All sizes must be positive");
+      return -1;
+    }
+  }
+
+  // Create the fields, which are constant in each material
+  std::vector<int> field_ids(num_groups, -1);
+  for (size_t i = 0; i < num_groups; ++i) {
+    LOG_INFO("Setting mesh size for group ", groups[i].data(), " to ", sizes[i]);
+    // Create a constant field
+    int const fid = gmsh::model::mesh::field::add("Constant");
+    field_ids[i] = fid;
+    gmsh::model::mesh::field::setNumber(fid, "VIn", sizes[i]);
+    // Populate each of the fields with the entities in the
+    // physical group
+    std::vector<int> ent_tags;
+    gmsh::model::getEntitiesForPhysicalGroup(dim, group_tags[i], ent_tags);
+    ASSERT(!ent_tags.empty());
+    std::vector<double> const double_ent_tags(ent_tags.begin(), ent_tags.end());
+    switch (dim) {
+    case 0:
+      gmsh::model::mesh::field::setNumbers(fid, "PointsList", double_ent_tags);
+      break;
+    case 1:
+      gmsh::model::mesh::field::setNumbers(fid, "CurvesList", double_ent_tags);
+      break;
+    case 2:
+      gmsh::model::mesh::field::setNumbers(fid, "SurfacesList", double_ent_tags);
+      break;
+    case 3:
+      gmsh::model::mesh::field::setNumbers(fid, "VolumesList", double_ent_tags);
+      break;
+    default:
+      LOG_ERROR("Invalid dimension");
+    } // dim switch
+  } // for (size_t i = 0; i < num_groups; ++i)
 
   // Create a field that takes the min of each and set as background mesh
   int const fid = gmsh::model::mesh::field::add("Min");

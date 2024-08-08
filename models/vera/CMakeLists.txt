@@ -1,5 +1,7 @@
 um2_add_executable(./problem_1/vera_1a.cpp)
 um2_add_executable(./problem_1/vera_1a_nogap.cpp)
+um2_add_executable(./problem_1/vera_1a_nogap_var_mesh.cpp)
+um2_add_executable(./problem_1/vera_1a_nogap_extract_source.cpp)
 um2_add_executable(./problem_4/2d/vera_4_unrodded_2d_variable_grid.cpp)
 um2_add_executable(./problem_4/2d/vera_4_rodded_2d_variable_grid.cpp)
 um2_add_executable(./problem_4/2d/vera_4_rodded_2d_advanced_mesh.cpp)
