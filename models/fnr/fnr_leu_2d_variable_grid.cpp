@@ -692,7 +692,9 @@ main(int argc, char ** argv) -> int
 
   model.importCoarseCellMeshes("fnr_2d.inp");
   model.write("fnr_2d.xdmf");
-  model.writeCMFDInfo("fnr_2d_cmfd_info.xdmf");
+  #if UM2_HAS_CMFD
+    model.writeCMFDInfo("fnr_2d_cmfd_info.xdmf");
+  #endif
   um2::finalize();
   return 0;
 }
