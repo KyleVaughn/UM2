@@ -192,8 +192,7 @@ set_omega(Matrix<ComplexF> & omega, Matrix<ComplexF> & An, Matrix<ComplexF> & Bn
   Int const p = params.p;
   set_U(U, An, Bn, params, alpha, I, ipiv);
   auto const F = getF(params, alpha); // This is a scalar
-  auto const s = params.s;
-  ASSERT(s == 1);
+  ASSERT(params.s == 1);
 
   // ω = (U^σ + F * J * (U^σ - U^(σ - 1)))
   // ω = (U + F * J * (U - I)) * U^(σ - 1)
