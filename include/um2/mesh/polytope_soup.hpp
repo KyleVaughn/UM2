@@ -8,7 +8,10 @@
 
 // External dependencies
 #if UM2_USE_HDF5
+#  pragma push_macro("HOST")
+#  undef HOST
 #  include <H5Cpp.h>
+#  pragma pop_macro("HOST")
 #endif
 
 #if UM2_USE_PUGIXML

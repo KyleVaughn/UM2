@@ -463,8 +463,27 @@ endif()
 # HDF5
 if (UM2_USE_HDF5)
   find_package(HDF5 REQUIRED COMPONENTS CXX)
-  target_link_libraries(um2 PUBLIC "${HDF5_CXX_LIBRARIES}")
-  target_include_directories(um2 SYSTEM PUBLIC "${HDF5_INCLUDE_DIRS}")
+  message(STATUS "HDF5_IS_PARALLEL=${HDF5_IS_PARALLEL}")
+  if (HDF5_IS_PARALLEL)
+    find_package(MPI REQUIRED)
+    if(MPI_FOUND)
+      target_link_libraries(um2 PUBLIC
+        "${HDF5_CXX_LIBRARIES}"
+        "${MPI_CXX_LIBRARIES}"
+      )
+      target_include_directories(um2 SYSTEM PUBLIC
+        "${HDF5_INCLUDE_DIRS}"
+        "${MPI_CXX_INCLUDE_DIRS}"
+      )
+    else()
+      message(FATAL_ERROR "HDF5 was built with MPI but MPI was not found!\n"
+                          "    Try setting MPI_ROOT environment variable.\n"
+      )
+    endif()
+  else()
+    target_link_libraries(um2 PUBLIC "${HDF5_CXX_LIBRARIES}")
+    target_include_directories(um2 SYSTEM PUBLIC "${HDF5_INCLUDE_DIRS}")
+  endif()
 endif()
 
 # pugixml
