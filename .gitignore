@@ -7,3 +7,7 @@ MPACT_Extras
 
 # config files
 include/um2/config.hpp
+
+.vscode
+
+Testing
